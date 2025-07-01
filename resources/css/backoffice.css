@@ -1,0 +1,423 @@
+
+body {
+    background-color: #f0e9e0;
+    font-family: 'Montserrat', sans-serif;
+    margin: 0 auto;
+}
+
+.red-percentage {
+    color: #ff5b5b;
+}
+.green-percentage {
+    color: #19ff19;
+}
+
+.sidebar {
+    background-color: #13283F;
+    min-height: 100vh;
+    color: #fff;
+    padding: 1rem;
+    width: 250px;
+    transition: width 0.3s ease;
+    top: 0;
+    left: 0;
+    height: 100vh; /* full vertical height */
+    overflow-y: auto; /* allow vertical scroll */
+    overflow-x: hidden;
+    z-index: 999;
+    position: sticky;
+}
+
+.sidebar::-webkit-scrollbar {
+    width: 5px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+    background: #13283F; /* sidebar bg color */
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background-color: #9f9e9d;
+    border-radius: 10px;
+    border: 2px solid #13283F;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+    transition:all 0.3s ease;
+    background-color: #cc4b1f;
+}
+
+
+.sidebar.shrunk {
+    width: 6rem;
+}
+
+.sidebar .nav-link {
+    color: #bbb;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: color 0.3s;
+}
+.sidebar .nav-link.active {
+    background-color: #f05a28 !important; 
+    color: white !important;
+    margin: 5px 0;
+    transition: margin 0.3 ease;
+}
+
+.sidebar .nav-link:hover {
+    color: white;
+    background-color: #3b1100 !important; 
+    transition: all 0.2s ease;
+}
+
+.sidebar .section-title {
+    margin-top: 2rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    color: #aaa;
+    margin-bottom: 1rem;
+    transition: opacity 0.3s;
+}
+/* Hide texts when shrunk */
+.sidebar.shrunk .nav-link > span,
+.sidebar.shrunk .section-title, 
+.sidebar.shrunk .nav-brand {
+    transition: all 0.1s ease;
+    display: none;
+}
+
+.sidebar.shrunk .sidebar-wrapper {
+    margin-top: 2rem;
+}
+
+/* Adjust icon spacing when shrunk */
+.sidebar.shrunk .nav-link i {
+    margin-top: 2rem;
+    font-size: 1.4rem;
+}
+/* Hamburger toggle button */
+#sidebarToggleDesktop, #sidebarToggleMobile {
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 1.6rem;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    z-index: 1000;
+}
+
+#sidebarToggle:focus {
+    outline: none;
+}
+#sidebarToggleMobile {
+    display: none;
+}
+@media only screen and (max-width: 768px) {
+    .sidebar {
+        display: none;
+        position: fixed;
+        width: 100%;
+        z-index: 1001;
+    }
+    .sidebar.shrunk {
+        display: none !important;
+    }
+    .sidebar.open {
+        display: block;
+    }
+    #sidebarToggleMobile {
+        display: inline-block;
+    }
+    
+    #sidebarToggleDekstop {
+       display: none;
+    }
+}
+
+
+/* Cards */
+.card:hover{
+    border: 1px solid #f05a28;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+}
+.card-black {
+    background-color: #13283F !important;
+    color: #f05a28;
+    border-radius: 1rem;
+}
+.card-white {
+    background-color: #fff ;
+    border-radius: 1rem;
+}
+.card-small {
+    border-radius: 1rem;
+    min-height: 120px;
+}
+.navbar-custom {
+    background-color: #ff8c00;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid #ddd;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+
+    position: sticky !important;
+    top: 0;
+    z-index: 1000; /* keep it above other elements */
+}
+.navbar-custom .btn-add {
+    background-color: #f05a28;
+    border: none;
+    color: #fff;
+}
+
+.navbar-custom .btn-add:hover {
+}
+
+.navbar-custom .nav-icon {
+    font-size: larger;
+    border: none;
+    background-color: #ff8c00;
+    margin-right:1rem ;
+}
+.navbar-custom .nav-icon:hover {
+
+}
+.chart-placeholder {
+    height: 150px;
+    background: #eee;
+    border-radius: 1rem;
+    position: relative;
+}
+/* Tooltip style */
+.tooltip-inner {
+    background-color: #000;
+    color: #fff;
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+}
+
+
+
+/* table */
+.order-table th{
+    background-color: #fff !important;
+    font-weight: 500;
+}
+.order-table th, .order-table td {
+    vertical-align: middle;
+    padding: 1rem !important;
+}
+.order-table tb, .order-table td {
+    border-top: 1px solid rgb(209, 209, 209) !important;
+}
+.nav-tabs .nav-link.active {
+    background-color: none !important;
+    border-bottom: 1px solid #f05a28 !important;
+    font-weight: 600;
+    color: #f05a28 !important;
+}
+.nav-tabs .nav-link {
+    color: black;
+    text-decoration: none;
+}
+.nav-tabs .nav-link:hover {
+    color: #f05a28;
+}
+.filter-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+/* summary container */
+.order-summary {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    color: #d1d1d1;
+}
+.summary-container {
+    padding: 15px;
+    background-color: #f3f3f3;
+    border-radius: 10px;
+    color: #000000;
+}
+
+.summary-container p{
+    margin: 0px;
+    font-weight: bold;
+}
+
+.summary-container .data{
+    font-size: larger;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #000;
+    border-color: #000;
+}
+.table-hover tbody tr:hover {
+    background-color: #f1f1f1;
+}
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+.action-buttons .btn-add {
+    background-color: #f05a28;
+    border: none;
+    color: #fff;
+}
+
+.edit-btn-table {
+    background-color: rgb(223, 247, 255) !important;
+    color: rgb(0, 191, 255) !important;
+}
+.edit-btn-table:hover {
+    background-color: rgb(0, 191, 255) !important;
+    color: rgb(255, 255, 255) !important;
+}
+.delete-btn-table {
+    background-color: rgb(255, 215, 215) !important;
+    color: red !important;
+}
+.delete-btn-table:hover {
+    background-color: rgb(255, 110, 110) !important;
+    color: rgb(255, 255, 255) !important;
+}
+.view-btn-table {
+    background-color: rgb(215, 255, 217) !important;
+    color: rgb(0, 180, 9) !important;
+}
+.view-btn-table:hover {
+    background-color: rgb(3, 172, 12) !important;
+    color: rgb(255, 255, 255) !important;
+}
+
+.action-buttons .btn-add:hover {
+    background-color: #f05a28;
+    opacity: 0.7;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    color: white;
+}
+.action-buttons .btn-add:active {
+    transform: translateY(1px);
+    background-color: #f05a28 !important;
+    color: white !important;
+}
+
+.action-btn {
+    border-radius: 50%;
+    margin:0 0.4vh;
+    border: none;
+    cursor: pointer;
+    padding: 6px 10px;
+    color: #ff8c00;
+    transition: color 0.2s ease;
+    font-size: 10px  !important;
+    transition:all 0.5s ease;
+}
+
+.action-btn:hover {
+    color: #cc6f00;
+}
+
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    user-select: none;
+}
+.status-badge.online {
+    background-color: #d9f2d9;
+    color: #3a803a;
+}
+.status-badge.online::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background-color: #3a803a;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+.status-badge.offline {
+    background-color: #ffe3d6;
+    color: #b44c00;
+}
+.status-badge.offline::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background-color: #b44c00;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+
+
+/* slider */
+.permission-border{
+    border: 1px solid rgb(226, 226, 226);
+    padding: 10px;
+    border-radius: 9px;
+    width: max-content !important;
+}
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 24px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: #4CAF50;
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}

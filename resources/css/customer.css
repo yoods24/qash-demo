@@ -1,0 +1,431 @@
+/* resources/css/custom.css */
+@font-face {
+    font-family: 'Helvetica Narrow LT';
+    src: url('/fonts/helvn.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Helvetica Narrow LT';
+    src: url('/fonts/helvn_b.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Helvetica Narrow LT';
+    src: url('/fonts/helvn_i.ttf') format('truetype');
+    font-weight: normal;
+    font-style: italic;
+}
+@font-face {
+    font-family: 'Helvetica Narrow LT';
+    src: url('/fonts/helvn_bi.ttf') format('truetype');
+    font-weight: bold;
+    font-style: italic;
+}
+
+body {
+    font-family: 'Montserrat', sans-serif;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+.img-fluid {
+    max-width: 100%;
+    height: auto;
+}
+
+nav{
+  position: sticky;
+  z-index: 2;
+  top: 0;
+  overflow: auto;
+  padding: 30px;
+  background: linear-gradient(to top, #000000, #301b01);
+  transition: all 0.1s ease;
+}
+
+nav.scrolled {
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+    background: black;
+    padding: 0.8rem 1rem;
+    transition: padding 0.3s ease;
+}
+
+@media (max-width: 768px) {
+    nav {
+        padding: 15px;
+    }
+
+    .nav-links {
+        font-size: 0.9rem;
+        padding-bottom: 4px;
+    }
+
+    .nav-links:hover {
+        font-size: 1rem;
+    }
+
+    .reservation-btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
+}
+
+.scroll-section {
+  height: 100vh;
+}
+
+.bg-gradient {
+    min-height: 100vh;
+}
+.primer{
+    color: #ff8c00;
+}
+.section-wrapper {
+    padding: 50px;
+    padding-bottom: 100px;
+    max-width: 1500px;
+    margin: 0 auto;
+    height: 100vh;
+}
+
+@media (max-width: 768px) {
+    .section-wrapper {
+        padding: 20px;
+        padding-bottom: 60px;
+    }
+}
+
+.secondary-white {
+background: linear-gradient(to bottom right, #fff8f0, #ffffff);
+}
+.bold {
+    font-weight: bold;
+}
+
+/* Hero Section */
+.hero-img {
+    width: 100%;
+    max-height: 400px;
+    height: auto;
+    border-radius: 12px;
+    object-fit: cover;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+    transition: transform 0.3s ease;
+}
+
+.hero-img:hover {
+    transform: scale(1.01);
+}
+
+
+
+.hero-title h1 {
+    font-size: 60px;
+}
+
+@media (max-width: 768px) {
+    .hero-title h1 {
+        font-size: 36px;
+        text-align: center;
+    }
+
+    .hero-img {
+        max-height: 250px;
+        border-radius: 8px;
+    }
+}
+
+
+.nav-links {
+    position: relative;
+    color: white;
+    opacity: 0.8;
+    text-decoration: none;
+    padding-bottom: 5px;
+    transition: opacity 0.3s;
+    transition: 0.3s;
+
+}
+
+.nav-links::after,
+.nav-links-active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 2px;
+    background-color: #ff8c00; /* dark orange */
+    transition: width 0.3s ease-in-out;
+}
+
+.nav-links::after {
+    width: 0%;
+}
+
+.nav-links:hover::after {
+    width: 100%;
+}
+
+.nav-links:hover {
+    opacity: 1;
+    font-size: larger;
+    transition: 0.3s;
+
+}
+
+.nav-links-active {
+    opacity: 1;
+    position: relative;
+    color: white;
+    text-decoration: none;
+    padding-bottom: 5px;
+    transition: opacity 0.3s;
+    color: white;
+    font-size: larger;
+}
+
+.nav-links-active::after {
+    width: 100%;
+}
+
+.reservation-btn {
+    background-color: transparent;
+    border: 2px solid #ff8c00;
+    color: #ff8c00;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    border-radius: 8px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    min-width: 140px;
+    max-width: 100%;
+    cursor: pointer;
+}
+
+.reservation-btn:hover {
+    background-color: #ff8c00;
+    color: black;
+    opacity: 0.8;
+    transition: 0.3s;
+}
+
+/* section 2 */
+
+.job-card {
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+    .career-card {
+        padding: 1.5rem;
+    }
+
+    .career-card .btn {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+    }
+
+    #hamburgToggle {
+        display: hidden;
+    }
+}
+
+.job-card-img {
+    max-width: 100%;
+    height: auto;
+    object-fit: cover;
+    border-radius: 8px;
+    display: block;
+}
+.read-more-link:hover{
+    transition: 0.3s;
+    font-size: larger;
+}
+.read-more-link {
+    margin-right: 30px;
+}
+
+
+
+/* section 3 */
+
+.location-section {
+    background: linear-gradient(to top, #fff8f0, #ffffff);
+    color: #1e1e1e;
+}
+
+.section-title {
+    color: #000000;
+    font-weight: 600;
+    position: relative;
+}
+
+.card-style {
+    background: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+@media (max-width: 768px) {
+    .card-style {
+        padding: 1rem;
+    }
+
+    .social-icons a {
+        font-size: 1.2rem;
+    }
+}
+
+.social-icons a {
+    color: #301b01;
+    transition: 0.3s ease-in-out;
+}
+
+.social-icons a:hover {
+    color: #ff8c00;
+    transform: scale(1.15);
+}
+
+
+/* carousel img */
+.carousel-wrapper {
+  max-width: 1000px;  /* You can change this to 800px, 700px, etc. */
+  width: 100%;
+}
+
+.carousel-img {
+  height: 500px;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+@media (max-width: 768px) {
+  .carousel-img {
+    height: 250px;
+  }
+}
+
+/* careers */
+.career-card {
+    position: relative;
+    background-color: rgb(255, 255, 255); /* Deep black base */
+    border: 2px solid #ff8c00;
+    border-radius: 12px;
+    box-shadow: 0 6px 16px rgba(255, 140, 0, 0.2);
+    padding: 2rem 2.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #000000;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.career-card:hover {
+    box-shadow: 0 8px 20px rgba(255, 140, 0, 0.5);
+    transform: translateY(-4px);
+}
+
+.career-card .time-tag {
+    color: rgb(171, 171, 171);
+    font-weight: 600;
+    font-size: 0.85rem;
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    
+}
+
+.career-card h3 {
+    color: #000000;
+    margin-bottom: 0.75rem;
+}
+
+.career-card p {
+    margin-bottom: 1.25rem;
+    font-weight: 500;
+    color: #000000;
+}
+
+.career-card .btn {
+    border-radius: 8px;
+    font-weight: 600;
+    min-width: 100px;
+    background-color: transparent;
+    border: 2px solid #ff8c00;
+    color: #ff8c00;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.career-card .btn:hover {
+    background-color: #ff8c00;
+    color: #111;
+    opacity: 0.9;
+}
+
+
+
+
+/* BOOK MENU */
+/* #flipbookContainer {
+} */
+
+    .my-page {
+      width: 100%;
+      height: 100%;
+      padding: 1rem 2rem;
+      background: linear-gradient(to top, #000000, #301b01);
+      color: #fff;
+      overflow-y: auto;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .menu-category {
+      font-size: 1.8rem;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 2rem;
+      border-bottom: 1px solid #444;
+      padding-bottom: 0.5rem;
+    }
+    .menu-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .menu-item img {
+      width: 70px;
+      height: 70px;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+    .menu-details {
+      flex-grow: 1;
+      border-bottom: 1px dashed #888;
+      padding-bottom: 0.5rem;
+    }
+    .menu-title {
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 1rem;
+      color: #fff;
+    }
+    .menu-description {
+      font-size: 0.85rem;
+      color: #bbb;
+    }
+    .add-to-cart {
+      background-color: #fff;
+      color: #000;
+      border: none;
+      padding: 0.3rem 0.6rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      cursor: pointer;
+    }
