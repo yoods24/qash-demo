@@ -17,7 +17,9 @@
 .btn-primer {
     color: #ffffff;
     background-color: #ff8c00;
+    border: none;
 }
+
 .btn-primer:hover{
     background-color: #f05a28;
     opacity: 0.7;

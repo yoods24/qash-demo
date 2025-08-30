@@ -37,6 +37,11 @@
                         </div>
 
                         <div class="mb-3">
+                            <label class="form-label fw-bold">Description</label>
+                            <textarea type="text" name="description" class="form-control" required></textarea>
+                        </div>
+
+                        <div class="mb-3">
                             <label class="form-label fw-bold">Price</label>
                             <input type="number" name="price" step="0.01" class="form-control" required>
                         </div>
@@ -62,8 +67,8 @@
         </div>
 
         <div class="mt-4 d-flex justify-content-end">
-            <a href="{{ route('backoffice.product.index') }}" class="btn btn-secondary me-2">Cancel</a>
-            <button type="submit" class="btn btn-primary">Save Product</button>
+            <a href="{{ route('backoffice.product.store') }}" class="btn btn-secondary me-2">Cancel</a>
+            <button type="submit" class="btn btn-primary">Create Product</button>
         </div>
     </form>
 </div>

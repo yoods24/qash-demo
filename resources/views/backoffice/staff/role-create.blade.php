@@ -3,7 +3,6 @@
 <div class="container">
     <h2>Manage Permissions for Role:</h2>
 
-
     <form method="POST" action="{{ route('backoffice.permission.update', $role->id) }}">
         @csrf
         @method('PUT')

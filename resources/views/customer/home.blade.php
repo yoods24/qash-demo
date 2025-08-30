@@ -5,8 +5,13 @@
                 <div class="d-flex flex-column gap-4 w-50">
                     <h1>Discover the taste of real coffee</h1>
                     <h6 class="text-secondary">We always ready to help by providing the best service for you. <br> We believe a good place to live can make life better.</h6>
+                    <a href="{{route('customer.order')}}">
                     <button class="reservation-btn w-50">
                         Order Now
+                    </button>
+                    </a>
+                    <button class="reservation-btn w-50">
+                        Takeaway
                     </button>
                 </div>
                 <div class="ms-5">

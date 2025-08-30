@@ -1,9 +1,10 @@
 import { PageFlip } from 'page-flip';
 
+
 //nav
 document.addEventListener("DOMContentLoaded", () => {
     const navbar = document.querySelector("nav");
-
+    if(navbar) {
     window.addEventListener("scroll", () => {
         if (window.scrollY > 1) {
             navbar.classList.add("scrolled");
@@ -11,6 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
             navbar.classList.remove("scrolled");
         }
     });
+    }
 });
 
 
@@ -38,7 +40,6 @@ document.addEventListener("DOMContentLoaded", () => {
         setTimeout(() => (isScrolling = false), 1000);
     });
 });
-
 // book menu
 document.addEventListener("DOMContentLoaded", function () {
     const pageFlip = new PageFlip(document.getElementById('book'), {
@@ -49,4 +50,50 @@ document.addEventListener("DOMContentLoaded", function () {
     pageFlip.loadFromHTML(document.querySelectorAll('.my-page'));
 });
 
+
+document.addEventListener('livewire:init', () => {
+    Livewire.on('lock-scroll', () => {
+        document.body.classList.add('no-scroll');
+    });
+    Livewire.on('unlock-scroll', () => {
+        document.body.classList.remove('no-scroll');
+    });
+});
+
+
+// JS to trigger footer slide up
+document.addEventListener('DOMContentLoaded', function() {
+    const cartFooter = document.querySelector('.cart-footer');
+    if(cartFooter) {
+        setTimeout(() => {
+            cartFooter.classList.add('show');
+        }, 100); // small delay for smooth appearance
+    }
+});
+
+// cart footer 
+let lastScrollY = window.scrollY;
+let cartFooter = document.querySelector('.cart-footer');
+let scrollTimeout;
+
+window.addEventListener('scroll', () => {
+    if (!cartFooter) return;
+
+    // detect scroll down
+    if (window.scrollY > lastScrollY) {
+        cartFooter.classList.add('hide');
+    } else {
+        cartFooter.classList.remove('hide');
+    }
+
+    // clear old timer
+    clearTimeout(scrollTimeout);
+
+    // re-show footer after 500ms of no scroll
+    scrollTimeout = setTimeout(() => {
+        cartFooter.classList.remove('hide');
+    }, 1000);
+
+    lastScrollY = window.scrollY;
+});
 

@@ -9,7 +9,8 @@
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
     
-    @vite(['resources/css/backoffice.css', 'resources/css/app.css', 'resources/js/backoffice.js', 'resources/js/app.js'])
+    @vite(['resources/css/backoffice.css', 'resources/js/backoffice.js', 'resources/css/app.css'])
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 </head>
 <body>
   <div class="d-flex">
@@ -24,9 +25,9 @@
         @include('components.toast-delete')
         {{$slot}}
       </div>
-<x-modal-delete />
+      <x-modal-delete />
     </div>
   </div>
+  @stack('scripts')
 </body>
-<!-- Include this in your Blade layout (if not already included) -->
 </html>

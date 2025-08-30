@@ -1,7 +1,7 @@
       <nav class="navbar navbar-expand navbar-custom d-flex justify-content-between px-3">
         <div class="d-flex w-100 gap-3">
         <button id="sidebarToggleDesktop" title="Toggle Sidebar"><i class="bi bi-list"></i></button>
-        <form class="d-flex w-75" role="search">
+        <form class="d-flex w-75 ms-5" role="search">
           <input class="form-control" type="search" placeholder="Search" aria-label="Search" />
         </form>
         </div>

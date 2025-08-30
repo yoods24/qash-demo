@@ -74,7 +74,7 @@
               data-bs-target="#confirmModal"
               data-id="{{ $product->id }}"
               data-title="{{ $product->title }}"
-              data-url="{{ route('backoffice.career.destroy', $product->id) }}"
+              data-url="{{ route('backoffice.product.destroy', $product->id) }}"
           >
               <i class="bi bi-trash-fill"></i>
           </button>

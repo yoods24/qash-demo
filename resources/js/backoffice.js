@@ -35,5 +35,55 @@ document.addEventListener('DOMContentLoaded', function () {
         form.action = deleteUrl;
     });
 });
+// option section
+document.getElementById('toggleOptions').addEventListener('change', function () {
+    document.getElementById('optionsSection').style.display = this.checked ? 'block' : 'none';
+});
+
+let rowCount = 1;
+
+document.getElementById('addRow').addEventListener('click', function() {
+    let tableBody = document.querySelector('#optionValuesTable tbody');
+    let newRow = `
+        <tr>
+            <td><input type="text" name="values[${rowCount}][value]" class="form-control" placeholder="Medium" required></td>
+            <td><input type="number" step="0.01" name="values[${rowCount}][price_change]" class="form-control" placeholder="0.00"></td>
+            <td><button type="button" class="btn btn-danger btn-sm removeRow">&times;</button></td>
+        </tr>
+    `;
+    tableBody.insertAdjacentHTML('beforeend', newRow);
+    rowCount++;
+});
+
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('removeRow')) {
+        e.target.closest('tr').remove();
+    }
+});
 
 
+
+// Toast success
+document.addEventListener('DOMContentLoaded', function () {
+    const button = document.querySelector('.close-toast');
+    const toast = document.getElementById('toast');
+    const progress = document.querySelector('.toast-progress');
+
+    // Start progress bar animation
+    setTimeout(() => {
+        progress.style.width = '100%';
+    }, 100); // slight delay to trigger transition
+
+    // Auto-dismiss after 5s
+    const timeout = setTimeout(() => {
+        toast.classList.remove('show');
+        toast.classList.add('hide');
+    }, 5100); // match the CSS animation
+
+    // Manual close
+    button.addEventListener('click', () => {
+        clearTimeout(timeout);
+        toast.classList.remove('show');
+        toast.classList.add('hide');
+    });
+});

@@ -131,6 +131,7 @@ body {
     }
     #sidebarToggleMobile {
         display: inline-block;
+        z-index: 100;
     }
     
     #sidebarToggleDekstop {

@@ -22,7 +22,9 @@
                   </div>
                   <div class="menu-description">{{ $item->description }}</div>
                 </div>
-                <button class="add-to-cart">Add</button>
+                <button class="add-to-cart">
+                  <i class="bi bi-cart-fill"></i>
+                </button>
               </div>
             @endforeach
           </div>

@@ -26,13 +26,17 @@ class DatabaseSeeder extends Seeder
         Category::factory()
         ->count(3)
         ->state(new Sequence(
-            ['name' => 'Non Beverage'], 
-            ['name' => 'Coffee'],
+['name' => 'Non Beverage'], 
+        ['name' => 'Coffee'],
         ['name' => 'Non Coffee'])
     )->create();
         
 
-        Product::factory(20)->create();
+        Product::factory(3)->state(new Sequence(
+            ['name' => 'Kopi Gayo',], 
+        ['name' => 'Americano'],
+        ['name' => 'Sushi'])
+        )->create();
 
        $this->call([
         PermissionRoleSeeder::class,

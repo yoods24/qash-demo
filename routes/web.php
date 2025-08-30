@@ -5,11 +5,18 @@ use App\Models\Product;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\CareerController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\AuthenticatedSessionController;
+
+use App\Livewire\CartPage;
+
+
+
+
 
 Route::get('/', function () {
     return view('customer.home');
@@ -20,19 +27,19 @@ Route::get('/menu', function () {
     return view('customer.menu.index', ['products' => $products]);
 });
 
+Route::get('/order', App\Livewire\OrderPage::class)->name('customer.order');
+
 
 // Authentication 
 Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('auth.login');
 Route::post('/login', [AuthenticatedSessionController::class, 'store'])->name('auth.store');
 Route::post('/logout/{user}', [AuthenticatedSessionController::class, 'destroy'])->name('auth.logout');
 
-
-
-
 //career
 Route::get('/career', [CareerController::class, 'indexCustomer']);
 
-
+// cart Page
+Route::get('/cart', CartPage::class)->name('cart.page');
 
 
 
@@ -68,10 +75,25 @@ Route::prefix('backoffice')->middleware('auth')->group(function() {
     Route::delete('/category/{category}/delete', [CategoryController::class, 'destroy'])->name('backoffice.category.destroy');
 
 // Product
-    Route::get('/product', [ProductController::class, 'index'])->name('backoffice.product.index');
-    Route::get('/product/create', [ProductController::class, 'create'])->name('backoffice.product.create');
-    Route::post('/product/store', [ProductController::class, 'store'])->name('backoffice.product.store');
-    Route::get('/product/{product}/edit', [ProductController::class, 'edit'])->name('backoffice.product.edit');
+    Route::get('/product', [ProductController::class, 'index'])
+        ->name('backoffice.product.index');
+    Route::get('/product/create', [ProductController::class, 'create'])
+        ->name('backoffice.product.create');
+    Route::post('/product/store', [ProductController::class, 'store'])
+        ->name('backoffice.product.store');
+    Route::get('/product/{product}/edit', [ProductController::class, 'edit'])
+        ->name('backoffice.product.edit');
+    Route::delete('/product/{product}/delete', [ProductController::class, 'destroy'])
+        ->name('backoffice.product.destroy');
+    Route::put('/product/{product}/edit/update', [ProductController::class, 'update'])
+        ->name('backoffice.product.update');
+
+// product options
+    Route::post('/product/{product}/options/store', [ProductController::class, 'optionStore'])->name('backoffice.product.options.store');
+    Route::delete('/product/{product}/options/{option}/delete', [ProductController::class, 'optionDestroy'])->name('backoffice.product.options.destroy');
+    Route::get('/product/{product}/options/edit', [ProductController::class, 'optionEdit'])->name('backoffice.product.options.edit');
+// product option values
+    Route::post('/product/{product}/options/value/delete', [ProductController::class, 'optionDestroy'])->name('backoffice.product.option.value.destroy');
 
 
 // User Manipulate
@@ -81,5 +103,4 @@ Route::prefix('backoffice')->middleware('auth')->group(function() {
     Route::put('/user/{user}/update-notifications', [UserController::class, 'notificationUpdate'])->name('backoffice.profile.notification.update');
 
 });
-
 

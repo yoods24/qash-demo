@@ -81,4 +81,90 @@
             </div>
           </div>
         </div>
+
+<div class="row g-3 mt-3">
+  <div class="col-md-3 border">
+    <h4 class="mb-4">Top 3 Favorite Menus</h4>
+    <div id="favoriteMenuChart"></div>
+  </div>
+
+<div class="table-responsive border mt-3 col-md-9">
+  <div class="panel-header p-3">Most Ordered Menu</div>
+  <hr>
+<table class="table table-hover text-center text-nowrap">
+  <thead>
+    <tr>
+      <th scope="col">No</th>
+      <th scope="col">Menu</th>
+      <th scope="col">Changes Last Month</th>
+      <th scope="col">Quantity</th>
+      <th scope="col">Product Revenue</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td>Burger</td>
+      <td>
+        <span class="text-success">
+          <i class="bi bi-caret-up me-1"></i><span>28%</span>
+        </span>
+      </td>
+      <td>125</td>
+      <td>
+        <span class="text-danger">
+          <i class="bi bi-caret-down me-1"></i><span>-17,654</span>
+        </span>
+      </td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>Sampoerna Mild</td>
+      <td>
+        <span class="text-danger">
+          <i class="bi bi-caret-down me-1"></i><span>28%</span>
+        </span>
+      </td>
+      <td>125</td>
+      <td>
+        <span class="text-danger">
+          <i class="bi bi-caret-down me-1"></i><span>-17,654</span>
+        </span>
+      </td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+
+
+@push('scripts')
+<!-- ApexCharts -->
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var options = {
+            chart: {
+                type: 'pie',
+                height: 350
+            },
+            series: [44, 33, 23], // dummy data (orders count per menu)
+            labels: ['Nasi Goreng', 'Mie Ayam', 'Sate Ayam'], // menu names
+            colors: ['#008FFB', '#00E396', '#FEB019'],
+            legend: {
+                position: 'bottom'
+            }
+        };
+
+        var chart = new ApexCharts(document.querySelector("#favoriteMenuChart"), options);
+        chart.render();
+    });
+</script>
+@endpush
+
 </x-backoffice.layout>
+
+
+
