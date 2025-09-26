@@ -2,15 +2,15 @@
 
 namespace Database\Seeders;
 
-use App\Models\Role;
 use App\Models\User;
 use App\Models\Career;
 use App\Models\Product;
-
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use App\Models\Category;
-use App\Models\Permission;
+use App\Models\Tenant;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Database\Eloquent\Factories\Sequence;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -20,27 +20,64 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        Career::factory(10)->create();
-        User::factory(5)->create();
-        
-        Category::factory()
-        ->count(3)
-        ->state(new Sequence(
-['name' => 'Non Beverage'], 
-        ['name' => 'Coffee'],
-        ['name' => 'Non Coffee'])
-    )->create();
-        
+        // 1) Create the central Qash admin first
+        $this->call(QashAdminSeeder::class);
 
-        Product::factory(3)->state(new Sequence(
-            ['name' => 'Kopi Gayo',], 
-        ['name' => 'Americano'],
-        ['name' => 'Sushi'])
-        )->create();
+        // 2) Ensure base permissions/roles exist (global via Spatie)
+        $this->call(PermissionRoleSeeder::class);
 
-       $this->call([
-        PermissionRoleSeeder::class,
-        AdminSeeder::class
-       ]);
+        // 3) Create a demo tenant
+        $tenant = Tenant::firstOrCreate([
+            'id' => 'demo-cafe',
+        ], [
+            'data' => [
+                'name' => 'Demo Cafe',
+                'description' => 'Seeded demo tenant',
+            ],
+        ]);
+
+        // 4) Create a primary admin within the tenant
+        $admin = User::firstOrCreate([
+            'email' => 'admin@demo-cafe.test',
+        ], [
+            'name' => 'Demo Admin',
+            'password' => Hash::make('Miscrits24!'),
+            'tenant_id' => $tenant->id,
+            'status' => 1,
+            'is_admin' => true,
+        ]);
+
+        // Assign Super Admin role and all permissions
+        $superAdminRole = Role::firstOrCreate(['name' => 'Super Admin']);
+        $admin->assignRole($superAdminRole);
+        $admin->syncPermissions(Permission::all());
+
+        // 5) Seed tenant-scoped data (categories, products, careers)
+        $categories = Category::factory()
+            ->count(3)
+            ->state(new Sequence(
+                ['name' => 'Non Beverage'],
+                ['name' => 'Coffee'],
+                ['name' => 'Non Coffee']
+            ))
+            ->create(['tenant_id' => $tenant->id]);
+
+        // Create sample products under this tenant
+        Product::factory()
+            ->count(3)
+            ->state(new Sequence(
+                ['name' => 'Kopi Gayo'],
+                ['name' => 'Americano'],
+                ['name' => 'Sushi']
+            ))
+            ->create([
+                'tenant_id' => $tenant->id,
+                // Let factory choose a random category; all categories above belong to this tenant
+            ]);
+
+        // Careers for the tenant
+        Career::factory(10)->create([
+            'tenant_id' => $tenant->id,
+        ]);
     }
 }

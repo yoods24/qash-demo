@@ -4,6 +4,17 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Dashboard - Qash</title>
+    <script>
+      // Initialize theme early to avoid flash
+      (function() {
+        try {
+          var key = 'qash:theme';
+          var saved = localStorage.getItem(key);
+          var theme = saved || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+          document.documentElement.dataset.theme = theme;
+        } catch (e) { /* no-op */ }
+      })();
+    </script>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     <!-- Bootstrap Icons -->
@@ -17,11 +28,11 @@
     <!-- Sidebar -->
     <x-backoffice.sidebar></x-backoffice.sidebar>
     <!-- Main content -->
-    <div class="flex-grow-1">
+    <div class="flex-grow-1 layout-main">
       <!-- Navbar -->
       <x-backoffice.navbar></x-backoffice.navbar>
       <!-- Dashboard content -->
-      <div class="container-fluid p-4 secondary-white">
+      <div class="p-4 secondary-white">
         @include('components.toast-delete')
         {{$slot}}
       </div>

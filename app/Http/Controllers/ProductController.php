@@ -6,8 +6,8 @@ use App\Models\Product;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use App\Models\ProductOption;
-use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
 {
@@ -28,9 +28,9 @@ class ProductController extends Controller
             'category_id' => 'required|exists:categories,id',
             'name' => 'required|string|max:255',
             'alternate_name' => 'nullable|string|max:255',
-            'price' => 'required|numeric',
-            'goods_price' => 'nullable|numeric',
-            'product_image' => 'nullable|image|mimes:jpg,jpeg,png,webp',
+            'price' => 'required|numeric|min:0',
+            'goods_price' => 'nullable|numeric|min:0',
+            'product_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'featured' => 'nullable|boolean',
             'description' => 'nullable|max:255|string'
         ]);
@@ -47,11 +47,11 @@ class ProductController extends Controller
         Product::create([
             'category_id' => $validated['category_id'],
             'name' => $validated['name'],
-            'alternate_name' => $validated['alternate_name'],
+            'alternate_name' => $validated['alternate_name'] ?? null,
             'price'=> $validated['price'],
-            'goods_price'=> $validated['goods_price'],
+            'goods_price'=> $validated['goods_price'] ?? null,
             'product_image' => $imagePath,
-            'description' => $validated['description'],
+            'description' => $validated['description'] ?? null,
             'featured' => $validated['featured'],
         ]);
 
@@ -76,8 +76,8 @@ class ProductController extends Controller
             'category_id'   => 'required|exists:categories,id',
             'name'          => 'required|string|max:255',
             'alternate_name'=> 'nullable|string|max:255',
-            'price'         => 'required|numeric',
-            'goods_price'   => 'nullable|numeric',
+            'price'         => 'required|numeric|min:0',
+            'goods_price'   => 'nullable|numeric|min:0',
             'product_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'featured'      => 'nullable|boolean',
             'description'   => 'nullable|string|max:255',
@@ -101,11 +101,11 @@ class ProductController extends Controller
         $product->update([
             'category_id'   => $validated['category_id'],
             'name'          => $validated['name'],
-            'alternate_name'=> $validated['alternate_name'],
+            'alternate_name'=> $validated['alternate_name'] ?? null,
             'price'         => $validated['price'],
-            'goods_price'   => $validated['goods_price'],
+            'goods_price'   => $validated['goods_price'] ?? null,
             'product_image' => $imagePath,
-            'description'   => $validated['description'],
+            'description'   => $validated['description'] ?? null,
             'featured'      => $validated['featured'],
         ]);
 
@@ -119,12 +119,12 @@ class ProductController extends Controller
         Storage::disk('public')->delete($product->product_image);
         }
         $product->delete();
-        return redirect()->route('backoffice.product.index')->with('message', 'Product created deleted.');
+        return redirect()->route('backoffice.product.index')->with('message', 'Product deleted successfully.');
     }
     // OPTIONS
-    public function optionStore(Request $request, $productId)
+    public function optionStore(Request $request, Product $product)
     {
-        $productName = Product::where('id',$productId)->value('name');
+        $productName = $product->name;
         // Validate the request
         $validated = $request->validate([
             'option_name' => 'required|string|max:255',
@@ -133,24 +133,26 @@ class ProductController extends Controller
             'values.*.price_change' => 'nullable|numeric',
         ]);
 
-        // Create the product option
-        $productOption = \App\Models\ProductOption::create([
-            'product_id' => $productId,
-            'name' => $validated['option_name'],
-        ]);
-
-        // Loop through each option value
-        foreach ($validated['values'] as $valueData) {
-            \App\Models\ProductOptionValue::create([
-                'product_option_id' => $productOption->id,
-                'value' => $valueData['value'],
-                'price_adjustment' => $valueData['price_change'] ?? 0,
+        DB::transaction(function () use ($product, $validated) {
+            // Create the product option
+            $productOption = ProductOption::create([
+                'product_id' => $product->id,
+                'name' => $validated['option_name'],
             ]);
-        }
+
+            // Loop through each option value
+            foreach ($validated['values'] as $valueData) {
+                \App\Models\ProductOptionValue::create([
+                    'product_option_id' => $productOption->id,
+                    'value' => $valueData['value'],
+                    'price_adjustment' => $valueData['price_change'] ?? 0,
+                ]);
+            }
+        });
 
         return redirect()
-            ->route('backoffice.product.edit', $productId)
-            ->with('message', "{$validated['option_name']} on product {$productName} option and values added successfully!");
+            ->route('backoffice.product.edit', $product->id)
+            ->with('message', "Option '{$validated['option_name']}' for product '{$productName}' added successfully.");
     }
 
     public function optionDestroy(Product $product, ProductOption $option)

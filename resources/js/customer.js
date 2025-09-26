@@ -1,4 +1,5 @@
 import { PageFlip } from 'page-flip';
+import 'bootstrap'; 
 
 
 //nav
@@ -40,60 +41,49 @@ document.addEventListener("DOMContentLoaded", () => {
         setTimeout(() => (isScrolling = false), 1000);
     });
 });
-// book menu
-document.addEventListener("DOMContentLoaded", function () {
-    const pageFlip = new PageFlip(document.getElementById('book'), {
-        width: 500, // required parameter - base page width
-        height: 600, // required parameter - base page height
-    });
-
-    pageFlip.loadFromHTML(document.querySelectorAll('.my-page'));
-});
-
 
 document.addEventListener('livewire:init', () => {
     Livewire.on('lock-scroll', () => {
         document.body.classList.add('no-scroll');
+        // Initialize CTA observer after modal renders
+        setTimeout(() => {
+            try { initOptionModalCtaObserver(); } catch (e) { console.warn(e); }
+        }, 50);
     });
     Livewire.on('unlock-scroll', () => {
         document.body.classList.remove('no-scroll');
+        try {
+            if (window.__optionCtaObserver) {
+                window.__optionCtaObserver.disconnect();
+                window.__optionCtaObserver = null;
+            }
+        } catch (e) { /* noop */ }
     });
 });
 
 
-// JS to trigger footer slide up
-document.addEventListener('DOMContentLoaded', function() {
-    const cartFooter = document.querySelector('.cart-footer');
-    if(cartFooter) {
-        setTimeout(() => {
-            cartFooter.classList.add('show');
-        }, 100); // small delay for smooth appearance
-    }
-});
+function initOptionModalCtaObserver() {
+    const wrapper = document.querySelector('#modal-wrapper');
+    if (!wrapper) return;
+    const hero = wrapper.querySelector('.option-img-container');
+    const cta = wrapper.querySelector('.option-cta');
+    if (!hero || !cta) return;
 
-// cart footer 
-let lastScrollY = window.scrollY;
-let cartFooter = document.querySelector('.cart-footer');
-let scrollTimeout;
+    // Ensure visible initially
+    cta.classList.remove('hide-cta');
 
-window.addEventListener('scroll', () => {
-    if (!cartFooter) return;
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            if (entry.isIntersecting && entry.intersectionRatio > 0.6) {
+                cta.classList.add('hide-cta');
+            } else {
+                cta.classList.remove('hide-cta');
+            }
+        });
+    }, { threshold: [0, 0.25, 0.6, 0.75, 1] });
 
-    // detect scroll down
-    if (window.scrollY > lastScrollY) {
-        cartFooter.classList.add('hide');
-    } else {
-        cartFooter.classList.remove('hide');
-    }
+    observer.observe(hero);
+    window.__optionCtaObserver = observer;
+}
 
-    // clear old timer
-    clearTimeout(scrollTimeout);
-
-    // re-show footer after 500ms of no scroll
-    scrollTimeout = setTimeout(() => {
-        cartFooter.classList.remove('hide');
-    }, 1000);
-
-    lastScrollY = window.scrollY;
-});
 

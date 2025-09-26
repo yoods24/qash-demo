@@ -33,7 +33,7 @@ class AuthenticatedSessionController extends Controller
             $request->session()->regenerate();
 
             // Redirect to the intended page
-            return redirect()->intended('/backoffice')->with('message', 'Logged In as ' . $user->name);
+            return redirect()->intended('/backoffice');
         }
 
         // If credentials don't match, return with an error

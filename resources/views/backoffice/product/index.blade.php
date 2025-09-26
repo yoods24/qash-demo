@@ -1,5 +1,4 @@
 <x-backoffice.layout>
-
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h2 class="fw-bold">Product</h2>
       <div class="action-buttons">

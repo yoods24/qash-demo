@@ -3,12 +3,17 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 class ProductOption extends Model
 {
+    use BelongsToTenant;
 
     protected $fillable = [
-        'product_id', 'name', 'is_required'
+        'tenant_id', 
+        'product_id', 
+        'name', 
+        'is_required'
     ];
     
     public function product() {

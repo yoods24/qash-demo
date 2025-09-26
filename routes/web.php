@@ -1,106 +1,39 @@
 <?php
 
-use App\Models\Career;
-use App\Models\Product;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\OrderController;
-use App\Http\Controllers\StaffController;
-use App\Http\Controllers\CareerController;
-use App\Http\Controllers\ProductController;
-use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\AuthenticatedSessionController;
-
+use App\Http\Controllers\Qash\TenantController;
+use App\Http\Controllers\Qash\QashAuthenticatedSessionController;
 use App\Livewire\CartPage;
-
-
-
 
 
 Route::get('/', function () {
     return view('customer.home');
 })->name('home');
 
-Route::get('/menu', function () {
-    $products = Product::all();
-    return view('customer.menu.index', ['products' => $products]);
+
+// Qash central auth (separate guard)
+Route::prefix('qash')->name('qash.')->group(function () {
+    Route::get('/login', [QashAuthenticatedSessionController::class, 'create'])->name('login');
+    Route::post('/login', [QashAuthenticatedSessionController::class, 'store'])->name('auth.store');
+    Route::post('/logout', [QashAuthenticatedSessionController::class, 'destroy'])->name('auth.logout');
 });
 
-Route::get('/order', App\Livewire\OrderPage::class)->name('customer.order');
+// Qash central admin (protected by qash guard)
+Route::middleware('auth:qash')->prefix('qash')->name('qash.')->group(function () {
+    Route::get('/', [TenantController::class, 'index'])->name('dashboard');
+    Route::post('/tenants', [TenantController::class, 'store'])->name('tenants.store');
+});
+
+
+// Tenant customer routes moved under routes/tenant.php (path-based)
 
 
 // Authentication 
-Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('auth.login');
+Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');
 Route::post('/login', [AuthenticatedSessionController::class, 'store'])->name('auth.store');
 Route::post('/logout/{user}', [AuthenticatedSessionController::class, 'destroy'])->name('auth.logout');
 
-//career
-Route::get('/career', [CareerController::class, 'indexCustomer']);
 
-// cart Page
-Route::get('/cart', CartPage::class)->name('cart.page');
-
-
-
-Route::prefix('backoffice')->middleware('auth')->group(function() {
-    Route::get('/', function() {
-        return view('backoffice.dashboard');
-    });
-//career
-    Route::get('/career/create', [CareerController::class, 'create'])->name('backoffice.career.create');
-    Route::get('/career/{career}/edit', [CareerController::class, 'edit'])->name('backoffice.career.edit');
-    Route::post('/career/create/store', [CareerController::class, 'store'])->name('backoffice.career.store')
-        ->middleware('permission:career_create');;
-    Route::delete('/career/{career}/delete', [CareerController::class, 'destroy'])->name('backoffice.career.destroy')
-        ->middleware('permission:career_delete');
-    Route::get('/career', [CareerController::class, 'indexBackoffice'])->name('backoffice.careers.index');
-
-//staffs
-    Route::get('/staff', [StaffController::class, 'index'])->name('backoffice.staff.index');
-    Route::post('/staff/store', [StaffController::class, 'storeStaff'])->name('backoffice.staff.store');
-    Route::get('/roles', [StaffController::class, 'indexRoles'])->name('backoffice.roles.index');
-    Route::delete('/staff/{staff}/delete', [StaffController::class, 'destroy'])->name('backoffice.staff.destroy');
-
-
-//role
-    Route::post('/roles/create', [StaffController::class, 'storeRole'])->name('backoffice.role.store');
-    Route::delete('/roles/{role}/delete', [StaffController::class, 'destroyRole'])->name('backoffice.role.destroy');
-    Route::get('/roles/{role}/permissions', [StaffController::class, 'indexPermission'])->name('backoffice.permission.index');
-    Route::put('/roles/{role}/permissions/update', [StaffController::class, 'updatePermission'])->name('backoffice.permission.update');
-
-// Category
-    Route::get('/category', [CategoryController::class, 'index'])->name('backoffice.category.index');
-    Route::post('/store', [CategoryController::class, 'store'])->name('backoffice.category.store');
-    Route::delete('/category/{category}/delete', [CategoryController::class, 'destroy'])->name('backoffice.category.destroy');
-
-// Product
-    Route::get('/product', [ProductController::class, 'index'])
-        ->name('backoffice.product.index');
-    Route::get('/product/create', [ProductController::class, 'create'])
-        ->name('backoffice.product.create');
-    Route::post('/product/store', [ProductController::class, 'store'])
-        ->name('backoffice.product.store');
-    Route::get('/product/{product}/edit', [ProductController::class, 'edit'])
-        ->name('backoffice.product.edit');
-    Route::delete('/product/{product}/delete', [ProductController::class, 'destroy'])
-        ->name('backoffice.product.destroy');
-    Route::put('/product/{product}/edit/update', [ProductController::class, 'update'])
-        ->name('backoffice.product.update');
-
-// product options
-    Route::post('/product/{product}/options/store', [ProductController::class, 'optionStore'])->name('backoffice.product.options.store');
-    Route::delete('/product/{product}/options/{option}/delete', [ProductController::class, 'optionDestroy'])->name('backoffice.product.options.destroy');
-    Route::get('/product/{product}/options/edit', [ProductController::class, 'optionEdit'])->name('backoffice.product.options.edit');
-// product option values
-    Route::post('/product/{product}/options/value/delete', [ProductController::class, 'optionDestroy'])->name('backoffice.product.option.value.destroy');
-
-
-// User Manipulate
-    Route::get('/user/{user}/edit', [UserController::class, 'edit'])->name('backoffice.user.edit');
-    Route::get('/user/{user}/profile-update', [UserController::class, 'profileUpdate'])->name('backoffice.profile.update');
-    Route::put('/user/{user}/update-password', [UserController::class, 'passwordUpdate'])->name('backoffice.profile.password.update');
-    Route::put('/user/{user}/update-notifications', [UserController::class, 'notificationUpdate'])->name('backoffice.profile.notification.update');
-
-});
-
+// Tenant customer routes moved under routes/tenant.php (path-based)
+// Backoffice routes moved under routes/tenant.php (path-based)

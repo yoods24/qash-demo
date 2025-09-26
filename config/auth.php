@@ -40,6 +40,10 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+        'qash' => [
+            'driver' => 'session',
+            'provider' => 'qash_users',
+        ],
     ],
 
     /*
@@ -63,6 +67,10 @@ return [
         'users' => [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', App\Models\User::class),
+        ],
+        'qash_users' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\QashUser::class,
         ],
 
         // 'users' => [

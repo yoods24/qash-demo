@@ -3,11 +3,17 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 class ProductOptionValue extends Model
 {
+    use BelongsToTenant;
+
     protected $fillable = [
-        'product_option_id', 'value', 'price_adjustment'
+        'tenant_id', 
+        'product_option_id', 
+        'value', 
+        'price_adjustment'
     ];
     public function product() {
         return $this->belongsTo(ProductOption::class);

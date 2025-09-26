@@ -20,9 +20,16 @@
 
     {{-- User Greeting + Order Box --}}
     <div class="bg-white rounded shadow p-3 mb-4">
-        <div class="d-flex justify-content-between align-items-center">
-            <span class="fw-bold text-dark">Hi, {{ $username ?? 'Guest' }}</span>
-            <span class="badge bg-warning text-dark">Points: {{ $points ?? 0 }}</span>
+        <div class="d-flex justify-content-between">
+                <div class="d-flex flex-column">
+                    <span class="fw-bold text-dark">Hi, {{ $username ?? 'Guest' }} </span>
+                    <span class="text-muted">{{ $customerEmail ?? ''}}</span>
+                </div>
+                <div>
+                @if (session()->has('customer_detail_id'))
+                    <button wire:click="openCustomerEdit" class="btn btn-primer">Change data</button>
+                @endif
+                </div>
         </div>
 
         <div class="mt-3 align-content-center">
@@ -52,7 +59,7 @@
 
 
     @if($selectedCategory === 'all')
-            {{-- Voucher Lists --}}
+    {{-- Voucher Lists --}}
 
     {{-- Coffee List --}}
     <div id="product-slider" class="splide" wire:ignore>
@@ -155,10 +162,10 @@
     <div class="bottom-sheet show">
         <!-- header buttons -->
         <div class="option-header d-flex justify-content-between">
-            <button class="rounded-circle btn-lg bi bi-x" onclick="@this.closeOptionModal()"></button>
+            <button class="rounded-circle btn-lg bi bi-x p-2" onclick="@this.closeOptionModal()"></button>
             <div class="d-flex gap-4">
-                <button class="rounded-circle btn-lg bi bi-share"></button>
-                <button class="rounded-circle btn-lg bi bi-heart"></button>
+                <button class="rounded-circle btn-lg bi bi-share p-2"></button>
+                <button class="rounded-circle btn-lg bi bi-heart p-2"></button>
             </div>
         </div>
         {{-- product image --}}
@@ -170,13 +177,18 @@
         <!-- Product Info -->
     <div class="product-info p-3">
         <div class="text-center">
-                <div class="d-flex justify-content-between">
+                <div class="d-flex justify-content-between align-items-start">
                     <div class="text-start w-75">
-                        <h5 class="fw-bold">{{ $selectedProduct->name }}</h5>
-                        <p class="text-muted mb-1 ">{{ $selectedProduct->description }}</p>
+                        <h5 class="product-title mb-1">{{ $selectedProduct->name }}</h5>
+                        <div class="d-flex align-items-center gap-2 product-subtle mb-1">
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <span>4.8</span>
+                            <span>(124 reviews)</span>
+                        </div>
+                        <p class="product-subtle mb-1">{{ $selectedProduct->description }}</p>
                     </div>
                     <div class="align-content-center">
-                        <h6 class="text-brown">Rp {{ number_format($selectedProduct->price, 0, ',', '.') }}</h6>
+                        <h6 class="price-accent">Rp {{ number_format($selectedProduct->price, 0, ',', '.') }}</h6>
                     </div>
                 </div>
                 <hr>
@@ -186,29 +198,27 @@
         <div class="mt-3">
             @if ($selectedProduct->options->count() > 0)
                 @foreach($selectedProduct->options as $option)
-                    <p class="fw-bold text-dark mb-2">{{ $option->name }}</p>
-                    <div class="list-group mb-3">
+                    <p class="option-section-title mb-2">{{ $option->name }}</p>
+                    <div class="option-grid mb-3">
                         @foreach($option->values as $value)
-                        <label class="list-group-item d-flex justify-content-between align-items-center">
-                            <div>
-                                {{ $value->value }}
-                            </div>
-                            <div>
-                                <span class="text-muted small">
+                        <div class="option-item">
+                            <input 
+                                class="option-radio"
+                                type="radio" 
+                                id="opt-{{ $option->id }}-{{ $value->id }}"
+                                wire:model="selectedOptions.{{ $option->id }}" 
+                                value="{{ $value->id }}">
+                            <label class="option-card" for="opt-{{ $option->id }}-{{ $value->id }}">
+                                <div class="opt-name">{{ $value->value }}</div>
+                                <div class="opt-meta">
                                     @if($value->price_adjustment > 0)
                                         +Rp{{ number_format($value->price_adjustment, 0, ',', '.') }}
                                     @else
                                         Free
                                     @endif
-                                </span>
-                                <input 
-                                    class="form-check-input ms-2"
-                                    type="radio" 
-                                    wire:model="selectedOptions.{{ $option->id }}" 
-                                    wire:click="$refresh"
-                                    value="{{ $value->id }}">
-                            </div>
-                        </label>
+                                </div>
+                            </label>
+                        </div>
                         @endforeach
                     </div>
                 @endforeach
@@ -216,6 +226,74 @@
                 <p class="text-muted">No options available</p>
             @endif
         </div>
+        <hr>
+
+        <!-- Quantity -->
+        <div class="mt-3">
+            <p class="option-section-title mb-2">Quantity</p>
+            <div class="qty-bar mb-4">
+                <button class="qty-btn" type="button" wire:click="decrementQuantity"><i class="bi bi-dash"></i></button>
+                <div class="qty-value">{{ $quantity }}</div>
+                <button class="qty-btn" type="button" wire:click="incrementQuantity"><i class="bi bi-plus"></i></button>
+            </div>
+        </div>
+
+        <!-- Info Tabs: Ingredients, Nutrition, Reviews -->
+        <div class="mt-2">
+            <ul class="nav nav-tabs" id="productTabs-{{ $selectedProduct->id }}" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="ingredients-tab-{{ $selectedProduct->id }}" data-bs-toggle="tab" data-bs-target="#ingredients-{{ $selectedProduct->id }}" type="button" role="tab" aria-controls="ingredients-{{ $selectedProduct->id }}" aria-selected="true">Ingredients</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="nutrition-tab-{{ $selectedProduct->id }}" data-bs-toggle="tab" data-bs-target="#nutrition-{{ $selectedProduct->id }}" type="button" role="tab" aria-controls="nutrition-{{ $selectedProduct->id }}" aria-selected="false">Nutrition</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="reviews-tab-{{ $selectedProduct->id }}" data-bs-toggle="tab" data-bs-target="#reviews-{{ $selectedProduct->id }}" type="button" role="tab" aria-controls="reviews-{{ $selectedProduct->id }}" aria-selected="false">Reviews</button>
+                </li>
+            </ul>
+            <div class="tab-content pt-3" id="productTabsContent-{{ $selectedProduct->id }}">
+                <div class="tab-pane fade show active" id="ingredients-{{ $selectedProduct->id }}" role="tabpanel" aria-labelledby="ingredients-tab-{{ $selectedProduct->id }}">
+                    <ul class="list-unstyled small text-muted mb-0">
+                        <li>Espresso shot</li>
+                        <li>Steamed milk</li>
+                        <li>Caramel syrup</li>
+                    </ul>
+                </div>
+                <div class="tab-pane fade" id="nutrition-{{ $selectedProduct->id }}" role="tabpanel" aria-labelledby="nutrition-tab-{{ $selectedProduct->id }}">
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <div class="text-muted small">Calories</div>
+                                <div class="fw-bold">120 kcal</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <div class="text-muted small">Protein</div>
+                                <div class="fw-bold">3g</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <div class="text-muted small">Carbs</div>
+                                <div class="fw-bold">12g</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <div class="text-muted small">Fat</div>
+                                <div class="fw-bold">5g</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="reviews-{{ $selectedProduct->id }}" role="tabpanel" aria-labelledby="reviews-tab-{{ $selectedProduct->id }}">
+                    <div class="small text-muted">“Great balance, not too sweet.”</div>
+                    <div class="small text-muted">“Smooth and strong!”</div>
+                </div>
+            </div>
+        </div>
+
         <hr>
 
         <!-- Quantity and Add to Cart -->
@@ -237,7 +315,78 @@
             @endif
         </div>
         </div>
+                <!-- Sticky CTA inside modal -->
+        <div class="option-cta" id="option-cta">
+            @if ($quantity > 0)
+                <button class="btn-cta" wire:click="addSelectedProductToCart">
+                    Add to Cart — Rp {{ number_format($this->totalPrice, 0, ',', '.') }}
+                </button>
+            @else
+                <button class="btn-cta" disabled>
+                    Add Quantity First!
+                </button>
+            @endif
+        </div>
     </div>
+</div>
+@endif
+
+{{-- Customer Details Modal --}}
+@if($showCustomerModal)
+<div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Your Details</h5>
+        <button type="button" class="btn-close" aria-label="Close" wire:click="cancelCustomerModal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">Name</label>
+          <input type="text" class="form-control" wire:model.defer="customerName" placeholder="Enter your name">
+          @error('customerName')<div class="text-danger small">{{ $message }}</div>@enderror
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Email</label>
+          <input type="email" class="form-control" wire:model.defer="customerEmail" placeholder="you@example.com">
+          @error('customerEmail')<div class="text-danger small">{{ $message }}</div>@enderror
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Coffee Shop</label>
+          <input type="text" class="form-control" wire:model.defer="tenantName" readonly>
+          <input type="hidden" wire:model="tenantId">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Gender (optional)</label>
+          <div class="d-flex gap-3">
+            <div class="form-check">
+              <input class="form-check-input" type="radio" id="genderMan" value="man" wire:model="customerGender">
+              <label class="form-check-label" for="genderMan">Man</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" id="genderWomen" value="women" wire:model="customerGender">
+              <label class="form-check-label" for="genderWomen">Women</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" id="genderNone" value="none" wire:model="customerGender">
+              <label class="form-check-label" for="genderNone">Prefer not to say</label>
+            </div>
+          </div>
+          @error('customerGender')<div class="text-danger small">{{ $message }}</div>@enderror
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger" wire:click="cancelCustomerModal">Cancel</button>
+        <button type="button" class="btn btn-primer" wire:click="saveCustomer">
+            {{ $pendingAction === 'add_to_cart' ? 'Save & Add to Cart' : 'Save' }}
+        </button>
+      </div>
+    </div>
+  </div>
+  <style>
+    /* prevent page scroll when modal visible */
+    body { overflow: hidden; }
+  </style>
 </div>
 @endif
 
@@ -246,7 +395,7 @@
     <div class="eta">
         <p class="mb-0">Estimated Time 20 Minutes</p>
     </div>
-    <a href="{{ route('cart.page') }}" class="cart-summary">
+    <a href="{{ route('cart.page', ['tenant' => $tenantId ?? request()->route('tenant') ?? tenant('id')]) }}" class="cart-summary">
         <div class="cart-info p-3 d-flex w-100 justify-content-between">
             <div class="d-flex gap-2">
                 <i class="bi bi-cart-check"></i>
@@ -333,6 +482,8 @@ $js('voucherSlider', () => {
 // Run voucher slider once when component is rendered
 document.addEventListener("livewire:navigated", () => {
     $js.voucherSlider();
+    $js.initCartFooter();
+
 });
 
 $wire.on('cart-updated', () => {
@@ -343,7 +494,7 @@ $wire.on('cart-updated', () => {
 
 // 👉 Cart footer logic in reusable function
 $js('initCartFooter', () => {
-        let cartFooter = document.querySelector('.cart-footer');
+    let cartFooter = document.querySelector('.cart-footer');
     if (!cartFooter) return;
 
     console.log("Cart footer initialized");
@@ -379,4 +530,3 @@ $js('initCartFooter', () => {
 
 </script>
 @endscript
-

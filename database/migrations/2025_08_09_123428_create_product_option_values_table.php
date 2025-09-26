@@ -13,6 +13,8 @@ return new class extends Migration
     {
         Schema::create('product_option_values', function (Blueprint $table) {
             $table->id();
+            $table->string('tenant_id');
+            $table->foreign('tenant_id')->references('id')->on('tenants')->cascadeOnDelete();
             $table->foreignId('product_option_id')->constrained()->onDelete('cascade');
             $table->string('value'); // e.g. "Small", "Medium", "Large"
             $table->decimal('price_adjustment', 8, 2)->default(0); // Extra cost if any

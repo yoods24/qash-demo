@@ -1,4 +1,4 @@
- import 'bootstrap'; 
+import 'bootstrap'; 
   
   
   // var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
@@ -8,12 +8,89 @@
 
     // Sidebar toggle
 document.addEventListener("DOMContentLoaded", function () {
-    const toggles = document.querySelectorAll('#sidebarToggleDesktop, #sidebarToggleMobile');
+    // Theme toggle
+    (function() {
+        const key = 'qash:theme';
+        const btn = document.getElementById('themeToggle');
+        const icon = btn ? btn.querySelector('[data-theme-icon]') : null;
 
-    toggles.forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelector('.sidebar').classList.toggle('shrunk');
+        const setIcon = (theme) => {
+            if (!icon) return;
+            icon.className = 'bi';
+            icon.classList.add(theme === 'dark' ? 'bi-sun' : 'bi-moon-stars');
+        };
+
+        const apply = (theme) => {
+            document.documentElement.dataset.theme = theme;
+            try { localStorage.setItem(key, theme); } catch (e) {}
+            setIcon(theme);
+        };
+
+        // Initialize icon from current theme
+        const current = document.documentElement.dataset.theme || 'light';
+        setIcon(current);
+
+        if (btn) {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const next = (document.documentElement.dataset.theme === 'dark') ? 'light' : 'dark';
+                apply(next);
+            });
+        }
+    })();
+
+    const sidebar = document.querySelector('.sidebar');
+    const desktopToggle = document.querySelector('#sidebarToggleDesktop');
+    const mobileToggle = document.querySelector('#sidebarToggleMobile');
+
+    // Helper: whether viewport is mobile
+    const isMobile = () => window.innerWidth <= 768;
+
+    // Desktop nav toggle: shrink on desktop, open on mobile
+    if (desktopToggle) {
+        desktopToggle.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (!sidebar) return;
+            if (isMobile()) {
+                sidebar.classList.toggle('open');
+                sidebar.classList.remove('shrunk');
+                document.body.classList.toggle('sidebar-open', sidebar.classList.contains('open'));
+            } else {
+                sidebar.classList.toggle('shrunk');
+            }
         });
+    }
+
+    // In-sidebar mobile toggle: close/open overlay
+    if (mobileToggle) {
+        mobileToggle.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (!sidebar) return;
+            sidebar.classList.toggle('open');
+            document.body.classList.toggle('sidebar-open', sidebar.classList.contains('open'));
+        });
+    }
+
+    // Close sidebar when resizing up to desktop
+    window.addEventListener('resize', () => {
+        if (!sidebar) return;
+        if (!isMobile()) {
+            sidebar.classList.remove('open');
+            document.body.classList.remove('sidebar-open');
+        }
+    });
+
+    // Click outside to close on mobile
+    document.addEventListener('click', (e) => {
+        if (!isMobile()) return;
+        if (!sidebar) return;
+        if (!sidebar.classList.contains('open')) return;
+        const insideSidebar = sidebar.contains(e.target);
+        const isToggle = e.target.closest('#sidebarToggleDesktop') || e.target.closest('#sidebarToggleMobile');
+        if (!insideSidebar && !isToggle) {
+            sidebar.classList.remove('open');
+            document.body.classList.remove('sidebar-open');
+        }
     });
 });
 

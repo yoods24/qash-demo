@@ -42,6 +42,7 @@
         <th scope="col">Email</th>
         <th scope="col">Phone</th>
         <th scope="col">Role</th>
+        <th scope="col">Status</th>
         <th scope="col">Action</th>
       </x-slot>
       <x-slot name="tbody">

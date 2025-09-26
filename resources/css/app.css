@@ -146,6 +146,11 @@
     overflow: hidden;
 }
 
+/* Smooth transitions for toast */
+.toast-success-container, .toast-success-icon, .toast-progress {
+    transition: background-color .25s ease, color .25s ease, border-color .25s ease;
+}
+
 .toast-success-container.show {
     opacity: 1;
     transform: translateX(0);
@@ -172,3 +177,10 @@
     bottom: 0;
     left: 0;
 }
+
+/* Dark mode variants for toast */
+html[data-theme='dark'] .toast-success-container { background-color: #0f172a; color: #e5e7eb; box-shadow: 0 0.5rem 1rem rgba(0,0,0,.5); border: 1px solid #1f2937; }
+html[data-theme='dark'] .toast-success-container .text-black { color: #e5e7eb !important; }
+html[data-theme='dark'] .toast-success-icon { color: #22c55e; }
+html[data-theme='dark'] .toast-progress { background: #374151; }
+html[data-theme='dark'] .toast-success-container .btn.text-muted { color: #cbd5e1 !important; }

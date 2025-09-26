@@ -7,6 +7,8 @@ use App\Models\Product;
 use App\Models\Category;
 use App\Models\ProductOptionValue;
 use Darryldecode\Cart\Facades\CartFacade as Cart;
+use Illuminate\Support\Facades\Session;
+use App\Models\CustomerDetail;
 
 class OrderPage extends Component
 {
@@ -17,11 +19,35 @@ class OrderPage extends Component
     public $selectedOptions = [];
     public $quantity = 1;
     public $showOptionModal = false;
+    public $showCustomerModal = false;
+    public $customerName = '';
+    public $customerEmail = '';
+    public $customerGender = null; // 'man' | 'women' | null
+    public $username = null;
+    public $pendingAction = null; // 'add_to_cart' | 'update_profile' | null
+    public $tenantId = null;   // current tenant id
+    public $tenantName = null; // display-only name
 
     public function mount()
     {
+        // Resolve tenant context for display & fallbacks
+        $tenant = tenant();
+        $this->tenantId = $tenant?->id ?? request()->route('tenant');
+        $this->tenantName = ($tenant?->data['name'] ?? null) ?: ($tenant?->id ?? '');
+
         $this->categories = Category::all();
         $this->loadProducts();
+
+        // Preload customer from session if exists (for greeting/UI)
+        if (Session::has('customer_detail_id')) {
+            $customer = CustomerDetail::find(Session::get('customer_detail_id'));
+            if ($customer) {
+                $this->username       = $customer->name;
+                $this->customerName   = $customer->name;   // prefill modal if reopened
+                $this->customerEmail  = $customer->email;
+                $this->customerGender = $customer->gender;
+            }
+        }
     }
 
     private function loadProducts()
@@ -54,7 +80,6 @@ class OrderPage extends Component
                 ]
             ]);
         }
-
         $this->dispatch('categoryUpdated');
     }
 
@@ -86,6 +111,21 @@ class OrderPage extends Component
     }
 
     public function addSelectedProductToCart()
+    {
+        if (!$this->selectedProduct) {
+            return;
+        }
+        // Require customer details before adding to cart
+        if (!Session::has('customer_detail_id')) {
+            $this->pendingAction = 'add_to_cart';
+            $this->showCustomerModal = true;
+            return;
+        }
+
+        $this->performAddToCart();
+    }
+
+    private function performAddToCart()
     {
         if (!$this->selectedProduct) {
             return;
@@ -127,6 +167,70 @@ class OrderPage extends Component
         $this->dispatch('cart-updated');
     }
 
+    public function cancelCustomerModal()
+    {
+        $this->showCustomerModal = false;
+    }
+
+    public function saveCustomer()
+    {
+        $data = $this->validate([
+            'customerName'   => 'required|string|max:255',
+            'customerEmail'  => 'required|email|max:255',
+            'customerGender' => 'nullable|in:man,women,none',
+        ]);
+
+        $gender = ($data['customerGender'] ?? null) === 'none' ? null : ($data['customerGender'] ?? null);
+
+        // Resolve tenant id robustly for Livewire requests (fallback to bound property)
+        $tenantId = tenant()?->id ?? request()->route('tenant') ?? $this->tenantId;
+        $customer = CustomerDetail::firstOrCreate(
+            ['email' => $data['customerEmail'], 'tenant_id' => $tenantId],
+            ['name' => $data['customerName'], 'gender' => $gender, 'tenant_id' => $tenantId]
+        );
+
+        // Update name/gender if changed
+        $updates = [];
+        if ($customer->name !== $data['customerName']) {
+            $updates['name'] = $data['customerName'];
+        }
+        if (($customer->gender ?? null) !== $gender) {
+            $updates['gender'] = $gender;
+        }
+        if (!empty($updates)) {
+            $customer->update($updates);
+        }
+
+        Session::put('customer_detail_id', $customer->id);
+        $this->username = $customer->name; // reflect on UI header
+        $this->customerEmail = $customer->email;
+
+        $this->showCustomerModal = false;
+        // Decide next action after saving details
+        if ($this->pendingAction === 'add_to_cart') {
+            $this->performAddToCart();
+        } else {
+            session()->flash('success', 'Details updated.');
+        }
+        $this->pendingAction = null;
+    }
+
+    public function openCustomerEdit()
+    {
+        $customer = Session::has('customer_detail_id')
+            ? CustomerDetail::find(Session::get('customer_detail_id'))
+            : null;
+
+        if ($customer) {
+            $this->customerName   = $customer->name;
+            $this->customerEmail  = $customer->email;
+            $this->customerGender = $customer->gender; // may be null
+        }
+
+        $this->pendingAction = 'update_profile';
+        $this->showCustomerModal = true;
+    }
+
     public function closeOptionModal()
     {
         $this->showOptionModal = false;
@@ -142,9 +246,11 @@ class OrderPage extends Component
 
         $total = $this->selectedProduct->price;
 
-        foreach ($this->selectedOptions as $optionId => $valueId) {
+        // Use already-loaded relations to avoid extra DB queries on every render
+        foreach ($this->selectedProduct->options as $option) {
+            $valueId = $this->selectedOptions[$option->id] ?? null;
             if ($valueId) {
-                $value = ProductOptionValue::find($valueId);
+                $value = $option->values->firstWhere('id', $valueId);
                 if ($value) {
                     $total += $value->price_adjustment;
                 }

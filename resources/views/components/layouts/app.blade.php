@@ -13,11 +13,9 @@
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@splidejs/splide/dist/css/splide.min.css">
-
     <title>Qash</title>
     @vite(['resources/css/customer.css', 'resources/js/customer.js', 'resources/css/app.css'])
     @livewireStyles
-
 </head>
 
 <body class="scroll-container text-white">

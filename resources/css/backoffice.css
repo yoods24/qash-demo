@@ -1,9 +1,46 @@
-
+@import 'bootstrap-icons/font/bootstrap-icons.css';
+/* resources/css/custom.css */
+/* ==========================================================================
+   Global Fonts & Base
+   ========================================================================== */
+@font-face {
+    font-family: 'Maison Neue';
+    src: url('/fonts/Maison_Neue_Book.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Maison Neue';
+    src: url('/fonts/Maison_Neue_Bold.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+}
+:root {
+    /* Main Pallete */
+    --mainColorOrange :#F97316;
+    --mainColorBlue : #142566;
+    /* Secondary Pallete */
+    --secondaryBlue : #6996CC;
+    --secondaryCream : #F7F0E8;
+    --secondaryBlack : #131313;
+    --secondaryWhite : #FAFAFA;
+}
+/* Smooth theme transitions */
+body, .sidebar, .navbar-custom, .card, .nav-link, .dropdown-menu, .table, .order-table th, .order-table td, .summary-container, .chart-placeholder {
+    transition: background-color .25s ease, color .25s ease, border-color .25s ease;
+}
 body {
     background-color: #f0e9e0;
-    font-family: 'Montserrat', sans-serif;
+    font-family: 'Maison Neue', sans-serif !important;
     margin: 0 auto;
 }
+
+.secondary-white { background-color: #ffffff; }
+
+/* Utilities */
+.min-w-0 { min-width: 0 !important; }
+.layout-main { min-width: 0 !important; }
+img, svg, video, canvas { max-width: 100%; height: auto; }
 
 .red-percentage {
     color: #ff5b5b;
@@ -28,6 +65,56 @@ body {
     position: sticky;
 }
 
+/* =========================
+   Dark Theme Overrides
+   ========================= */
+html[data-theme='dark'] { color-scheme: dark; }
+html[data-theme='dark'] body { background-color: #0b1220; color: #e5e7eb; }
+html[data-theme='dark'] .navbar-custom {
+    background-color: #0f172a;
+    border-bottom-color: #1f2937;
+    box-shadow: 0 3px 10px rgba(0,0,0,.6);
+    color: #e5e7eb;
+}
+html[data-theme='dark'] .navbar-custom .nav-icon {
+    background-color: transparent;
+    color: #e5e7eb;
+}
+html[data-theme='dark'] .dropdown-menu {
+    background-color: #111827;
+    color: #e5e7eb;
+    border-color: #1f2937;
+}
+html[data-theme='dark'] .dropdown-item { color: #e5e7eb; }
+html[data-theme='dark'] .dropdown-item:hover { background-color: #1f2937; color: #fff; }
+
+html[data-theme='dark'] .card-white { background-color: #0f172a; color: #e5e7eb; border-color: #1f2937; }
+html[data-theme='dark'] .card-black { background-color: #0b1220 !important; color: #f05a28; }
+html[data-theme='dark'] .chart-placeholder { background: #111827; }
+html[data-theme='dark'] .table-hover tbody tr:hover { background-color: #1f2937; }
+html[data-theme='dark'] .order-table th { background-color: #162238 !important; color: #e5e7eb; }
+html[data-theme='dark'] .order-table th, html[data-theme='dark'] .order-table td { border-color: #1f2937 !important; }
+html[data-theme='dark'] .summary-container { background-color: #111827; color: #e5e7eb; }
+html[data-theme='dark'] .nav-tabs .nav-link { color: #e5e7eb; }
+html[data-theme='dark'] .nav-tabs .nav-link:hover { color: #f05a28; }
+html[data-theme='dark'] .table { color: #e5e7eb; }
+html[data-theme='dark'] .secondary-white { background-color: #0e1627; }
+/* Kitchen dark */
+html[data-theme='dark'] .kcol { background: #0f172a; box-shadow: 0 2px 12px rgba(0,0,0,.35); }
+html[data-theme='dark'] .kcol-title { color: #e5e7eb; }
+html[data-theme='dark'] .kcard { background: #0b1220; border-color: #1f2937; box-shadow: 0 2px 8px rgba(0,0,0,.5); }
+html[data-theme='dark'] .kcard-header { background: #0f1b33; color: #e5e7eb; }
+html[data-theme='dark'] .kitem .name { color: #e5e7eb; }
+html[data-theme='dark'] .kitem { border-bottom-color: #1f2937; }
+/* Sidebar dark mode */
+html[data-theme='dark'] .sidebar { background-color: #0b1220; color: #e5e7eb; }
+html[data-theme='dark'] .sidebar .section-title { color: #9ca3af; }
+html[data-theme='dark'] .sidebar .nav-link { color: #e5e7eb; }
+html[data-theme='dark'] .sidebar .nav-link:hover { background-color: #1f2937 !important; color: #fff; }
+html[data-theme='dark'] .sidebar .nav-link.active { background-color: var(--mainColorOrange) !important; color: #fff !important; }
+html[data-theme='dark'] .sidebar::-webkit-scrollbar-track { background: #0b1220; }
+html[data-theme='dark'] .sidebar::-webkit-scrollbar-thumb { background-color: #374151; border-color: #0b1220; }
+
 .sidebar::-webkit-scrollbar {
     width: 5px;
 }
@@ -49,18 +136,21 @@ body {
 
 
 .sidebar.shrunk {
-    width: 6rem;
+    width: 5rem;
 }
 
 .sidebar .nav-link {
-    color: #bbb;
+    color: var(--secondaryWhite);
+    font-size: bold;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     transition: color 0.3s;
+    padding: 10px;
 }
+
 .sidebar .nav-link.active {
-    background-color: #f05a28 !important; 
+    background-color: var(--mainColorOrange) !important; 
     color: white !important;
     margin: 5px 0;
     transition: margin 0.3 ease;
@@ -122,20 +212,56 @@ body {
         position: fixed;
         width: 100%;
         z-index: 1001;
+        left: 0;
+        top: 0;
+        transform: translateX(-100%);
+        transition: transform 0.5s ease;
     }
     .sidebar.shrunk {
         display: none !important;
     }
     .sidebar.open {
         display: block;
+        transition: transform 0.5s ease;
+        transform: translateX(0);
     }
     #sidebarToggleMobile {
         display: inline-block;
-        z-index: 100;
+        z-index: 1002;
     }
-    
-    #sidebarToggleDekstop {
-       display: none;
+    /* hide desktop toggle if you prefer — keep visible if you use it to open */
+    #sidebarToggleDesktop {
+       /* display: none; */
+    }
+    /* reduce padding to fit content nicer on phones */
+    .secondary-white.container-fluid,
+    .secondary-white.container,
+    .container-fluid.p-4 {
+        padding: 1rem !important;
+    }
+    /* navbar tweaks */
+    .navbar-custom { padding: 0.5rem 0.75rem; }
+    .navbar-custom .left-group { gap: .5rem; flex-wrap: wrap; }
+    .navbar-custom .left-group form { width: 100% !important; margin-left: 0 !important; }
+    .navbar-custom .nav-icon { font-size: 1.25rem; padding: .5rem; min-width: 44px; min-height: 44px; }
+    html, body { max-width: 100%; overflow-x: hidden; }
+    /* cards and charts */
+    .card-small h2 { font-size: 1.25rem; }
+    .card-small small { font-size: .8rem; }
+    .chart-placeholder { height: 120px; }
+    /* table readability */
+    .table th, .table td { font-size: .875rem; padding: .5rem; }
+    /* allow wrapping on narrow screens */
+    .table.text-nowrap { white-space: normal !important; }
+    /* inputs/buttons/tap targets */
+    .btn, .form-control, .form-select { min-height: 44px; font-size: 1rem; }
+    /* screen overlay when sidebar open */
+    body.sidebar-open::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,.35);
+        z-index: 1000; /* under the sidebar (1001) */
     }
 }
 
@@ -188,6 +314,31 @@ body {
 .navbar-custom .nav-icon:hover {
 
 }
+/* =========================
+   Kitchen Board Styles
+   ========================= */
+.kitchen-board { }
+.kcol { background: #fff; border-radius: 12px; padding: 1rem; box-shadow: 0 2px 12px rgba(0,0,0,.08); }
+.kcol-header { display:flex; align-items:center; justify-content:space-between; margin-bottom: .5rem; }
+.kcol-title { font-weight: 700; color: #13283F; }
+.kcol-body { display:flex; flex-direction:column; gap: 1rem; }
+
+.kcard { border-radius: 12px; overflow:hidden; background:#fff; border: 1px solid #eee; box-shadow: 0 2px 8px rgba(0,0,0,.04); }
+.kcard-header { display:flex; align-items:center; justify-content:space-between; padding: .75rem 1rem; background: #13283F; color: #fff; }
+.kcard-header .order-id { font-weight: 700; }
+.kcard-body { padding: 1rem; }
+.kcard-actions { margin-top: .75rem; display:flex; justify-content:flex-end; }
+
+.kitem { display:flex; justify-content:space-between; align-items:flex-start; padding: .5rem 0; border-bottom: 1px solid #f0f0f0; }
+.kitem:last-child { border-bottom: none; }
+.kitem .name { font-weight: 600; color: #13283F; }
+.kitem .note { font-weight: 500; font-style: italic; color: #6b7280; font-size: .9rem; }
+.kitem .qty { background: #ff8c00; color:#fff; border-radius: 999px; font-weight:700; padding: .15rem .5rem; min-width: 2rem; text-align:center; }
+
+.btn-kitchen-primary { background-color: #f05a28; color:#fff; border:none; }
+.btn-kitchen-primary:hover { opacity: .85; color:#fff; }
+.btn-kitchen-secondary { background-color: #6996CC; color:#fff; border:none; }
+.btn-kitchen-secondary:hover { opacity: .9; color:#fff; }
 .chart-placeholder {
     height: 150px;
     background: #eee;
@@ -369,8 +520,21 @@ body {
     margin-right: 8px;
 }
 
-
-
+/* order status */
+.order-status {
+    padding: 0.5rem;
+    border-radius: 8px;
+    color: white;
+}
+.paid {
+    background: green;
+}
+.pending {
+    background: #ff8c00;
+}
+.cancelled {
+    background:red;
+}
 /* slider */
 .permission-border{
     border: 1px solid rgb(226, 226, 226);

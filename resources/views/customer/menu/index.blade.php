@@ -35,4 +35,16 @@
     </div>
   </div>
 </div>
+
+<script>
+  // book menu
+document.addEventListener("DOMContentLoaded", function () {
+    const pageFlip = new PageFlip(document.getElementById('book'), {
+        width: 500, // required parameter - base page width
+        height: 600, // required parameter - base page height
+    });
+
+    pageFlip.loadFromHTML(document.querySelectorAll('.my-page'));
+});
+</script>
 </x-customer.layout>

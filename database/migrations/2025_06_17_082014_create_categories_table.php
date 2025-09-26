@@ -13,9 +13,13 @@ return new class extends Migration
     {
         Schema::create('categories', function (Blueprint $table) {
             $table->id();
+            $table->string('tenant_id');
+            $table->foreign('tenant_id')->references('id')->on('tenants')->cascadeOnDelete();
             $table->string('image_url')->nullable();
-            $table->string('name')->unique('name');
+            $table->string('name');
             $table->timestamps();
+            // Ensure category names are unique per tenant
+            $table->unique(['tenant_id', 'name']);
         });
     }
 

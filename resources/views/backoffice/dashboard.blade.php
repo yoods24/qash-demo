@@ -1,16 +1,17 @@
 <x-backoffice.layout>
-    <h4 class="mb-4">Dashboard</h4>
+    <h4 class="mb-3 mb-md-4">{{tenant('id')}} Dashboard</h4>
+
         <!-- Top cards -->
         <div class="row g-3 mb-4">
 
-          <div class="col-md-3">
+          <div class="col-12 col-md-3">
             <div class="card text-white card-black p-3 card-small">
               <small>Gross Sales</small>
               <h2>Rp. 26.978.874</h2>
               <div class="d-flex justify-content-between align-items-center">
                 <div>
                   <svg width="80" height="30">
-                    <polyline fill="none" stroke="#f05a28" stroke-width="2" points="0,15 20,10 40,18 60,12 80,15" />
+                    <polyline fill="none" stroke="#f05a28" stroke-width="2" points="0,15 20,10 40,18 60,30 90,18" />
                   </svg>
                 </div>
                 <div class="red-percentage">↓ 18%</div>
@@ -18,14 +19,14 @@
             </div>
           </div>
 
-          <div class="col-md-3">
+          <div class="col-12 col-md-3">
             <div class="card text-white card-black p-3 card-small">
               <small>NET SALES</small>
               <h2>Rp. 17.841.101</h2>
               <div class="d-flex justify-content-between align-items-center">
                 <div>
                   <svg width="80" height="30">
-                    <polyline fill="none" stroke="#f05a28" stroke-width="2" points="0,15 20,10 40,18 60,12 80,15" />
+                    <polyline fill="none" stroke="#f05a28" stroke-width="2" points="0,10 20,10 40,18 60,12 80,0" />
                   </svg>
                 </div>
               <div class="green-percentage">↑ 24%</div>
@@ -33,7 +34,7 @@
             </div>
           </div>
 
-          <div class="col-md-3">
+          <div class="col-12 col-md-3">
             <div class="card card-white p-3 card-small">
               <small>GROSS PROFIT</small>
               <h2>Rp. 21.412.345</h2>
@@ -41,7 +42,7 @@
             </div>
           </div>
 
-          <div class="col-md-3">
+          <div class="col-12 col-md-3">
             <div class="card card-white p-3 card-small">
               <small>Transaction</small>
               <h2>154</h2>
@@ -54,7 +55,7 @@
 
         <!-- Charts row -->
         <div class="row g-3">
-          <div class="col-md-6">
+          <div class="col-12 col-md-6">
             <div class="card card-white p-3">
               <div class="d-flex justify-content-between align-items-center mb-2">
                 <h6 class="mb-0">Sales Pipeline by Stage</h6>
@@ -67,7 +68,7 @@
               <div class="chart-placeholder" data-bs-toggle="tooltip" data-bs-placement="top" title="Total New 60%"></div>
             </div>
           </div>
-          <div class="col-md-6">
+          <div class="col-12 col-md-6">
             <div class="card card-white p-3">
               <div class="d-flex justify-content-between align-items-center mb-2">
                 <h6 class="mb-0">Sales Won Vs. Open</h6>
@@ -83,12 +84,12 @@
         </div>
 
 <div class="row g-3 mt-3">
-  <div class="col-md-3 border">
+  <div class="col-12 col-lg-3 border">
     <h4 class="mb-4">Top 3 Favorite Menus</h4>
     <div id="favoriteMenuChart"></div>
   </div>
 
-<div class="table-responsive border mt-3 col-md-9">
+<div class="table-responsive border mt-3 col-12 col-lg-9">
   <div class="panel-header p-3">Most Ordered Menu</div>
   <hr>
 <table class="table table-hover text-center text-nowrap">
@@ -145,10 +146,11 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
+        var chartHeight = window.innerWidth < 576 ? 260 : 350;
         var options = {
             chart: {
                 type: 'pie',
-                height: 350
+                height: chartHeight
             },
             series: [44, 33, 23], // dummy data (orders count per menu)
             labels: ['Nasi Goreng', 'Mie Ayam', 'Sate Ayam'], // menu names
@@ -160,11 +162,15 @@
 
         var chart = new ApexCharts(document.querySelector("#favoriteMenuChart"), options);
         chart.render();
+        // Update chart size on resize
+        window.addEventListener('resize', function() {
+          var newHeight = window.innerWidth < 576 ? 260 : 350;
+          chart.updateOptions({ chart: { height: newHeight } });
+        });
     });
 </script>
 @endpush
 
 </x-backoffice.layout>
-
 
 

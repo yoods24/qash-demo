@@ -1,5 +1,11 @@
 <x-backoffice.layout>
 <div class="container my-4">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{route('backoffice.product.index')}}">Product</a></li>
+        <li class="breadcrumb-item active">Dashboard</li>
+      </ol>
+    </nav>
     <h2 class="fw-bold mb-4">Edit Product</h2>
 
     <form action="{{ route('backoffice.product.update', $product->id) }}" method="POST" enctype="multipart/form-data">
