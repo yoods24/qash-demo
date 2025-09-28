@@ -14,7 +14,7 @@ class QashAdminSeeder extends Seeder
             ['email' => 'owner@qash.test'],
             [
                 'name' => 'Yuda',
-                'password' => Hash::make('password123'),
+                'password' => Hash::make('Miscrits24!'),
             ]
         );
     }

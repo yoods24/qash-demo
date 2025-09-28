@@ -32,7 +32,7 @@
                                     </div>
                                 @endforeach
                                 <div class="kcard-actions">
-                                    <button wire:click="startPreparing({{ $order->id }})" class="btn btn-sm btn-kitchen-primary">Start Preparing</button>
+                                    <button wire:click="startPreparing({{ $order->id }})" class="btn btn-sm btn-primer">Start Preparing</button>
                                 </div>
                             </div>
                         </div>
