@@ -31,9 +31,12 @@ class AuthenticatedSessionController extends Controller
 
             // Regenerate session to prevent fixation
             $request->session()->regenerate();
-
-            // Redirect to the intended page
-            return redirect()->intended('/backoffice');
+            // Determine tenant from the authenticated user and redirect
+            $tenantId = $user->tenant_id;
+            ds(redirect()->intended(route('backoffice.dashboard', ['tenant' => $tenantId])));
+            
+            // Redirect to tenant backoffice dashboard
+            return redirect()->intended(route('backoffice.dashboard', ['tenant' => $tenantId]));
         }
 
         // If credentials don't match, return with an error

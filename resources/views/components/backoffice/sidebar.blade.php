@@ -9,9 +9,10 @@
           <x-backoffice.sidebar-nav-link href="{{route('backoffice.dashboard')}}" class="bi bi-grid-1x2-fill me-2">Dashboard</x-backoffice.sidebar-nav-link>
         </x-backoffice.sidebar-nav-section>
         <x-backoffice.sidebar-nav-section section="Home">
-          <x-backoffice.sidebar-nav-link class="bi bi-cash-coin me-2"  >Profile</x-backoffice.sidebar-nav-link>
+          <x-backoffice.sidebar-nav-link class="bi bi-cash-coin me-2">Profile</x-backoffice.sidebar-nav-link>
           <x-backoffice.sidebar-nav-link class="bi bi-gear me-2" >Settings</x-backoffice.sidebar-nav-link>
           <x-backoffice.sidebar-nav-link class="bi bi-building me-2" >Report</x-backoffice.sidebar-nav-link>
+          <x-backoffice.sidebar-nav-link href="{{route('backoffice.notification.index')}}" class="bi bi-bell me-2" >Notification</x-backoffice.sidebar-nav-link>
         </x-backoffice.sidebar-nav-section>
 
         <x-backoffice.sidebar-nav-section section="Product">

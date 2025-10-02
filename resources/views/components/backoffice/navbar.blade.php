@@ -6,8 +6,7 @@
           <button id="themeToggle" class="sekunder nav-icon" title="Toggle theme" aria-label="Toggle theme">
             <i data-theme-icon class="bi"></i>
           </button>
-          <button class="sekunder nav-icon" title="Messages"><i class="bi bi-chat-left-text"></i></button>
-          <button class="sekunder nav-icon" title="Notifications"><i class="bi bi-bell"></i></button>
+          <livewire:backoffice.tenant-notification />
           <div class="dropdown">
             <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle text-black" data-bs-toggle="dropdown" aria-expanded="false">
               <img src="https://i.pravatar.cc/30" alt="User" class="rounded-circle me-2" />

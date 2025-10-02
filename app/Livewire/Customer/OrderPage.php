@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire;
+namespace App\Livewire\Customer;
 
 use Livewire\Component;
 use App\Models\Product;
@@ -262,7 +262,7 @@ class OrderPage extends Component
 
     public function render()
     {
-        return view('livewire.order-page', [
+        return view('livewire.customer.order-page', [
             'products'         => $this->products,
             'featuredProducts' => Product::where('featured', 1)->get(),
             'cartTotal'        => Cart::getTotal(),

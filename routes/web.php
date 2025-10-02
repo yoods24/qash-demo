@@ -4,7 +4,6 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthenticatedSessionController;
 use App\Http\Controllers\Qash\TenantController;
 use App\Http\Controllers\Qash\QashAuthenticatedSessionController;
-use App\Livewire\CartPage;
 
 
 Route::get('/', function () {

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire;
+namespace App\Livewire\Customer;
 
 use App\Models\Order;
 use App\Models\Product;
@@ -9,6 +9,7 @@ use Livewire\Component;
 use App\Models\OrderItem;
 use Illuminate\Support\Facades\DB;
 use Darryldecode\Cart\Facades\CartFacade as Cart;
+use App\Models\TenantNotification;
 
 class CartPage extends Component
 {
@@ -26,7 +27,6 @@ class CartPage extends Component
     public $editingItemId = null; // if set, modal updates existing cart item
     
     public $softwareService = 1000;
-
 
     public function mount()
     {
@@ -288,7 +288,7 @@ class CartPage extends Component
             }
 
 
-            OrderItem::create([
+            $order = OrderItem::create([
                 'order_id'     => $order->id,
                 'product_id'   => $item->id,
                 'product_name' => $item->name,
@@ -301,6 +301,22 @@ class CartPage extends Component
 
             // Optionally store order id for receipt page later
             session(['last_order_id' => $order->id]);
+
+            // Create a tenant-scoped notification (non-blocking)
+            try {
+                $itemCount = Cart::getTotalQuantity();
+                TenantNotification::create([
+                    'tenant_id'   => $tenantId,
+                    'type'        => 'order',
+                    'title'       => 'New Order Created',
+                    'item_id'     => $order->id,
+                    'description' => 'Order #' . $order->id . ' placed with ' . $itemCount . ' item' . ($itemCount == 1 ? '' : 's') . '.',
+                    'route_name'  => 'backoffice.order.view',
+                    'route_params' => json_encode(['order' => $order->id, 'tenant' => $tenantId])
+                ]);
+            } catch (\Throwable $e) {
+                // notifications should not block checkout
+            }
         });
 
         $this->clearCart();
@@ -312,7 +328,7 @@ class CartPage extends Component
 
     public function render()
     {
-        return view('livewire.cart-page', [
+        return view('livewire.customer.cart-page', [
             'featuredProducts' => Product::where('featured', 1)->get(),
         ]);
     }

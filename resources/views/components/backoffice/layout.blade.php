@@ -21,6 +21,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
     
     @vite(['resources/css/backoffice.css', 'resources/js/backoffice.js', 'resources/css/app.css'])
+    @livewireStyles
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 </head>
 <body>
@@ -40,5 +41,6 @@
     </div>
   </div>
   @stack('scripts')
+  @livewireScripts
 </body>
 </html>

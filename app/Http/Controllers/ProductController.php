@@ -2,12 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use Log;
 use App\Models\Product;
 use App\Models\Category;
+use Darryldecode\Cart\Cart;
 use Illuminate\Http\Request;
 use App\Models\ProductOption;
-use Illuminate\Support\Facades\Storage;
+use App\Models\TenantNotification;
 use Illuminate\Support\Facades\DB;
+use Stancl\Tenancy\Facades\Tenancy;
+use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
@@ -24,6 +28,14 @@ class ProductController extends Controller
 }
     public function store(Request $request)
     {
+
+        // Get tenant model
+        $tenant = tenant(); // or Tenancy::getTenant()
+
+        // Tenant ID (the primary key of your tenants table)
+        $tenantId = $tenant->id;
+        $userName = $request->user()->name;
+
         $validated = $request->validate([
             'category_id' => 'required|exists:categories,id',
             'name' => 'required|string|max:255',
@@ -44,7 +56,7 @@ class ProductController extends Controller
         // Ensure featured is properly set
         $validated['featured'] = $request->has('featured') ? 1 : 0;
         // Store Product
-        Product::create([
+        $product = Product::create([
             'category_id' => $validated['category_id'],
             'name' => $validated['name'],
             'alternate_name' => $validated['alternate_name'] ?? null,
@@ -54,6 +66,21 @@ class ProductController extends Controller
             'description' => $validated['description'] ?? null,
             'featured' => $validated['featured'],
         ]);
+        try {
+            TenantNotification::create([
+                'tenant_id'    => $tenantId,
+                'type'         => 'product',
+                'title'        => 'New Product Created',
+                'description'  => "Product '{$validated['name']}' has been created by {$userName}.",
+                'item_id'      => $product->id,
+                'route_name'   => 'backoffice.product.edit',
+                // Pass array; let the model cast it to JSON. Use proper route param name (e.g. 'product')
+                'route_params' => ['product' => $product->id, 'tenant' => $tenantId],
+            ]);
+        } catch (\Throwable $e) {
+            ds($e);
+        }
+
 
         return redirect()->route('backoffice.product.index')->with('message', 'Product created successfully.');
     }

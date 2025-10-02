@@ -12,13 +12,14 @@ use App\Http\Controllers\StaffController;
 use App\Http\Controllers\CareerController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CategoryController;
-
+use App\Http\Controllers\TenantNotificationController;
+use App\Livewire\Backoffice\TenantNotification;
 // Models
 use App\Models\Product;
 
 // Livewire
-use App\Livewire\CartPage;
-use App\Livewire\OrderPage;
+use App\Livewire\Customer\CartPage;
+use App\Livewire\Customer\OrderPage;
 
 /*
 |--------------------------------------------------------------------------
@@ -118,5 +119,8 @@ Route::middleware([
           Route::get('/user/{user}/profile-update', [UserController::class, 'profileUpdate'])->name('backoffice.profile.update');
           Route::put('/user/{user}/update-password', [UserController::class, 'passwordUpdate'])->name('backoffice.profile.password.update');
           Route::put('/user/{user}/update-notifications', [UserController::class, 'notificationUpdate'])->name('backoffice.profile.notification.update');
+
+          //  notification page
+          Route::get('/notification', [TenantNotificationController::class, 'index'])->name('backoffice.notification.index');
       });
   });
