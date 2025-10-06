@@ -5,16 +5,17 @@
    ========================================================================== */
 @font-face {
     font-family: 'Maison Neue';
-    src: url('/fonts/Maison_Neue_Book.ttf') format('truetype');
+    src: url('../fonts/Maison_Neue_Book.ttf') format('truetype');
     font-weight: 400;
     font-style: normal;
 }
 @font-face {
     font-family: 'Maison Neue';
-    src: url('/fonts/Maison_Neue_Bold.ttf') format('truetype');
+    src: url('../fonts/Maison_Neue_Bold.ttf') format('truetype');
     font-weight: bold;
     font-style: normal;
 }
+
 :root {
     /* Main Pallete */
     --mainColorOrange :#F97316;
@@ -24,23 +25,81 @@
     --secondaryCream : #F7F0E8;
     --secondaryBlack : #131313;
     --secondaryWhite : #FAFAFA;
+    --bg-opacity-backoffice : 1;
 }
 /* Smooth theme transitions */
 body, .sidebar, .navbar-custom, .card, .nav-link, .dropdown-menu, .table, .order-table th, .order-table td, .summary-container, .chart-placeholder {
     transition: background-color .25s ease, color .25s ease, border-color .25s ease;
 }
-
+.shadow-top {
+  box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1);
+}
 body {
-    background-color: #f0e9e0;
     font-family: 'Maison Neue', sans-serif !important;
     margin: 0 auto;
 }
 
-.secondary-white { background-color: #ffffff; }
+/* =========================
+    background colors
+   ========================= */
+.bg-secondary-white { 
+    background-color: #ffffff; 
+}
+
+.bg-orange {
+    background-color: rgb(242 62 20 / var(--bg-opacity-backoffice, 1));;
+}
+
+.bg-green {
+    background-color: rgb(1 190 95 / var(--bg-opacity-backoffice, 1));;
+}
+
+.bg-blue {
+    background-color:rgb(66 110 255 / var(--bg-opacity-backoffice, 1)); ;
+}
+
+.bg-purple-light {
+    background-color: rgb(169 83 255 / var(--bg-opacity-backoffice, 1));;
+}
+
+.bg-purple {
+    background-color: rgb(130 98 254 / var(--bg-opacity-backoffice, 1));;
+}
+/*   */
+/* =========================
+    backoffice colors
+   ========================= */
+.text-secondary-white { 
+    color: #ffffff; 
+}
+
+.text-orange {
+    color: rgb(242 62 20 / var(--bg-opacity-backoffice, 1));;
+}
+
+.text-green {
+    color: rgb(1 190 95 / var(--bg-opacity-backoffice, 1));;
+}
+
+.text-blue {
+    color:rgb(66 110 255 / var(--bg-opacity-backoffice, 1)); ;
+}
+
+.text-purple-light {
+    color: rgb(169 83 255 / var(--bg-opacity-backoffice, 1));;
+}
+
+.text-purple {
+    color: rgb(130 98 254 / var(--bg-opacity-backoffice, 1));;
+}
+
 
 /* Utilities */
 .min-w-0 { min-width: 0 !important; }
-.layout-main { min-width: 0 !important; }
+.layout-main { 
+    min-width: 0 !important; 
+}
+
 img, svg, video, canvas { max-width: 100%; height: auto; }
 
 .red-percentage {

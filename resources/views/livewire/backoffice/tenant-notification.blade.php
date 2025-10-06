@@ -1,4 +1,4 @@
-<div class="position-relative cursor-pointer-none" wire:poll.8s="refreshNotifications">
+<div class="position-relative" wire:poll.8s="refreshNotifications">
     <button class="sekunder nav-icon text-decoration-none" wire:click="toggle">
         <i class="bi bi-bell"></i>
         @if($unreadCount > 0)
@@ -15,7 +15,7 @@
                     <div>
                         <h3>Notifications</h3>
                     </div>
-                    <button type="button" class="btn btn-sm btn-light" wire:click="toggle"><i class="bi bi-x"></i></button>
+                    <button type="button" class="btn btn-sm rounded btn-outline-danger" wire:click="toggle"><i class="bi bi-x"></i></button>
                 </div>
                 <div class="d-flex align-items-center justify-content-between px-3 pt-3">
                     <div class="d-flex gap-3 align-items-center small text-muted">
@@ -24,7 +24,7 @@
                         <a href="#" class="text-decoration-none {{ $tab==='read' ? 'fw-semibold text-dark' : '' }}" wire:click.prevent="changeTab('read')">Read</a>
                     </div>
                     <div wire:click="markAllAsRead" class="d-flex align-items-center small text-muted">
-                        <p class="text-primer m-0">
+                        <p class="text-primer m-0 btn-light btn btn-sm">
                             <span>
                                 <i class="bi bi-check"></i>
                             </span>
@@ -61,7 +61,7 @@
                     @endforelse
                 </div>
 
-                <div class="text-center">
+                <div class="text-center mt-3 shadow-top">
                     <a href="{{route('backoffice.notification.index', ['tenant' => $tenantId])}}" class="w-100 btn btn-primer rounded-0 text-decoration-none">
                         View All Notifications
                     </a>

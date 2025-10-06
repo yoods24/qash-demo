@@ -33,7 +33,7 @@
       <!-- Navbar -->
       <x-backoffice.navbar></x-backoffice.navbar>
       <!-- Dashboard content -->
-      <div class="p-4 secondary-white">
+      <div class="p-4 secondary-white main-component">
         @include('components.toast-delete')
         {{$slot}}
       </div>

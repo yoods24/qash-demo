@@ -12,6 +12,7 @@ use App\Http\Controllers\StaffController;
 use App\Http\Controllers\CareerController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\TenantNotificationController;
 use App\Livewire\Backoffice\TenantNotification;
 // Models
@@ -54,9 +55,9 @@ Route::middleware([
 
       // Backoffice (tenant-specific)
       Route::prefix('backoffice')->middleware(['auth', 'ensure.user.can.access.tenant'])->group(function() {
-          Route::get('/dashboard', function() {
-              return view('backoffice.dashboard');
-          })->name('backoffice.dashboard');
+          
+        Route::get('/dashboard', [DashboardController::class, 'mainDashboard'])
+        ->name('backoffice.dashboard');
 
           // Career management
           Route::get('/career/create', [CareerController::class, 'create'])->name('backoffice.career.create');

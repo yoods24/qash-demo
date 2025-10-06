@@ -41,11 +41,10 @@
                 </button>
             </div>
         </div>
-
     </div>
 
     <div class="card border-0 shadow-sm">
-        <div class="list-group list-group-flush">
+        <div class="list-group list-group-flush border shadow mt-3">
             @forelse($notifications as $note)
                 <div class="list-group-item py-3">
                     <div class="d-flex gap-3 align-items-start">
