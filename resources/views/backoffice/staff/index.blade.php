@@ -63,7 +63,7 @@
               <button onclick="window.location='{{ route('backoffice.career.edit', $staff->id) }}'" class="action-btn edit-btn-table" title="Edit" aria-label="Edit">
                   <i class="bi bi-pencil"></i>
               </button>
-              <button onclick="window.location='{{ route('backoffice.career.edit', $staff->id) }}'" class="action-btn view-btn-table" title="View" aria-label="View">
+              <button onclick="window.location='{{ route('backoffice.staff.view', $staff->id) }}'" class="action-btn view-btn-table" title="View" aria-label="View">
                   <i class="bi bi-eye"></i>
               </button>
           <button

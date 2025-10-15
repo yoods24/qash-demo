@@ -70,6 +70,7 @@ Route::middleware([
 
           // Staffs
           Route::get('/staff', [StaffController::class, 'index'])->name('backoffice.staff.index');
+          Route::get('/staff/{staff}/view', [StaffController::class, 'view'])->name('backoffice.staff.view');
           Route::post('/staff/store', [StaffController::class, 'storeStaff'])->name('backoffice.staff.store');
           Route::get('/roles', [StaffController::class, 'indexRoles'])->name('backoffice.roles.index');
           Route::delete('/staff/{staff}/delete', [StaffController::class, 'destroy'])->name('backoffice.staff.destroy');

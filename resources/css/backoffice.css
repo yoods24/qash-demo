@@ -339,8 +339,10 @@ html[data-theme='dark'] .sidebar::-webkit-scrollbar-thumb { background-color: #3
     border: 1px solid #f05a28;
     transition: all 0.2s ease;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    cursor: pointer;
 }
+/* Only show pointer when explicitly intended */
+.card.clickable:hover,
+.clickable-card:hover { cursor: pointer; }
 .card-black {
     background-color: #13283F !important;
     color: #f05a28;
@@ -542,7 +544,7 @@ html[data-theme='dark'] .sidebar::-webkit-scrollbar-thumb { background-color: #3
 }
 
 .action-btn {
-    border-radius: 50%;
+    border-radius: 9px;
     margin:0 0.4vh;
     border: none;
     cursor: pointer;
@@ -669,3 +671,43 @@ input:checked + .slider:before {
     -webkit-box-orient:vertical; 
     overflow:hidden; 
 }
+
+/* =========================
+   Kitchen Orders – New UI helpers
+   ========================= */
+.ko-toolbar { gap: .5rem; }
+.ko-tab { border:1px solid #e5e7eb; background:#fff; color:#1f2937; padding:.55rem 1rem; border-radius:10px; font-weight:600; }
+.ko-tab.active { border-color:#c7d2fe; color:#3b82f6; box-shadow: 0 2px 6px rgba(59,130,246,.15); }
+.ko-search .form-control { border-left:0; }
+.ko-search .input-group-text { border-right:0; }
+.ko-toggle i { transition: transform .2s ease; }
+.ko-toggle[aria-expanded='true'] i { transform: rotate(180deg); }
+
+/* Items board rows */
+.ko-item-row { display:flex; align-items:center; justify-content:space-between; padding:.9rem 1rem; border-bottom:1px solid #f0f0f0; }
+.ko-item-row:last-child { border-bottom:0; }
+.ko-item-title { font-weight:600; color:#0b1220; }
+.ko-item-qty { width:28px; height:28px; border-radius:999px; background:#0b0b0b; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; }
+
+/* Order cards matching mock */
+.ko-card { border-radius:12px; background:#fff; border:1px solid #eee; box-shadow: 0 2px 8px rgba(0,0,0,.05); overflow:hidden; }
+.ko-card + .ko-card { margin-top: .85rem; }
+.ko-card-top { display:flex; align-items:center; gap:.5rem; padding:.75rem 1rem; background:#f8fbff; }
+.ko-card-dinein .ko-card-top { background: #eef5ff; }
+.ko-card-takeaway .ko-card-top { background: #f6efff; }
+.ko-card-body { padding: .75rem 1rem; }
+.ko-order-link { text-decoration:none; font-weight:700; color:#3b82f6; }
+
+/* Chips */
+.ko-chip { display:inline-block; font-size:.8rem; font-weight:700; padding:.25rem .6rem; border-radius:10px; }
+.ko-chip-success { background:#22c55e; color:#fff; }
+.ko-chip-warning { background:#f59e0b; color:#fff; }
+.ko-chip-info { background:#3b82f6; color:#fff; }
+
+/* Dark variants */
+html[data-theme='dark'] .ko-tab { background:#0f172a; color:#e5e7eb; border-color:#1f2937; }
+html[data-theme='dark'] .ko-tab.active { color:#93c5fd; border-color:#1d4ed8; box-shadow: 0 2px 6px rgba(29,78,216,.25); }
+html[data-theme='dark'] .ko-item-row { border-bottom-color:#1f2937; }
+html[data-theme='dark'] .ko-item-title { color:#e5e7eb; }
+html[data-theme='dark'] .ko-card { background:#0b1220; border-color:#1f2937; box-shadow: 0 2px 8px rgba(0,0,0,.5); }
+html[data-theme='dark'] .ko-card-top { background:#0f1b33; }

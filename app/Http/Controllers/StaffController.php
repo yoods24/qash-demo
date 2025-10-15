@@ -15,6 +15,15 @@ class StaffController extends Controller
         return view('backoffice.staff.index', data: ['staffs' => $staffs , 'roles' => $roles]);
     }
 
+    public function view(User $staff)
+    {
+        $role = $staff->getRoleNames()->first();
+        return view('backoffice.staff.view', [
+            'staff' => $staff,
+            'role' => $role,
+        ]);
+    }
+
     public function destroy(User $staff) {
         $staff->delete();
         return redirect()->route('backoffice.staff.index')->with('message', 'Staff successfully deleted!');
