@@ -173,13 +173,16 @@
               </div>
             </div>
           </div>
-
-
         </div>
-
-
       </div>
+
+
+
     </div>
+  </div>
+
+  <div>
+    @livewire('blog-posts-chart')
   </div>
 </div>
 

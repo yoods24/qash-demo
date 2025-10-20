@@ -21,13 +21,16 @@ document.addEventListener("DOMContentLoaded", function () {
         };
 
         const apply = (theme) => {
+            // Persist string value for our own CSS and logic
             document.documentElement.dataset.theme = theme;
+            // Also toggle Tailwind/Filament dark mode class
+            document.documentElement.classList.toggle('dark', theme === 'dark');
             try { localStorage.setItem(key, theme); } catch (e) {}
             setIcon(theme);
         };
 
         // Initialize icon from current theme
-        const current = document.documentElement.dataset.theme || 'light';
+        const current = document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';
         setIcon(current);
 
         if (btn) {
@@ -96,46 +99,55 @@ document.addEventListener("DOMContentLoaded", function () {
 
 document.addEventListener('DOMContentLoaded', function () {
     const confirmModal = document.getElementById('confirmModal');
+    if (confirmModal) {
+        confirmModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const itemId = button?.getAttribute('data-id');
+            const itemTitle = button?.getAttribute('data-title');
+            const deleteUrl = button?.getAttribute('data-url');
 
-    confirmModal.addEventListener('show.bs.modal', function (event) {
-        const button = event.relatedTarget;
-        const itemId = button.getAttribute('data-id');
-        const itemTitle = button.getAttribute('data-title');
-        const deleteUrl = button.getAttribute('data-url');
+            const titleElement = confirmModal.querySelector('#modalItemTitle');
+            const idElement = confirmModal.querySelector('#modalItemId');
+            const form = confirmModal.querySelector('#deleteForm');
 
-        const titleElement = confirmModal.querySelector('#modalItemTitle');
-        const idElement = confirmModal.querySelector('#modalItemId');
-        const form = confirmModal.querySelector('#deleteForm');
-
-        titleElement.textContent = `"${itemTitle}"`;
-        idElement.textContent = `"${itemId}"`
-        form.action = deleteUrl;
-    });
-});
-// option section
-document.getElementById('toggleOptions').addEventListener('change', function () {
-    document.getElementById('optionsSection').style.display = this.checked ? 'block' : 'none';
-});
-
-let rowCount = 1;
-
-document.getElementById('addRow').addEventListener('click', function() {
-    let tableBody = document.querySelector('#optionValuesTable tbody');
-    let newRow = `
-        <tr>
-            <td><input type="text" name="values[${rowCount}][value]" class="form-control" placeholder="Medium" required></td>
-            <td><input type="number" step="0.01" name="values[${rowCount}][price_change]" class="form-control" placeholder="0.00"></td>
-            <td><button type="button" class="btn btn-danger btn-sm removeRow">&times;</button></td>
-        </tr>
-    `;
-    tableBody.insertAdjacentHTML('beforeend', newRow);
-    rowCount++;
-});
-
-document.addEventListener('click', function(e) {
-    if (e.target.classList.contains('removeRow')) {
-        e.target.closest('tr').remove();
+            if (titleElement) titleElement.textContent = `"${itemTitle}"`;
+            if (idElement) idElement.textContent = `"${itemId}"`;
+            if (form && deleteUrl) form.action = deleteUrl;
+        });
     }
+
+    // option section (guard elements may not exist on all pages)
+    const toggleOptions = document.getElementById('toggleOptions');
+    const optionsSection = document.getElementById('optionsSection');
+    if (toggleOptions && optionsSection) {
+        toggleOptions.addEventListener('change', function () {
+            optionsSection.style.display = this.checked ? 'block' : 'none';
+        });
+    }
+
+    let rowCount = 1;
+    const addRowBtn = document.getElementById('addRow');
+    if (addRowBtn) {
+        addRowBtn.addEventListener('click', function() {
+            const tableBody = document.querySelector('#optionValuesTable tbody');
+            if (!tableBody) return;
+            const newRow = `
+                <tr>
+                    <td><input type="text" name="values[${rowCount}][value]" class="form-control" placeholder="Medium" required></td>
+                    <td><input type="number" step="0.01" name="values[${rowCount}][price_change]" class="form-control" placeholder="0.00"></td>
+                    <td><button type="button" class="btn btn-danger btn-sm removeRow">&times;</button></td>
+                </tr>
+            `;
+            tableBody.insertAdjacentHTML('beforeend', newRow);
+            rowCount++;
+        });
+    }
+
+    document.addEventListener('click', function(e) {
+        if (e.target.classList?.contains('removeRow')) {
+            e.target.closest('tr')?.remove();
+        }
+    });
 });
 
 
@@ -146,21 +158,25 @@ document.addEventListener('DOMContentLoaded', function () {
     const toast = document.getElementById('toast');
     const progress = document.querySelector('.toast-progress');
 
+    if (!toast || !progress) return;
+
     // Start progress bar animation
     setTimeout(() => {
         progress.style.width = '100%';
-    }, 100); // slight delay to trigger transition
+    }, 100);
 
     // Auto-dismiss after 5s
     const timeout = setTimeout(() => {
         toast.classList.remove('show');
         toast.classList.add('hide');
-    }, 5100); // match the CSS animation
+    }, 5100);
 
     // Manual close
-    button.addEventListener('click', () => {
-        clearTimeout(timeout);
-        toast.classList.remove('show');
-        toast.classList.add('hide');
-    });
+    if (button) {
+        button.addEventListener('click', () => {
+            clearTimeout(timeout);
+            toast.classList.remove('show');
+            toast.classList.add('hide');
+        });
+    }
 });

@@ -16,6 +16,5 @@ class ProductCategorySeeder extends Seeder
     {
         $product = Product::factory(5)->create();
         $category = Category::factory(5)->create();
-
     }
 }

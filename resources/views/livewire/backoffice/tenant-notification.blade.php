@@ -2,7 +2,7 @@
     <button class="sekunder nav-icon text-decoration-none" wire:click="toggle">
         <i class="bi bi-bell"></i>
         @if($unreadCount > 0)
-            <span class="position-absolute top-30 start-70 translate-middle badge rounded-pill bg-danger">
+            <span class="position-absolute translate-middle badge rounded-pill bg-danger">
                 {{ $unreadCount }}
             </span>
         @endif

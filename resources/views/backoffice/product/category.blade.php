@@ -22,55 +22,7 @@
       <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#unpaid" type="button" role="tab">Unpaid</button></li>
     </ul>
 
-    <div class="filter-bar mb-2">
-      <input type="text" class="form-control w-25" placeholder="Search order...">
-      <button class="btn btn-outline-secondary">Filter</button>
-    </div>
-
-    <x-backoffice.table>
-      <x-slot name="thead">
-        <th scope="col">Id</th>
-        <th scope="col">Name</th>
-        <th scope="col">Action</th>
-      </x-slot>
-      <x-slot name="tbody">
-          @foreach ($categories as $category)
-            <tr>
-            <td>{{$category->id}}</td>
-            <td>{{$category->name}}</td>
-          <td>
-              <button onclick="window.location='{{ route('backoffice.career.edit', $category->id) }}'" class="action-btn view-btn-table" title="View" aria-label="View">
-                  <i class="bi bi-eye"></i>
-              </button>
-          <button
-              class="action-btn delete-btn-table"
-              title="Delete"
-              aria-label="Delete"
-              data-bs-toggle="modal"
-              data-bs-target="#confirmModal"
-              data-id="{{ $category->id }}"
-              data-title="{{ $category->name }}"
-              data-url="{{ route('backoffice.category.destroy', $category->id) }}"
-          >
-              <i class="bi bi-trash-fill"></i>
-          </button>
-          </td>
-          </tr>
-          @endforeach
-      </x-slot>
-    </x-backoffice.table>
-
-        <div class="d-flex justify-content-end align-items-center">
-          <div>
-            <label for="itemsPerPage" class="form-label mx-3">{{$categories->links()}}</label>
-            <select class="form-select d-inline-block w-auto" id="itemsPerPage">
-              <option>10</option>
-              <option>20</option>
-              <option>50</option>
-            </select>
-          </div>
-        </div>
-      </div>
+    @livewire('backoffice.tables.category-table')
 
       <!-- Add other tabs like #unpaid, #ship etc. as needed -->
     </div>
