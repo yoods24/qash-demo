@@ -5,7 +5,7 @@ import cv2
 import shutil
 import pickle
 import numpy as np
-import time  # 🌟 Pastikan 'time' diimpor
+import time  # Pastikan 'time' diimpor
 from flask import Flask, request, jsonify
 from werkzeug.utils import secure_filename
 from insightface.app import FaceAnalysis
@@ -13,6 +13,8 @@ from flask_cors import CORS
 # Impor layanan
 import face_register_service
 import face_recognize_service
+# Impor logger secara langsung jika diperlukan di __main__
+from attendance_logger import CSV_PATH as ATTENDANCE_CSV_PATH
 
 # === KONFIGURASI DASAR ===
 app = Flask(__name__)
@@ -44,7 +46,7 @@ def load_embeddings():
 
     if os.path.exists(MODEL_PATH) and os.path.exists(NAMES_PATH):
         try:
-            # 🌟 Jeda singkat (0.5s) untuk memastikan file selesai ditulis ke disk
+            # Jeda singkat (0.5s) untuk memastikan file selesai ditulis ke disk
             time.sleep(0.5)
 
             with open(MODEL_PATH, "rb") as f:
@@ -69,7 +71,7 @@ def load_embeddings():
         LOADED_NAMES = np.array([])
 
 
-load_embeddings()
+load_embeddings() # Panggil saat server start
 
 
 # --- Endpoint: Register wajah (Hanya Routing) ---
@@ -96,15 +98,18 @@ def register():
 
         # MUAT ULANG EMBEDDINGS JIKA REGISTRASI SELESAI
         if result.get('status') == 'finished':
-            # 🌟 Tambahkan jeda 1 detik setelah retrain selesai sebelum memuat ulang
+            # Tambahkan jeda 1 detik setelah retrain selesai sebelum memuat ulang
             print("⏳ Retrain selesai. Menunggu 1 detik sebelum memuat ulang model...")
             time.sleep(1)
-            load_embeddings()
+            load_embeddings() # Muat data baru ke memori server
 
         return jsonify(result)
 
     except Exception as e:
         print(f"❌ INTERNAL SERVER ERROR during registration: {e}")
+        # Cetak traceback untuk debugging lebih lanjut jika perlu
+        import traceback
+        traceback.print_exc()
         return jsonify({"message": "❌ Terjadi kesalahan internal server saat memproses registrasi.", "status": "error", "fatalError": True}), 500
 
 
@@ -115,12 +120,17 @@ def cancel_register():
     if not name:
         return jsonify({"message": "Nama tidak boleh kosong.", "status": "error"}), 400
 
+    # Pastikan secure_filename digunakan untuk keamanan
     person_dir = os.path.join(DATASET_PATH, secure_filename(name))
     if os.path.exists(person_dir):
-        shutil.rmtree(person_dir)
-        return jsonify({"message": "Data pendaftaran dihapus.", "status": "success"})
+        try:
+            shutil.rmtree(person_dir)
+            return jsonify({"message": "Data pendaftaran dihapus.", "status": "success"})
+        except Exception as e:
+            print(f"❌ Error saat menghapus folder {person_dir}: {e}")
+            return jsonify({"message": "Gagal menghapus folder data.", "status": "error"}), 500
     else:
-        return jsonify({"message": "Proses pembatalan selesai.", "status": "success"})
+        return jsonify({"message": "Proses pembatalan selesai (folder tidak ditemukan).", "status": "success"})
 
 
 # --- Endpoint: Recognize wajah (Hanya Routing) ---
@@ -128,6 +138,7 @@ def cancel_register():
 def recognize():
     global LOADED_EMBEDDINGS, LOADED_NAMES
 
+    # Coba muat ulang jika kosong
     if LOADED_EMBEDDINGS.size == 0:
         load_embeddings()
 
@@ -135,18 +146,26 @@ def recognize():
     if not image_file:
         return jsonify({"message": "Tidak ada gambar diterima.", "status": "error"}), 400
 
+    # Ambil data geolokasi
+    latitude = request.form.get("latitude")
+    longitude = request.form.get("longitude")
+
     try:
         # Panggil fungsi dari layanan recognition
         result = face_recognize_service.handle_recognition_frame(
             app_insight,
             LOADED_EMBEDDINGS,
             LOADED_NAMES,
-            image_file
+            image_file,
+            latitude,
+            longitude
         )
         return jsonify(result)
 
     except Exception as e:
         print(f"❌ INTERNAL SERVER ERROR during recognition: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({"message": "❌ Terjadi kesalahan internal server saat memproses absensi.", "status": "error"}), 500
 
 
@@ -154,15 +173,16 @@ def recognize():
 if __name__ == '__main__':
     # Logika pembuatan CSV awal saat server dimulai
     import csv
-    # Pastikan path ini sesuai
-    CSV_PATH_MAIN = r"D:/Semester 8/Capstong/TA2/absensi.csv"
-    if not os.path.exists(CSV_PATH_MAIN):
+    if not os.path.exists(ATTENDANCE_CSV_PATH):
         try:
-            with open(CSV_PATH_MAIN, mode='w', newline='') as file:
+            with open(ATTENDANCE_CSV_PATH, mode='w', newline='') as file:
                 writer = csv.writer(file)
                 writer.writerow(["tanggal", "jam", "nama", "status"])
-            print(f"⚠️ Membuat file CSV kosong dengan header di: {CSV_PATH_MAIN}")
+            print(f"⚠️ Membuat file CSV kosong dengan header di: {ATTENDANCE_CSV_PATH}")
         except Exception as e:
             print(f"❌ Gagal membuat file CSV: {e}")
 
+    # Jalankan server Flask
+    # host='0.0.0.0' agar bisa diakses dari jaringan lokal (termasuk HP)
+    # debug=True untuk development, ganti ke False saat production
     app.run(host="0.0.0.0", port=5000, debug=True)
