@@ -84,7 +84,7 @@
                                 <div class="text-muted small">Token No: <span class="fw-semibold">{{ str_pad((string)($order->id % 200 + 100), 4, '0', STR_PAD_LEFT) }}</span></div>
                                 <div class="text-muted small">{{ $order->created_at?->format('h:i A, d-m-Y') }}</div>
                             </div>
-                            <div id="{{ $collapseId }}" class="collapse ko-items px-3 pb-3">
+                            <div id="{{ $collapseId }}" class="collapse ko-items px-3 pb-3" wire:ignore>
                                 @foreach($order->items as $it)
                                     <div class="kitem">
                                         <div class="name">{{ $it->product_name }}</div>
@@ -137,7 +137,7 @@
                                 <div class="text-muted small">Token No: <span class="fw-semibold">{{ $tk['token'] }}</span></div>
                                 <div class="text-muted small">{{ $tk['time'] }}</div>
                             </div>
-                            <div id="{{ $cid }}" class="collapse ko-items px-3 pb-3">
+                            <div id="{{ $cid }}" class="collapse ko-items px-3 pb-3" wire:ignore>
                                 @foreach($tk['items'] as $it)
                                     <div class="kitem">
                                         <div class="name">{{ $it['name'] }}</div>

@@ -1,0 +1,10 @@
+/* Bootstrap vs Tailwind/Filament collapse name clash fix
+   Tailwind defines a utility `.collapse { visibility: collapse; }`
+   which conflicts with Bootstrap's `.collapse` behavior.
+   Ensure Bootstrap semantics win on backoffice pages. */
+
+.collapse { visibility: visible !important; }
+.collapse:not(.show) { display: none !important; }
+.collapse.show { display: block !important; }
+.collapsing { height: 0; overflow: hidden; transition: height .35s ease; }
+

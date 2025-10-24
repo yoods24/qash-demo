@@ -20,9 +20,15 @@
             <form action="{{ route('backoffice.profile.update', Auth::user()) }}" method="POST">
                 @csrf
                 @method('POST')
-                <div class="mb-3">
-                    <label for="title" class="form-label">User Name</label>
-                    <input type="text" class="form-control" id="title" name="title" value="{{ $user->name }}" required>
+                <div class="row g-2">
+                    <div class="col-6">
+                        <label for="firstName" class="form-label">First Name</label>
+                        <input type="text" class="form-control" id="firstName" name="firstName" value="{{ $user->firstName }}" required>
+                    </div>
+                    <div class="col-6">
+                        <label for="lastName" class="form-label">Last Name</label>
+                        <input type="text" class="form-control" id="lastName" name="lastName" value="{{ $user->lastName }}" required>
+                    </div>
                 </div>
 
                 <div class="mb-3">

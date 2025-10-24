@@ -26,6 +26,9 @@
     --secondaryBlack : #131313;
     --secondaryWhite : #FAFAFA;
     --bg-opacity-backoffice : 1;
+    /* Backoffice navbar measurements */
+    --nav-height: 56px;           /* default, updated by JS */
+    --handle-overlap: 16px;       /* how much the handle overlaps when hidden */
 }
 /* Smooth theme transitions */
 body, .sidebar, .navbar-custom, .card, .nav-link, .dropdown-menu, .table, .order-table th, .order-table td, .summary-container, .chart-placeholder {
@@ -40,12 +43,93 @@ body {
 }
 
 /* =========================
+   Navbar toggle & handle
+   ========================= */
+/* Make navbar sticky and animatable by width/padding */
+.navbar-custom {
+    position: sticky;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    transition: width .25s ease, height .25s ease, padding .25s ease;
+}
+
+/* When hidden: collapse width and fade out contents, keep handle */
+.navbar-custom.hide {
+    width: 0 !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    overflow: visible !important; /* so fixed handle can sit above */
+}
+
+.navbar-custom.hide .left-group,
+.navbar-custom.hide .right-group > *:not(.toggle-nav-container) {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Toggle handle: fixed and centered horizontally */
+.toggle-nav-container {
+    transition: all 0.3s ease, opacity 0.2s ease;
+    position: fixed;               /* detach from navbar flow so it remains visible */
+    top: calc(var(--nav-height) - 15px); /* near bottom edge when visible */
+    transform: translateX(-50%);
+    z-index: 1100;                 /* above the navbar */
+    pointer-events: none;          /* container ignores events */
+    opacity: 0;                    /* hidden by default */
+    visibility: hidden;            /* do not show until hover */
+}
+.toggle-nav-container #toggleNavigationBar {
+    pointer-events: all;           /* button is clickable */
+    background: transparent;
+    border: 0;
+    line-height: 1;
+}
+.toggle-nav-container i {
+    font-size: 1.25rem;
+}
+
+/* When navbar is hidden, stick handle to top center */
+.navbar-custom.hide .toggle-nav-container {
+    top: 8px; /* top of page */
+    opacity: 1;                   /* always visible when navbar hidden */
+    visibility: visible;
+}
+
+/* Reveal handle when hovering over the visible navbar */
+.navbar-custom:hover .toggle-nav-container {
+    opacity: 1;
+    visibility: visible;
+}
+
+/*  
+.toggle-nav-container .handle-bg {
+    background: rgba(255,255,255,.85);
+    backdrop-filter: blur(4px);
+    border-radius: 999px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.15);
+}
+*/
+
+/* =========================
     background colors
    ========================= */
 .bg-secondary-white { 
     background-color: #ffffff; 
 }
-
+.red-asterisk {
+    color: red !important;
+}
+.bg-main {
+    background-color: #F7F7F7 !important;
+}
 .bg-orange {
     background-color: rgb(242 62 20 / var(--bg-opacity-backoffice, 1));;
 }
@@ -124,7 +208,23 @@ img, svg, video, canvas { max-width: 100%; height: auto; }
     z-index: 999;
     position: sticky;
 }
+/* Bootstrap Tabs */
+.bootstrap-tabs-custom {
 
+}
+.bootstrap-tabs-item-custom {
+    
+}
+.bootstrap-tabs-link-custom {
+    color: var(--secondaryBlack) !important;
+}
+.bootstrap-tabs-link-custom:hover {
+    color: var(--mainColorOrange) !important;
+}
+.bootstrap-tabs-link-custom.active {
+    background-color: var(--mainColorOrange) !important;
+    color: white !important;
+}
 /* =========================
    Dark Theme Overrides
    ========================= */
@@ -145,6 +245,15 @@ html[data-theme='dark'] .dropdown-menu {
     color: #e5e7eb;
     border-color: #1f2937;
 }
+
+/* Dark variants */
+html[data-theme='dark'] .ko-tab { background:#0f172a; color:#e5e7eb; border-color:#1f2937; }
+html[data-theme='dark'] .ko-tab.active { color:#93c5fd; border-color:#1d4ed8; box-shadow: 0 2px 6px rgba(29,78,216,.25); }
+html[data-theme='dark'] .ko-item-row { border-bottom-color:#1f2937; }
+html[data-theme='dark'] .ko-item-title { color:#e5e7eb; }
+html[data-theme='dark'] .ko-card { background:#0b1220; border-color:#1f2937; box-shadow: 0 2px 8px rgba(0,0,0,.5); }
+html[data-theme='dark'] .ko-card-top { background:#0f1b33; }
+
 html[data-theme='dark'] .dropdown-item { color: #e5e7eb; }
 html[data-theme='dark'] .dropdown-item:hover { background-color: #1f2937; color: #fff; }
 
@@ -158,7 +267,7 @@ html[data-theme='dark'] .summary-container { background-color: #111827; color: #
 html[data-theme='dark'] .nav-tabs .nav-link { color: #e5e7eb; }
 html[data-theme='dark'] .nav-tabs .nav-link:hover { color: #f05a28; }
 html[data-theme='dark'] .table { color: #e5e7eb; }
-html[data-theme='dark'] .secondary-white { background-color: #0e1627; }
+html[data-theme='dark'] .bg-main { background-color: #0e1627 !important; }
 /* Kitchen dark */
 html[data-theme='dark'] .kcol { background: #0f172a; box-shadow: 0 2px 12px rgba(0,0,0,.35); }
 html[data-theme='dark'] .kcol-title { color: #e5e7eb; }
@@ -279,6 +388,23 @@ html[data-theme='dark'] .sidebar::-webkit-scrollbar-thumb { background-color: #3
         transform: translateX(-100%);
         transition: transform 0.5s ease;
     }
+    /* Hide navbar toggle handle on mobile */
+    .toggle-nav-container {
+        display: none !important;
+    }
+    /* Ensure navbar stays visible on mobile even if .hide is present */
+    .navbar-custom.hide {
+        width: 100% !important;
+        height: auto !important;
+        min-height: var(--nav-height);
+        padding-left: 0.75rem !important;
+        padding-right: 0.75rem !important;
+        padding-top: 0.5rem !important;
+        padding-bottom: 0.5rem !important;
+        border: 0 !important;
+        box-shadow: none !important;
+        overflow: visible !important;
+    }
     .sidebar.shrunk {
         display: none !important;
     }
@@ -365,13 +491,27 @@ html[data-theme='dark'] .sidebar::-webkit-scrollbar-thumb { background-color: #3
     top: 0;
     z-index: 1000; /* keep it above other elements */
 }
+
+.toggle-nav-container {
+    position: fixed; /* keep centered handle always visible */
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1100;
+    pointer-events: none;
+}
+.toggle-nav-container i{
+    transition: all 0.3s ease;
+}
+.toggle-nav-container i:hover{
+    opacity: 0.8;
+    cursor: pointer;
+}
+
 .navbar-custom .btn-add {
     background-color: #f05a28;
     border: none;
     color: #fff;
-}
-
-.navbar-custom .btn-add:hover {
 }
 
 .navbar-custom .nav-icon {
@@ -381,6 +521,7 @@ html[data-theme='dark'] .sidebar::-webkit-scrollbar-thumb { background-color: #3
     border-radius: 50%;
     margin-right:1rem ;
     transition: all 0.2s ease;
+    padding: 6px 12px;
 }
 
 .navbar-custom .nav-icon:hover {
@@ -703,11 +844,3 @@ input:checked + .slider:before {
 .ko-chip-success { background:#22c55e; color:#fff; }
 .ko-chip-warning { background:#f59e0b; color:#fff; }
 .ko-chip-info { background:#3b82f6; color:#fff; }
-
-/* Dark variants */
-html[data-theme='dark'] .ko-tab { background:#0f172a; color:#e5e7eb; border-color:#1f2937; }
-html[data-theme='dark'] .ko-tab.active { color:#93c5fd; border-color:#1d4ed8; box-shadow: 0 2px 6px rgba(29,78,216,.25); }
-html[data-theme='dark'] .ko-item-row { border-bottom-color:#1f2937; }
-html[data-theme='dark'] .ko-item-title { color:#e5e7eb; }
-html[data-theme='dark'] .ko-card { background:#0b1220; border-color:#1f2937; box-shadow: 0 2px 8px rgba(0,0,0,.5); }
-html[data-theme='dark'] .ko-card-top { background:#0f1b33; }

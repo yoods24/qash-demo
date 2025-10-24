@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="2025-10-20T10:20:00.000Z" agent="Mozilla/5.0" version="24.7.9" editor="diagramly">
+  <diagram id="qashFlow" name="Qash Ordering &amp; Payments Flow">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2200" pageHeight="1400" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- Lane: Customer -->
+        <mxCell id="laneCustomer" value="Customer" style="swimlane;childLayout=stackLayout;horizontal=0;startSize=28;rounded=1;fillColor=#f5f5f5;strokeColor=#999;fontStyle=1;spacing=8;html=1;" vertex="1" parent="1">
+          <mxGeometry x="20" y="20" width="300" height="560" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="c1" value="Scan Table QR" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666;spacing=8;" vertex="1" parent="laneCustomer">
+          <mxGeometry x="20" y="40" width="260" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2" value="Resolve tenant + floor + table" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666;spacing=8;" vertex="1" parent="laneCustomer">
+          <mxGeometry x="20" y="90" width="260" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="c3" value="Open Menu &amp; Add to Cart" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666;spacing=8;" vertex="1" parent="laneCustomer">
+          <mxGeometry x="20" y="140" width="260" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="c4" value="Checkout (Confirm Order)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666;spacing=8;" vertex="1" parent="laneCustomer">
+          <mxGeometry x="20" y="190" width="260" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="c5" value="Choose Payment Gateway" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666;spacing=8;" vertex="1" parent="laneCustomer">
+          <mxGeometry x="20" y="240" width="260" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="conf" value="Customer sees Confirmation (Order #, status, summary)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#2e7d32;spacing=8;" vertex="1" parent="laneCustomer">
+          <mxGeometry x="20" y="300" width="260" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- Lane: Payment Gateways -->
+        <mxCell id="lanePG" value="Payment Gateways" style="swimlane;childLayout=stackLayout;horizontal=0;startSize=28;rounded=1;fillColor=#f5f5f5;strokeColor=#999;fontStyle=1;spacing=8;html=1;" vertex="1" parent="1">
+          <mxGeometry x="340" y="20" width="300" height="280" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="ex" value="Xendit Checkout Page" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666;spacing=8;" vertex="1" parent="lanePG">
+          <mxGeometry x="20" y="40" width="260" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="em" value="Midtrans Checkout Page" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666;spacing=8;" vertex="1" parent="lanePG">
+          <mxGeometry x="20" y="90" width="260" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="res" value="Payment Result" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fffde7;strokeColor=#f9a825;spacing=8;" vertex="1" parent="lanePG">
+          <mxGeometry x="20" y="140" width="260" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="ret" value="Pending / Failed → Show message + Retry" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffebee;strokeColor=#c62828;spacing=8;" vertex="1" parent="lanePG">
+          <mxGeometry x="20" y="190" width="260" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- Lane: App Server -->
+        <mxCell id="laneAPP" value="App Server (Tenant App)" style="swimlane;childLayout=stackLayout;horizontal=0;startSize=28;rounded=1;fillColor=#f5f5f5;strokeColor=#999;fontStyle=1;spacing=8;html=1;" vertex="1" parent="1">
+          <mxGeometry x="660" y="20" width="340" height="220" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="uo" value="Webhook: Update Order (mark Paid, attach table/floor context)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e3f2fd;strokeColor=#1565c0;spacing=8;" vertex="1" parent="laneAPP">
+          <mxGeometry x="20" y="40" width="300" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- Lane: Tenant Backoffice -->
+        <mxCell id="laneBO" value="Tenant Backoffice" style="swimlane;childLayout=stackLayout;horizontal=0;startSize=28;rounded=1;fillColor=#f5f5f5;strokeColor=#999;fontStyle=1;spacing=8;html=1;" vertex="1" parent="1">
+          <mxGeometry x="660" y="260" width="340" height="320" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="o1" value="New Order appears (Table X, items, notes)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666;spacing=8;" vertex="1" parent="laneBO">
+          <mxGeometry x="20" y="40" width="300" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="k1" value="Kitchen: In Progress" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666;spacing=8;" vertex="1" parent="laneBO">
+          <mxGeometry x="20" y="100" width="300" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="k2" value="Ready" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666;spacing=8;" vertex="1" parent="laneBO">
+          <mxGeometry x="20" y="150" width="300" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="k3" value="Served / Complete" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666;spacing=8;" vertex="1" parent="laneBO">
+          <mxGeometry x="20" y="200" width="300" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- Lane: Qash Central -->
+        <mxCell id="laneQC" value="Qash Central" style="swimlane;childLayout=stackLayout;horizontal=0;startSize=28;rounded=1;fillColor=#f5f5f5;strokeColor=#999;fontStyle=1;spacing=8;html=1;" vertex="1" parent="1">
+          <mxGeometry x="1020" y="20" width="340" height="260" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="q1" value="Record tenant transaction (amount, items, fees, method, status)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666;spacing=8;" vertex="1" parent="laneQC">
+          <mxGeometry x="20" y="40" width="300" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="q2" value="Dashboards &amp; Reports (all tenants)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666;spacing=8;" vertex="1" parent="laneQC">
+          <mxGeometry x="20" y="120" width="300" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- Edges: Customer -->
+        <mxCell id="e1" edge="1" parent="1" source="c1" target="c2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e2" edge="1" parent="1" source="c2" target="c3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e3" edge="1" parent="1" source="c3" target="c4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e4" edge="1" parent="1" source="c4" target="c5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Edges: to Payment Gateways -->
+        <mxCell id="e5" value="Xendit" edge="1" parent="1" source="c5" target="ex" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=#ffffff;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e6" value="Midtrans" edge="1" parent="1" source="c5" target="em" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=#ffffff;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e7" edge="1" parent="1" source="ex" target="res" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e8" edge="1" parent="1" source="em" target="res" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Edges: Result branching -->
+        <mxCell id="e9" value="Webhook (Success)" edge="1" parent="1" source="res" target="uo" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=#ffffff;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e10" value="Pending / Fail" edge="1" parent="1" source="res" target="ret" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=#ffffff;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e11" value="Retry / Change Method" edge="1" parent="1" source="ret" target="c4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;dashPattern=8 4;labelBackgroundColor=#ffffff;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Edges: App -> Confirmation + Backoffice + Qash -->
+        <mxCell id="e12" edge="1" parent="1" source="uo" target="conf" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e13" edge="1" parent="1" source="uo" target="o1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e14" edge="1" parent="1" source="o1" target="k1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e15" edge="1" parent="1" source="k1" target="k2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e16" edge="1" parent="1" source="k2" target="k3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e17" edge="1" parent="1" source="uo" target="q1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e18" edge="1" parent="1" source="k3" target="q1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e19" edge="1" parent="1" source="q1" target="q2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
+

@@ -34,7 +34,8 @@ class ProductController extends Controller
 
         // Tenant ID (the primary key of your tenants table)
         $tenantId = $tenant->id;
-        $userName = $request->user()->name;
+        $u = $request->user();
+        $userName = trim(($u->firstName ?? '') . ' ' . ($u->lastName ?? '')) ?: ($u->email ?? 'user');
 
         $validated = $request->validate([
             'category_id' => 'required|exists:categories,id',

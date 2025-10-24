@@ -36,15 +36,21 @@ class DatabaseSeeder extends Seeder
             ],
         ]);
 
-        // 4) Create a primary admin within the tenant
+        // 4) Seed default shifts for the tenant
+        $this->call(ShiftSeeder::class);
+        $fixedShift = \App\Models\Shift::where('tenant_id', $tenant->id)->where('name', 'Fixed 9-6')->first();
+
+        // 5) Create a primary admin within the tenant
         $admin = User::firstOrCreate([
             'email' => 'admin@demo-cafe.test',
         ], [
-            'name' => 'Demo Admin',
+            'firstName' => 'Demo',
+            'lastName' => 'Admin',
             'password' => Hash::make('Miscrits24!'),
             'tenant_id' => $tenant->id,
             'status' => 1,
             'is_admin' => true,
+            'shift_id' => $fixedShift->id,
         ]);
 
         // Assign Super Admin role and all permissions
@@ -52,7 +58,7 @@ class DatabaseSeeder extends Seeder
         $admin->assignRole($superAdminRole);
         $admin->syncPermissions(Permission::all());
 
-        // 5) Seed tenant-scoped data (categories, products, careers)
+        // 6) Seed tenant-scoped data (categories, products, careers)
         $categories = Category::factory()
             ->count(3)
             ->state(new Sequence(
@@ -79,5 +85,8 @@ class DatabaseSeeder extends Seeder
         Career::factory(10)->create([
             'tenant_id' => $tenant->id,
         ]);
+
+        // 7) Add a couple of demo staff users for testing
+        $this->call(DemoCafeUserSeeder::class);
     }
 }

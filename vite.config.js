@@ -11,6 +11,7 @@ export default defineConfig({
                 'resources/js/customer.js',
                 'resources/css/backoffice.css',
                 'resources/js/backoffice.js',
+                'resources/js/tables.js',
                 'resources/css/app.css',
                 'resources/css/filament.css',
             ],

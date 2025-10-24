@@ -17,13 +17,47 @@ return new class extends Migration
             // Tenants use a string primary key; keep tenant_id as string FK
             $table->string('tenant_id');
             $table->foreign('tenant_id')->references('id')->on('tenants')->cascadeOnDelete();
-            $table->string('name');
+            $table->foreignId('shift_id')->nullable()->constrained('shifts')->nullOnDelete();
+            // General Information
+            $table->string('profile-image')->nullable();
+            $table->string('firstName');
+            $table->string('lastName');
             $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
+            $table->string('emp_code')->nullable()->unique();
+            $table->date('date_of_birth')->nullable();
+            $table->enum('gender', ['Male', 'Female']);
+            $table->string('nationality')->nullable();
+            $table->date('joining_date')->nullable();
+            $table->enum('blood_group', ['O', 'A', 'B', 'AB']);
+            $table->text('about')->nullable();
             $table->string('phone')->nullable();
             $table->string('password');
+
+            // Address Information
+            $table->string('address')->nullable();
+            $table->string('country')->nullable();
+            $table->string('state')->nullable();
+            $table->string('city')->nullable();
+            $table->string('zipcode')->nullable();
+
+
+            // Emergency Information
+            $table->string('emergency_contact_number_1')->nullable();
+            $table->string('emergency_contact_relation_1')->nullable();
+            $table->string('emergency_contact_name_1')->nullable();
+            $table->string('emergency_contact_number_2')->nullable();
+            $table->string('emergency_contact_relation_2')->nullable();
+            $table->string('emergency_contact_name_2')->nullable();
+
+
+            // Bank Information
+            $table->string('bank_name')->nullable();
+            $table->string('account_number')->nullable();
+
+
             $table->boolean('is_admin')->default(0);
             $table->boolean('status')->default(0);
+            $table->timestamp('email_verified_at')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

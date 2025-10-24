@@ -10,7 +10,7 @@
         </x-backoffice.sidebar-nav-section>
         <x-backoffice.sidebar-nav-section section="Home">
           <x-backoffice.sidebar-nav-link class="bi bi-cash-coin me-2">Profile</x-backoffice.sidebar-nav-link>
-          <x-backoffice.sidebar-nav-link class="bi bi-gear me-2" >Settings</x-backoffice.sidebar-nav-link>
+          <x-backoffice.sidebar-nav-link href="{{ route('backoffice.settings.index') }}" class="bi bi-gear me-2" >Settings</x-backoffice.sidebar-nav-link>
           <x-backoffice.sidebar-nav-link class="bi bi-building me-2" >Report</x-backoffice.sidebar-nav-link>
           <x-backoffice.sidebar-nav-link href="{{route('backoffice.notification.index')}}" class="bi bi-bell me-2" >Notification</x-backoffice.sidebar-nav-link>
         </x-backoffice.sidebar-nav-section>
@@ -33,9 +33,13 @@
           <x-backoffice.sidebar-nav-link class="bi bi-building me-2" >Deposit</x-backoffice.sidebar-nav-link>
         </x-backoffice.sidebar-nav-section>
 
-        <x-backoffice.sidebar-nav-section section="Staffs">
+        <x-backoffice.sidebar-nav-section section="HRM">
           <x-backoffice.sidebar-nav-link href="{{route('backoffice.staff.index')}}" class="bi bi-list-task me-2" >All Staffs</x-backoffice.sidebar-nav-link>
           <x-backoffice.sidebar-nav-link href="{{route('backoffice.roles.index')}}" class="bi bi-cash-coin me-2" >Staff Permissions</x-backoffice.sidebar-nav-link>
+          <x-backoffice.sidebar-nav-link href="{{ route('backoffice.shift.index') }}" class="bi bi-building me-2" >Shifts</x-backoffice.sidebar-nav-link>
+          <x-backoffice.sidebar-nav-link href="{{ route('backoffice.attendance.index') }}" class="bi bi-building me-2" >Attendance</x-backoffice.sidebar-nav-link>
+          <x-backoffice.sidebar-nav-link class="bi bi-building me-2" >Cuti</x-backoffice.sidebar-nav-link>
+          <x-backoffice.sidebar-nav-link class="bi bi-building me-2" >Leaves</x-backoffice.sidebar-nav-link>
         </x-backoffice.sidebar-nav-section>
 
         <x-backoffice.sidebar-nav-section section="Sales">
@@ -44,6 +48,10 @@
 
         <x-backoffice.sidebar-nav-section section="Kitchen">
           <x-backoffice.sidebar-nav-link href="{{route('backoffice.kitchen.index')}}" class="bi bi-fork-knife me-2" >Kitchen Orders</x-backoffice.sidebar-nav-link>
+        </x-backoffice.sidebar-nav-section>
+
+        <x-backoffice.sidebar-nav-section section="Floor">
+          <x-backoffice.sidebar-nav-link href="{{route('backoffice.tables.index')}}" class="bi bi-grid-3x3-gap-fill me-2" >Dining Tables</x-backoffice.sidebar-nav-link>
         </x-backoffice.sidebar-nav-section>
 
         <div class="section-title">Projects</div>

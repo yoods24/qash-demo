@@ -23,7 +23,6 @@
     </ul>
 
     @livewire('backoffice.tables.category-table')
-
       <!-- Add other tabs like #unpaid, #ship etc. as needed -->
     </div>
 

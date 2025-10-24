@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="2025-10-20T10:45:00.000Z" agent="Mozilla/5.0" version="24.7.9" editor="diagramly">
+  <diagram id="qashUserFlow" name="Qash User Ordering Flow">
+    <mxGraphModel dx="1300" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2200" pageHeight="1400" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- Start / End -->
+        <mxCell id="start" value="Start" style="ellipse;whiteSpace=wrap;html=1;fillColor=#4a6cf7;fontColor=#ffffff;strokeColor=#2f49a1;shadow=0;" vertex="1" parent="1">
+          <mxGeometry x="40" y="60" width="120" height="48" as="geometry"/>
+        </mxCell>
+        <mxCell id="end" value="End" style="ellipse;whiteSpace=wrap;html=1;fillColor=#4a6cf7;fontColor=#ffffff;strokeColor=#2f49a1;shadow=0;" vertex="1" parent="1">
+          <mxGeometry x="40" y="520" width="120" height="48" as="geometry"/>
+        </mxCell>
+
+        <!-- Customer path -->
+        <mxCell id="p_scan" value="Scan Table QR" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="180" y="60" width="220" height="54" as="geometry"/>
+        </mxCell>
+        <mxCell id="d_qr" value="Valid QR?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffd54f;strokeColor=#c49b00;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="430" y="52" width="150" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="p_enter" value="Enter table manually" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="420" y="140" width="200" height="54" as="geometry"/>
+        </mxCell>
+        <mxCell id="p_menu" value="Load Menu &amp; Add Items" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="680" y="60" width="240" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="p_checkout" value="Checkout (Confirm Order)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="940" y="60" width="240" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="d_gateway" value="Choose Payment Gateway" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffd54f;strokeColor=#c49b00;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="1210" y="50" width="170" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="p_xendit" value="Xendit Checkout Page" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffcc80;strokeColor=#ef6c00;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="1210" y="170" width="220" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="p_midtrans" value="Midtrans Checkout Page" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffcc80;strokeColor=#ef6c00;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="1210" y="250" width="220" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="d_success" value="Payment success?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffd54f;strokeColor=#c49b00;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="1480" y="210" width="170" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="p_retry" value="Pending / Failed → Show message + Retry" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffebee;strokeColor=#c62828;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="1700" y="250" width="260" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="p_conf" value="Show Confirmation (Order #, summary)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#2e7d32;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="1700" y="130" width="280" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- Server and backoffice -->
+        <mxCell id="p_webhook" value="Webhook from gateway" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e3f2fd;strokeColor=#1565c0;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="680" y="210" width="240" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="p_mark" value="Mark order Paid (attach table/floor)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="940" y="210" width="260" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="p_new" value="Backoffice: New order appears" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="940" y="300" width="280" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="p_kitchen" value="Kitchen: In Progress → Ready → Served" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="940" y="380" width="320" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- Qash Central -->
+        <mxCell id="db_qash" value="Qash Central (Transactions)" style="shape=cylinder;whiteSpace=wrap;html=1;boundedLbl=1;fillColor=#000000;fontColor=#ffffff;strokeColor=#333333;" vertex="1" parent="1">
+          <mxGeometry x="1700" y="360" width="220" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="p_dash" value="Dashboards &amp; Reports (all tenants)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="1700" y="480" width="280" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- Edges main path -->
+        <mxCell id="e_start_scan" edge="1" parent="1" source="start" target="p_scan" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_scan_qr" edge="1" parent="1" source="p_scan" target="d_qr" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_qr_yes" value="Yes" edge="1" parent="1" source="d_qr" target="p_menu" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;labelBackgroundColor=#ffffff;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_qr_no" value="No" edge="1" parent="1" source="d_qr" target="p_enter" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;labelBackgroundColor=#ffffff;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_enter_menu" edge="1" parent="1" source="p_enter" target="p_menu" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_menu_checkout" edge="1" parent="1" source="p_menu" target="p_checkout" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_checkout_gateway" edge="1" parent="1" source="p_checkout" target="d_gateway" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Gateway branches -->
+        <mxCell id="e_gate_xendit" value="Xendit" edge="1" parent="1" source="d_gateway" target="p_xendit" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;labelBackgroundColor=#ffffff;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_gate_midtrans" value="Midtrans" edge="1" parent="1" source="d_gateway" target="p_midtrans" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;labelBackgroundColor=#ffffff;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e_xendit_success" edge="1" parent="1" source="p_xendit" target="d_success" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_midtrans_success" edge="1" parent="1" source="p_midtrans" target="d_success" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Success / fail branches -->
+        <mxCell id="e_pay_yes" value="Yes" edge="1" parent="1" source="d_success" target="p_conf" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;labelBackgroundColor=#ffffff;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_pay_no" value="No" edge="1" parent="1" source="d_success" target="p_retry" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;labelBackgroundColor=#ffffff;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_retry_back" value="Retry / Change Method" edge="1" parent="1" source="p_retry" target="p_checkout" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;dashed=1;dashPattern=8 4;labelBackgroundColor=#ffffff;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_conf_end" edge="1" parent="1" source="p_conf" target="end" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Server webhook and backoffice chain -->
+        <mxCell id="e_success_webhook" value="(Gateway Webhook)" edge="1" parent="1" source="d_success" target="p_webhook" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;dashed=1;labelBackgroundColor=#ffffff;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_webhook_mark" edge="1" parent="1" source="p_webhook" target="p_mark" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_mark_new" edge="1" parent="1" source="p_mark" target="p_new" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_new_kitchen" edge="1" parent="1" source="p_new" target="p_kitchen" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Qash central links -->
+        <mxCell id="e_mark_qash" value="Record transaction" edge="1" parent="1" source="p_mark" target="db_qash" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;labelBackgroundColor=#ffffff;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_kitchen_qash" value="Final status" edge="1" parent="1" source="p_kitchen" target="db_qash" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;labelBackgroundColor=#ffffff;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_qash_dash" edge="1" parent="1" source="db_qash" target="p_dash" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
+

@@ -3,11 +3,15 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+
+use App\Http\Enums\BloodGroup;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Spatie\Permission\Traits\HasRoles;
 use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
+use Illuminate\Support\Facades\Storage;
 
 class User extends Authenticatable
 {
@@ -20,14 +24,42 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'name',
+        'profile-image',
+        'firstName',
+        'lastName',
         'email',
         'password',
         'phone',
         'status',
         'is_admin',
-        'tenant_id'
+        'tenant_id',
+        'shift_id',
+        'name',
+        'emp_code',
+        'date_of_birth',
+        'attendance_method',
+        'gender',
+        'nationality',
+        'joining_date',
+        'blood_group',
+        'about',
+        'address',
+        'country',
+        'state',
+        'city',
+        'zipcode',
+        'emergency_contact_number_1',
+        'emergency_contact_relation_1',
+        'emergency_contact_name_1',
+        'emergency_contact_number_2',
+        'emergency_contact_relation_2',
+        'emergency_contact_name_2',
+        'bank_name',
+        'account_number',
     ];
+
+    // Ensure Spatie permissions use the tenant web guard
+    protected $guard_name = 'web';
 
     /**
      * The attributes that should be hidden for serialization.
@@ -50,5 +82,29 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+    protected $casts = [
+        'blood_group' => BloodGroup::class
+    ];
+
+    public function shift(): BelongsTo
+    {
+        return $this->belongsTo(Shift::class);
+    }
+
+    // Convenience accessors to avoid dealing with hyphenated column names in views/components
+    public function getProfileImagePathAttribute(): ?string
+    {
+        return $this->getAttribute('profile-image');
+    }
+    public function attendances()
+    {
+        return $this->hasMany(Attendance::class);
+    }
+
+    public function getProfileImageUrlAttribute(): ?string
+    {
+        $path = $this->getProfileImagePathAttribute();
+        return $path ? Storage::disk('public')->url($path) : null;
     }
 }
