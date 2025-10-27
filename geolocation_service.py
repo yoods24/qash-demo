@@ -5,8 +5,8 @@ import os
 
 # === KONFIGURASI LOKASI TARGET (HARDCODED) ===
 # ❗ GANTI DENGAN KOORDINAT LOKASI ANDA YANG DIDAPATKAN ❗
-TARGET_LATITUDE = -7.1397  # Contoh: Latitude dari script get_coords.py
-TARGET_LONGITUDE = 110.4208 # Contoh: Longitude dari script get_coords.py
+TARGET_LATITUDE = -7.056056962640098  # Contoh: Latitude dari script get_coords.py
+TARGET_LONGITUDE = 110.43926884109588 # Contoh: Longitude dari script get_coords.py
 
 # Radius toleransi dalam meter
 ACCEPTABLE_RADIUS_METERS = 50

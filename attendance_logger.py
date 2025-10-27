@@ -19,7 +19,7 @@ CSV_PATH = r"D:/Semester 8/Capstong/TA2/absensi.csv"
 DB_CONFIG = {
     'host': 'localhost',
     'user': 'root', # Ganti dengan username MySQL Anda
-    'password': 'Aptx4869', # Ganti dengan password MySQL Anda
+    'password': '', # Ganti dengan password MySQL Anda
     'database': DB_NAME
 }
 
