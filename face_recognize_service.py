@@ -4,7 +4,7 @@ import os
 import cv2
 import numpy as np
 from attendance_logger import log_attendance_to_csv 
-from geolocation_service import is_location_valid 
+#from geolocation_service import is_location_valid 
 
 # Treshold Absensi (60% kemiripan)
 RECOGNITION_THRESHOLD_ABSENSI = 0.40
@@ -58,21 +58,22 @@ def handle_recognition_frame(app_insight, LOADED_EMBEDDINGS, LOADED_NAMES, image
     if min_dist < RECOGNITION_THRESHOLD_ABSENSI:
         
         # Validasi Lokasi
-        location_ok, location_message = is_location_valid(employee_latitude, employee_longitude)
+        #location_ok, location_message = is_location_valid(employee_latitude, employee_longitude)
 
-        if not location_ok:
-            return {
-                "status": "error",
-                "message": f"❌ Wajah dikenali ({kemiripan_persen:.2f}%) sebagai {recognized_name}, tetapi absensi DITOLAK. {location_message}",
-                "name": recognized_name,
-                "distance": float(min_dist)
-            }
+        #if not location_ok:
+           # return {
+          #      "status": "error",
+          #      "message": f"❌ Wajah dikenali ({kemiripan_persen:.2f}%) sebagai {recognized_name}, tetapi absensi DITOLAK. {location_message}",
+          #      "name": recognized_name,
+          #      "distance": float(min_dist)
+          #  }
 
         # --- Jika Wajah & Lokasi VALID ---
         log_success = log_attendance_to_csv(recognized_name)
         
         if log_success:
-             message = f"Absensi BERHASIL! ({kemiripan_persen:.2f}%) Selamat datang, {recognized_name}. {location_message}"
+             message = f"Absensi BERHASIL! ({kemiripan_persen:.2f}%) Selamat datang, {recognized_name}"
+             #. {location_message}"
         else:
              message = f"Absensi BERHASIL (Wajah & Lokasi Valid), tetapi GAGAL mencatat. Selamat datang, {recognized_name}."
              
