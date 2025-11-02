@@ -14,7 +14,10 @@ return new class extends Migration
             $table->foreign('tenant_id')->references('id')->on('tenants')->cascadeOnDelete();
             $table->foreignId('customer_detail_id')->constrained('customer_details');
             $table->decimal('total', 10, 2);
-            $table->string('status')->default('pending');
+            $table->enum('status', ['confirmed', 'preparing', 'ready'])->default('confirmed');
+            $table->enum('payment_status', ['paid', 'unpaid', 'cancelled'])->default('unpaid');
+            $table->string('reference_no')->nullable();
+            $table->index(['tenant_id', 'reference_no']);
             $table->timestamps();
         });
     }

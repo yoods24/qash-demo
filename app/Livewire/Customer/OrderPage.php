@@ -4,6 +4,7 @@ namespace App\Livewire\Customer;
 
 use Livewire\Component;
 use App\Models\Product;
+use App\Models\DiningTable;
 use App\Models\Category;
 use App\Models\ProductOptionValue;
 use Darryldecode\Cart\Facades\CartFacade as Cart;
@@ -20,6 +21,7 @@ class OrderPage extends Component
     public $quantity = 1;
     public $showOptionModal = false;
     public $showCustomerModal = false;
+    public $showTableModal = false;
     public $customerName = '';
     public $customerEmail = '';
     public $customerGender = null; // 'man' | 'women' | null
@@ -27,6 +29,7 @@ class OrderPage extends Component
     public $pendingAction = null; // 'add_to_cart' | 'update_profile' | null
     public $tenantId = null;   // current tenant id
     public $tenantName = null; // display-only name
+    public $currentTable = null; // label for current dining table
 
     public function mount()
     {
@@ -38,6 +41,21 @@ class OrderPage extends Component
         $this->categories = Category::all();
         $this->loadProducts();
 
+        // If a QR code or table id is specified (from QR), assign the table into the session
+        $code = request()->query('code');
+        if ($code) {
+            $tenantId = $this->tenantId;
+            $t = DiningTable::where('tenant_id', $tenantId)->where('qr_code', $code)->first();
+            if ($t) {
+                Session::put('dining_table_id', (int) $t->id);
+            }
+        } else {
+            $table = request()->query('table');
+            if ($table && is_numeric($table)) {
+                Session::put('dining_table_id', (int) $table);
+            }
+        }
+
         // Preload customer from session if exists (for greeting/UI)
         if (Session::has('customer_detail_id')) {
             $customer = CustomerDetail::find(Session::get('customer_detail_id'));
@@ -46,13 +64,34 @@ class OrderPage extends Component
                 $this->customerName   = $customer->name;   // prefill modal if reopened
                 $this->customerEmail  = $customer->email;
                 $this->customerGender = $customer->gender;
+                // Persist current table to the customer's details (pre-payment)
+                $tableId = Session::get('dining_table_id');
+                if ($tableId && $customer->dining_table_id !== (int) $tableId) {
+                    $customer->update(['dining_table_id' => (int) $tableId]);
+                }
             }
+        }
+
+        // Expose current table for UI
+        $this->syncCurrentTable();
+    }
+
+    private function syncCurrentTable(): void
+    {
+        $tableId = Session::get('dining_table_id');
+        if ($tableId) {
+            $t = DiningTable::where('tenant_id', $this->tenantId)->find($tableId);
+            $this->currentTable = $t?->label;
+        } else {
+            $this->currentTable = null;
         }
     }
 
     private function loadProducts()
     {
         $this->products = Product::with('category')
+            ->where('active', 1)
+            ->where('stock_qty', '>', 0)
             ->get()
             ->groupBy('category_id')
             ->map(function ($items, $categoryId) {
@@ -76,7 +115,10 @@ class OrderPage extends Component
                 $categoryId => [
                     'id' => $categoryId,
                     'name' => $category->name,
-                    'items' => Product::where('category_id', $categoryId)->get(),
+                    'items' => Product::where('category_id', $categoryId)
+                        ->where('active', 1)
+                        ->where('stock_qty', '>', 0)
+                        ->get(),
                 ]
             ]);
         }
@@ -86,6 +128,12 @@ class OrderPage extends Component
     public function showProductOptions($productId)
     {
         $this->selectedProduct = Product::with(['options.values'])->findOrFail($productId);
+
+        // guard: hide/deny if inactive or out of stock
+        if (($this->selectedProduct->active ?? 1) != 1 || (int)($this->selectedProduct->stock_qty ?? 0) <= 0) {
+            session()->flash('error', 'This item is unavailable.');
+            return;
+        }
 
         // reset options
         $this->selectedOptions = [];
@@ -115,6 +163,19 @@ class OrderPage extends Component
         if (!$this->selectedProduct) {
             return;
         }
+        // Re-check availability
+        $fresh = Product::find($this->selectedProduct->id);
+        if (!$fresh || ($fresh->active ?? 1) != 1 || (int)($fresh->stock_qty ?? 0) <= 0) {
+            session()->flash('error', 'This item is unavailable.');
+            $this->reset(['selectedProduct', 'selectedOptions', 'quantity', 'showOptionModal']);
+            $this->dispatch('unlock-scroll');
+            return;
+        }
+        // Require dining table assignment before adding to cart
+        if (!Session::has('dining_table_id') || !Session::get('dining_table_id')) {
+            $this->showTableModal = true;
+            return;
+        }
         // Require customer details before adding to cart
         if (!Session::has('customer_detail_id')) {
             $this->pendingAction = 'add_to_cart';
@@ -123,6 +184,11 @@ class OrderPage extends Component
         }
 
         $this->performAddToCart();
+    }
+
+    public function closeTableModal()
+    {
+        $this->showTableModal = false;
     }
 
     private function performAddToCart()
@@ -184,9 +250,14 @@ class OrderPage extends Component
 
         // Resolve tenant id robustly for Livewire requests (fallback to bound property)
         $tenantId = tenant()?->id ?? request()->route('tenant') ?? $this->tenantId;
+        $defaults = ['name' => $data['customerName'], 'gender' => $gender, 'tenant_id' => $tenantId];
+        $tableId = Session::get('dining_table_id');
+        if ($tableId) {
+            $defaults['dining_table_id'] = (int) $tableId;
+        }
         $customer = CustomerDetail::firstOrCreate(
             ['email' => $data['customerEmail'], 'tenant_id' => $tenantId],
-            ['name' => $data['customerName'], 'gender' => $gender, 'tenant_id' => $tenantId]
+            $defaults
         );
 
         // Update name/gender if changed
@@ -196,6 +267,9 @@ class OrderPage extends Component
         }
         if (($customer->gender ?? null) !== $gender) {
             $updates['gender'] = $gender;
+        }
+        if ($tableId && $customer->dining_table_id !== (int) $tableId) {
+            $updates['dining_table_id'] = (int) $tableId;
         }
         if (!empty($updates)) {
             $customer->update($updates);
@@ -213,6 +287,7 @@ class OrderPage extends Component
             session()->flash('success', 'Details updated.');
         }
         $this->pendingAction = null;
+        $this->syncCurrentTable();
     }
 
     public function openCustomerEdit()
@@ -264,7 +339,10 @@ class OrderPage extends Component
     {
         return view('livewire.customer.order-page', [
             'products'         => $this->products,
-            'featuredProducts' => Product::where('featured', 1)->get(),
+            'featuredProducts' => Product::where('featured', 1)
+                ->where('active', 1)
+                ->where('stock_qty', '>', 0)
+                ->get(),
             'cartTotal'        => Cart::getTotal(),
             'cartQuantity'     => Cart::getTotalQuantity()
         ]);

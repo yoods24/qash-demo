@@ -23,7 +23,7 @@
 
     @livewire('backoffice.tables.shifts-table')
 
-    <x-modal-create id="addShiftModal" title="Add Shift" action="{{ route('backoffice.shift.store') }}">
+    <x-modal.create id="addShiftModal" title="Add Shift" action="{{ route('backoffice.shift.store') }}">
         <ul class="nav nav-tabs mb-3" role="tablist">
             <li class="nav-item" role="presentation">
                 <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-shift-info" type="button" role="tab">Shift Info</button>
@@ -152,5 +152,5 @@
                 </div>
             </div>
         </div>
-    </x-modal-create>
+    </x-modal.create>
 </x-backoffice.layout>

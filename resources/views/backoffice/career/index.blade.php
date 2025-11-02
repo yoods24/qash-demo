@@ -91,7 +91,7 @@
 
       <!-- Add other tabs like #unpaid, #ship etc. as needed -->
     </div>
-<x-modal-create id="addCareerModal" title="Tambah Career" action="{{ route('backoffice.career.store') }}">
+<x-modal.create id="addCareerModal" title="Tambah Career" action="{{ route('backoffice.career.store') }}">
       <div class="container my-4">
           <h2 class="mb-4 text-dark">Create Career</h2>
               <div class="mb-3">
@@ -117,6 +117,6 @@
                   </select>
               </div>
       </div>
-</x-modal-create>
+</x-modal.create>
 <!-- Modal -->
 </x-backoffice.layout>

@@ -10,6 +10,28 @@ import 'bootstrap';
 
     // Sidebar toggle
 document.addEventListener("DOMContentLoaded", function () {
+        // settings sidebar
+          (function(){
+        // ensure chevrons visually reflect expanded state
+        document.querySelectorAll('#settingsNav .settings-toggle').forEach(btn => {
+          const setState = () => {
+            const expanded = btn.getAttribute('aria-expanded') === 'true';
+            btn.classList.toggle('collapsed', !expanded);
+          };
+          btn.addEventListener('click', () => setTimeout(setState, 0));
+          setState();
+        });
+
+        // Auto-open the correct group when jumping to a tab hash
+        const hash = window.location.hash;
+        if (hash === '#att-pane' || hash === '#geo-pane') {
+          const el = document.getElementById('settings-app');
+          if (el && !el.classList.contains('show')) {
+            const collapse = bootstrap.Collapse.getOrCreateInstance(el, { toggle: false });
+            collapse.show();
+          }
+        }
+      })();
             // Navigation bar toggle
     (function() {
         const nav = document.querySelector('.navbar.navbar-custom');
@@ -95,6 +117,23 @@ document.addEventListener("DOMContentLoaded", function () {
             updateForViewport();
         });
     })();
+
+    // Global helper: navigate back without persisting changes
+    window.redirectToPrevious = function redirectToPrevious() {
+        try {
+            if (window.history && window.history.length > 1) {
+                window.history.back();
+                return;
+            }
+            if (document.referrer) {
+                window.location.href = document.referrer;
+                return;
+            }
+            window.location.href = window.location.origin || '/';
+        } catch (e) {
+            window.location.href = '/';
+        }
+    };
     // Theme toggle
     (function() {
         const key = 'qash:theme';
@@ -292,23 +331,136 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    let rowCount = 1;
-    const addRowBtn = document.getElementById('addRow');
-    if (addRowBtn) {
-        addRowBtn.addEventListener('click', function() {
+    // Single-option (edit page) add-row support remains above. Below is multi-option support for product create page.
+    (function(){
+        const groupsContainer = document.getElementById('optionsGroups');
+        const addGroupBtn = document.getElementById('addOptionGroup');
+        if (!groupsContainer) return; // not on product create
+
+        let nextGroupIndex = 1; // first group is 0
+
+        const renderGroup = (idx) => {
+            return `
+            <div class="option-group border rounded p-3" data-index="${idx}" data-next-value-index="1">
+                <div class="row g-2 align-items-end">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Option Name</label>
+                        <input type="text" name="options[${idx}][name]" class="form-control" placeholder="e.g. Ice Level">
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-check mt-4">
+                            <input class="form-check-input toggle-default-only" type="checkbox" name="options[${idx}][default_only]" value="1" id="opt${idx}DefaultOnly">
+                            <label class="form-check-label" for="opt${idx}DefaultOnly">Default only</label>
+                        </div>
+                    </div>
+                    <div class="col-md-2 text-end">
+                        <button type="button" class="btn btn-outline-danger btn-sm remove-option-group">Remove</button>
+                    </div>
+                </div>
+                <div class="default-wrap mt-2" style="display:none;">
+                    <label class="form-label">Default value</label>
+                    <input type="text" class="form-control" name="options[${idx}][default_value]" placeholder="Default" value="Default">
+                    <div class="form-text">When default only is on, only this single value is used.</div>
+                </div>
+                <div class="values-wrap mt-2">
+                    <table class="table table-bordered mb-2 option-values-table">
+                        <thead>
+                            <tr>
+                                <th>Value</th>
+                                <th>Price Change</th>
+                                <th width="10%"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><input type="text" name="options[${idx}][values][0][value]" class="form-control" placeholder="Normal Ice"></td>
+                                <td><input type="number" step="0.01" name="options[${idx}][values][0][price_change]" class="form-control" placeholder="0.00"></td>
+                                <td><button type="button" class="btn btn-outline-danger btn-sm removeRow">&times;</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="text-end">
+                        <button type="button" class="btn btn-sm btn-outline-success add-value">+ Add Value</button>
+                    </div>
+                </div>
+            </div>
+            `;
+        };
+
+        if (addGroupBtn) {
+            addGroupBtn.addEventListener('click', function(){
+                groupsContainer.insertAdjacentHTML('beforeend', renderGroup(nextGroupIndex));
+                nextGroupIndex++;
+            });
+        }
+
+        // Toggle default-only per group
+        document.addEventListener('change', function(e){
+            if (!e.target.classList?.contains('toggle-default-only')) return;
+            const group = e.target.closest('.option-group');
+            if (!group) return;
+            const defaultWrap = group.querySelector('.default-wrap');
+            const valuesWrap = group.querySelector('.values-wrap');
+            const addBtn = group.querySelector('.add-value');
+            const checked = e.target.checked;
+            if (defaultWrap && valuesWrap) {
+                defaultWrap.style.display = checked ? '' : 'none';
+                valuesWrap.style.display = checked ? 'none' : '';
+                // Disable values inputs when default-only
+                valuesWrap.querySelectorAll('input').forEach(inp => { inp.disabled = checked; });
+            }
+            if (addBtn) addBtn.disabled = checked;
+        });
+
+        // Add value row within a group
+        document.addEventListener('click', function(e){
+            if (!e.target.classList?.contains('add-value')) return;
+            const group = e.target.closest('.option-group');
+            if (!group) return;
+            if (group.querySelector('.toggle-default-only')?.checked) return; // disabled when default-only
+            const idx = group.getAttribute('data-index');
+            let nextVal = parseInt(group.getAttribute('data-next-value-index') || '1', 10);
+            const tbody = group.querySelector('.option-values-table tbody');
+            if (!tbody) return;
+            const row = `
+                <tr>
+                    <td><input type="text" name="options[${idx}][values][${nextVal}][value]" class="form-control" placeholder="Less Ice"></td>
+                    <td><input type="number" step="0.01" name="options[${idx}][values][${nextVal}][price_change]" class="form-control" placeholder="0.00"></td>
+                    <td><button type="button" class="btn btn-outline-danger btn-sm removeRow">&times;</button></td>
+                </tr>
+            `;
+            tbody.insertAdjacentHTML('beforeend', row);
+            group.setAttribute('data-next-value-index', String(nextVal + 1));
+        });
+
+        // Remove option group
+        document.addEventListener('click', function(e){
+            if (!e.target.classList?.contains('remove-option-group')) return;
+            const group = e.target.closest('.option-group');
+            if (!group) return;
+            group.remove();
+        });
+    })();
+
+    // Fallback for edit page: add rows to single option values table
+    (function(){
+        const addRowBtn = document.getElementById('addRow');
+        if (!addRowBtn) return;
+        let rowCount = 1;
+        addRowBtn.addEventListener('click', function(){
             const tableBody = document.querySelector('#optionValuesTable tbody');
             if (!tableBody) return;
             const newRow = `
                 <tr>
                     <td><input type="text" name="values[${rowCount}][value]" class="form-control" placeholder="Medium" required></td>
                     <td><input type="number" step="0.01" name="values[${rowCount}][price_change]" class="form-control" placeholder="0.00"></td>
-                    <td><button type="button" class="btn btn-danger btn-sm removeRow">&times;</button></td>
+                    <td><button type="button" class="btn btn-outline-danger btn-sm removeRow">&times;</button></td>
                 </tr>
             `;
             tableBody.insertAdjacentHTML('beforeend', newRow);
             rowCount++;
         });
-    }
+    })();
 
     document.addEventListener('click', function(e) {
         if (e.target.classList?.contains('removeRow')) {

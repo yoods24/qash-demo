@@ -267,16 +267,16 @@
         </div>
     </form>
 
-<x-modal-create id="addProductModal" title="Tambah Role" action="{{ route('backoffice.role.store-wr') }}">
+<x-modal.create id="addProductModal" title="Tambah Role" action="{{ route('backoffice.role.store-wr') }}">
     <div class="mb-3">
         <label for="product" class="form-label">Add Role</label>
         <input type="text" class="form-control" id="role" name="role" placeholder="Masukkan Role">
     </div>
-</x-modal-create>
+</x-modal.create>
 
 
 
-    <x-modal-create id="addShiftModal" title="Add Shift" action="{{ route('backoffice.shift.store') }}">
+    <x-modal.create id="addShiftModal" title="Add Shift" action="{{ route('backoffice.shift.store') }}">
         <ul class="nav nav-tabs mb-3" role="tablist">
             <li class="nav-item" role="presentation">
                 <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-shift-info" type="button" role="tab">Shift Info</button>
@@ -405,6 +405,6 @@
                 </div>
             </div>
         </div>
-    </x-modal-create>
+    </x-modal.create>
 </x-backoffice.layout>
 

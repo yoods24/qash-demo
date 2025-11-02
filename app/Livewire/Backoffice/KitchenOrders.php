@@ -20,7 +20,10 @@ class KitchenOrders extends Component
 
     public function startPreparing(int $orderId): void
     {
-        $order = Order::query()->where('status', 'pending')->find($orderId);
+        if (! auth()->user() || ! auth()->user()->can('kitchen_kds_update_order')) {
+            return; // silently ignore if not permitted
+        }
+        $order = Order::query()->where('status', 'confirmed')->find($orderId);
         if ($order) {
             $order->update(['status' => 'preparing']);
         }
@@ -28,6 +31,9 @@ class KitchenOrders extends Component
 
     public function markReady(int $orderId): void
     {
+        if (! auth()->user() || ! auth()->user()->can('kitchen_kds_confirm_order')) {
+            return; // silently ignore if not permitted
+        }
         $order = Order::query()->where('status', 'preparing')->find($orderId);
         if ($order) {
             $order->update(['status' => 'ready']);
@@ -37,7 +43,7 @@ class KitchenOrders extends Component
     protected function mapFilterToStatus(?string $filter): ?string
     {
         return match ($filter) {
-            'confirmed' => 'pending',
+            'confirmed' => 'confirmed',
             'preparing' => 'preparing',
             'done' => 'ready',
             default => null,
@@ -77,7 +83,7 @@ class KitchenOrders extends Component
 
         $counts = [
             'all' => Order::count(),
-            'confirmed' => Order::where('status', 'pending')->count(),
+            'confirmed' => Order::where('status', 'confirmed')->count(),
             'preparing' => Order::where('status', 'preparing')->count(),
             'done' => Order::where('status', 'ready')->count(),
         ];

@@ -7,7 +7,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
 
-      <form method="POST" action="{{ $action }}" enctype="multipart/form-data">
+      <form method="POST" action="{{ $action }}" enctype="multipart/form-data"> 
         @csrf
         <div class="modal-body">
           {{ $slot }}

@@ -19,6 +19,8 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\File;
 
 class StaffAttendance extends Component implements HasTable, HasActions, HasSchemas
 {
@@ -76,16 +78,7 @@ class StaffAttendance extends Component implements HasTable, HasActions, HasSche
             }
         }
 
-        $needsFace = ($effective === 'face') || ($effective === 'default_combined');
-        if ($needsFace && !$settings->face_recognition_enabled) {
-            session()->flash('error', 'Face recognition is disabled in settings.');
-            return;
-        }
-        if ($needsFace) {
-            $this->redirectRoute('backoffice.attendance.face', navigate: true);
-            return;
-        }
-
+        // Validate geofence position before proceeding to face screen (for combined mode)
         if ($needsGeo) {
             if ($this->lat === null || $this->lng === null) {
                 session()->flash('error', 'Please allow location access to clock in.');
@@ -96,6 +89,16 @@ class StaffAttendance extends Component implements HasTable, HasActions, HasSche
                 session()->flash('error', 'You are outside the allowed geofence.');
                 return;
             }
+        }
+
+        $needsFace = ($effective === 'face') || ($effective === 'default_combined');
+        if ($needsFace && !$settings->face_recognition_enabled) {
+            session()->flash('error', 'Face recognition is disabled in settings.');
+            return;
+        }
+        if ($needsFace) {
+            $this->redirectRoute('backoffice.face.attendance', ['tenant' => $this->tenantParam, 'user' => request()->user()], navigate: true);
+            return;
         }
 
         $this->service()->clockIn($user, now(), [
@@ -192,6 +195,70 @@ class StaffAttendance extends Component implements HasTable, HasActions, HasSche
         return $a->breaks()->whereNull('ended_at')->exists();
     }
 
+    #[Computed]
+    public function requiresGeo(): bool
+    {
+        $user = Auth::user();
+        $settings = AttendanceSetting::firstOrCreate(['tenant_id' => $user->tenant_id]);
+        $effective = $user->attendance_method === 'default'
+            ? (($settings->apply_face_to === 'all' && $settings->default_combined) ? 'default_combined' : ($settings->default_method ?? 'geo'))
+            : $user->attendance_method;
+        return in_array($effective, ['geo', 'default_combined'], true);
+    }
+
+    #[Computed]
+    public function geofenceConfigured(): bool
+    {
+        $s = AttendanceSetting::first();
+        $g = $s?->geofence ?? [];
+        return !empty($g['lat']) && !empty($g['lng']) && !empty($g['radius']);
+    }
+
+    #[Computed]
+    public function requiresFace(): bool
+    {
+        $user = Auth::user();
+        $settings = AttendanceSetting::firstOrCreate(['tenant_id' => $user->tenant_id]);
+        $effective = $user->attendance_method === 'default'
+            ? (($settings->apply_face_to === 'all' && $settings->default_combined) ? 'default_combined' : ($settings->default_method ?? 'geo'))
+            : $user->attendance_method;
+        return in_array($effective, ['face', 'default_combined'], true);
+    }
+
+    #[Computed]
+    public function hasFaceDataset(): ?bool
+    {
+        // Only check if face is required; otherwise it's irrelevant
+        if (!($this->requiresFace ?? false)) {
+            return null;
+        }
+        $user = Auth::user();
+        $tenantId = function_exists('tenant') ? tenant('id') : null;
+        $tenantId = $tenantId ?: (request()->route('tenant'));
+        if (!$tenantId) return null;
+
+        try {
+            $resp = Http::asForm()
+                ->withHeaders(['X-Tenant-Id' => $tenantId])
+                ->post('http://127.0.0.1:5001/has_face', [
+                    'tenant_id' => $tenantId,
+                    'name' => trim(($user->firstName ?? '') . ' ' . ($user->lastName ?? '')),
+                ]);
+            if (!$resp->ok()) return null;
+            $j = $resp->json();
+            if (is_array($j) && array_key_exists('registered', $j)) {
+                return (bool) $j['registered'];
+            }
+            if (is_array($j) && array_key_exists('status', $j)) {
+                return $j['status'] === 'ok';
+            }
+            return null;
+        } catch (\Throwable $e) {
+            return null;
+        }
+    }
+
+
     protected function fmt(int|float|null $seconds): string
     {
         $seconds = (int) ($seconds ?? 0);
@@ -233,6 +300,9 @@ class StaffAttendance extends Component implements HasTable, HasActions, HasSche
             'runningBreakStart' => $this->runningBreakStart,
             'geofence' => optional(AttendanceSetting::first())?->geofence, // will be tenant-scoped via model trait
             'fmt' => fn ($s) => $this->fmt($s),
+            'requiresGeo' => $this->requiresGeo,
+            'geofenceConfigured' => $this->geofenceConfigured,
+            'requiresFace' => $this->requiresFace,
         ]);
     }
 
@@ -269,12 +339,20 @@ class StaffAttendance extends Component implements HasTable, HasActions, HasSche
 
                 TextColumn::make('clock_in_at')
                     ->label('Clock In')
-                    ->formatStateUsing(fn($state) => $state ? \Carbon\Carbon::parse($state)->format('h:i A') : '-')
+                    ->formatStateUsing(function ($state) {
+                        if (!$state) return '-';
+                        $dt = $state instanceof \Carbon\Carbon ? $state : \Carbon\Carbon::parse($state);
+                        return $dt->copy()->setTimezone(config('app.timezone', 'UTC'))->format('h:i A');
+                    })
                     ->toggleable(),
 
                 TextColumn::make('clock_out_at')
                     ->label('Clock Out')
-                    ->formatStateUsing(fn($state) => $state ? \Carbon\Carbon::parse($state)->format('h:i A') : '-')
+                    ->formatStateUsing(function ($state) {
+                        if (!$state) return '-';
+                        $dt = $state instanceof \Carbon\Carbon ? $state : \Carbon\Carbon::parse($state);
+                        return $dt->copy()->setTimezone(config('app.timezone', 'UTC'))->format('h:i A');
+                    })
                     ->toggleable(),
 
                 TextColumn::make('production_seconds')

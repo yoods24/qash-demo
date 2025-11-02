@@ -10,6 +10,8 @@ use App\Models\OrderItem;
 use Illuminate\Support\Facades\DB;
 use Darryldecode\Cart\Facades\CartFacade as Cart;
 use App\Models\TenantNotification;
+use App\Models\DiningTable;
+use Illuminate\Support\Facades\Session;
 
 class CartPage extends Component
 {
@@ -27,11 +29,13 @@ class CartPage extends Component
     public $editingItemId = null; // if set, modal updates existing cart item
     
     public $softwareService = 1000;
+    public $currentTable = null; // label for current dining table
 
     public function mount()
     {
         $this->tenantId = tenant()?->id ?? request()->route('tenant');
         $this->refreshCart();
+        $this->syncCurrentTable();
     }
 
     public function refreshCart()
@@ -41,6 +45,17 @@ class CartPage extends Component
         // Always include software/service fee when there is at least one item
         $hasItems = $this->items && count($this->items) > 0;
         $this->grandTotal = $this->total + ($hasItems ? ($this->softwareService ?? 0) : 0);
+    }
+
+    private function syncCurrentTable(): void
+    {
+        $tableId = Session::get('dining_table_id');
+        if ($tableId) {
+            $t = DiningTable::where('tenant_id', $this->tenantId)->find($tableId);
+            $this->currentTable = $t?->label;
+        } else {
+            $this->currentTable = null;
+        }
     }
 
         public function closeOptionModal()
@@ -268,14 +283,43 @@ class CartPage extends Component
             session()->flash('error', 'Please enter your name and email before checkout.');
             return;
         }
+        // Validate cart items availability
+        $insufficient = [];
+        foreach (Cart::getContent() as $item) {
+            $p = Product::find($item->id);
+            if (!$p || ($p->active ?? 1) != 1) {
+                session()->flash('error', 'Some items are unavailable and were removed.');
+                Cart::remove($item->id);
+                continue;
+            }
+            if ((int)($p->stock_qty ?? 0) < (int) $item->quantity) {
+                $insufficient[] = $p->name ?? ('ID '.$p->id);
+            }
+        }
+        if (!empty($insufficient)) {
+            session()->flash('error', 'Insufficient stock for: '.implode(', ', $insufficient));
+            return;
+        }
+        if (Cart::isEmpty()) {
+            return;
+        }
         
         DB::transaction(function () {
             // Resolve tenant id robustly for Livewire requests, fallback to bound property
             $tenantId = tenant()?->id ?? request()->route('tenant') ?? $this->tenantId;
+            // Generate tenant-scoped reference number (e.g., DEM-XXXXXXXXXX)
+            $tenantCode = strtoupper(substr((string)($tenantId ?? ''), 0, 3));
+            $rand = strtoupper(substr(bin2hex(random_bytes(8)), 0, 10));
+            $reference = ($tenantCode ?: 'REF') . '-' . $rand;
+
             $order = Order::create([
+                'reference_no'    => $reference,
                 'customer_detail_id' => session('customer_detail_id'),
                 'total' => $this->grandTotal,
-                'status' => 'pending',
+                // Order pipeline status (KDS uses 'confirmed')
+                'status' => 'confirmed',
+                // Payment: mark as paid in development until gateway is integrated
+                'payment_status' => 'paid',
                 'tenant_id' => $tenantId,
             ]);
 
@@ -286,9 +330,8 @@ class CartPage extends Component
             if (is_array($options) && array_key_exists('image', $options)) {
                 unset($options['image']);
             }
-
-
-            $order = OrderItem::create([
+            // Create order item
+            $orderItem = OrderItem::create([
                 'order_id'     => $order->id,
                 'product_id'   => $item->id,
                 'product_name' => $item->name,
@@ -297,6 +340,16 @@ class CartPage extends Component
                 'options'      => $options,
                 'tenant_id'    => $tenantId ?? $this->tenantId,
             ]);
+
+            // Reduce product stock safely
+            $prod = Product::where('tenant_id', $tenantId)->lockForUpdate()->find($item->id);
+            if ($prod) {
+                // Double-check in-transaction quantity
+                if ((int)$prod->stock_qty < (int)$item->quantity) {
+                    throw new \RuntimeException('Insufficient stock for '.$prod->name.' during checkout.');
+                }
+                $prod->decrement('stock_qty', (int)$item->quantity);
+            }
         }
 
             // Optionally store order id for receipt page later
@@ -329,7 +382,10 @@ class CartPage extends Component
     public function render()
     {
         return view('livewire.customer.cart-page', [
-            'featuredProducts' => Product::where('featured', 1)->get(),
+            'featuredProducts' => Product::where('featured', 1)
+                ->where('active', 1)
+                ->where('stock_qty', '>', 0)
+                ->get(),
         ]);
     }
 }

@@ -27,7 +27,7 @@
     </div>
 
 
-<x-modal-create id="addProductModal" title="Add Category" action="{{ route('backoffice.category.store') }} ">
+<x-modal.create id="addProductModal" title="Add Category" action="{{ route('backoffice.category.store') }} ">
     <div class="mb-3">
         <label for="product" class="form-label">Add Category</label>
         <input type="text" class="form-control" id="name" name="name" placeholder="Category Name">
@@ -36,7 +36,7 @@
         <label for="image_url">Insert Image</label>
         <input type="file" id="image_url" name="image_url" class="form-control-file" >
     </div>
-</x-modal-create>
+</x-modal.create>
 
 <!-- Modal -->
 </x-backoffice.layout>

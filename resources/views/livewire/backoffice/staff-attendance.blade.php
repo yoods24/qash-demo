@@ -17,7 +17,10 @@
                     </div>
                     <div class="ms-auto d-flex gap-2">
                         @if(!$this->today || !$this->today->clock_in_at)
-                            <button wire:click="clockIn" class="btn btn-success">Clock In</button>
+                            <button wire:click="clockIn" class="btn btn-success"
+                                @if(($requiresGeo ?? false) && (!($geoOk ?? false) || !($geofenceConfigured ?? false))) disabled @endif>
+                                Clock In
+                            </button>
                         @endif
                         @if($this->today && $this->today->clock_in_at && !$this->today->clock_out_at)
                             <button wire:click="clockOut" class="btn btn-warning">Clock Out</button>
@@ -37,7 +40,20 @@
                         <span id="on-break-timer">00h 00m</span>
                     </div>
                 </div>
-                @if(!is_null($geoOk))
+                @if(($requiresGeo ?? false))
+                    <div class="px-3 pb-2 small">
+                        @if(!($geofenceConfigured ?? false))
+                            <span class="text-warning">Geofence is not configured. Please contact admin.</span>
+                        @elseif(is_null($geoOk))
+                            <span class="text-muted">Detecting location… allow location access.</span>
+                        @elseif(!$geoOk)
+                            <span class="text-danger">Outside geofence ({{ $geoDistance }} m). Clock in disabled.</span>
+                        @else
+                            <span class="text-success">Within geofence ({{ $geoDistance }} m). You can clock in.</span>
+                        @endif
+                    </div>
+                @endif
+                @if(($requiresGeo ?? false) && !is_null($geoOk))
                 <div class="px-3 pb-2 small">
                     @if($geoOk)
                         <span class="text-success">Within geofence ({{ $geoDistance }} m)</span>
@@ -48,6 +64,13 @@
                         <span class="ms-2 text-muted">You: {{ number_format($lat ?? 0, 5) }}, {{ number_format($lng ?? 0, 5) }} | Site: {{ number_format($geofence['lat'] ?? 0, 5) }}, {{ number_format($geofence['lng'] ?? 0, 5) }} (r={{ (int)($geofence['radius'] ?? 0) }}m)</span>
                     @endif
                 </div>
+                @endif
+
+                @if(($requiresFace ?? false))
+                    <div class="px-3 pb-2 small">
+                        <span class="fw-semibold text-dark">Facial recognition:</span>
+                        <span class="text-success ms-1">On</span>
+                    </div>
                 @endif
             </div>
         </div>
@@ -152,23 +175,101 @@
         // Geolocation watcher: updates Livewire lat/lng and validates geofence
         (function(){
             if (!('geolocation' in navigator)) return;
-            const setGeo = (lat, lng) => {
+
+            const G = @json($geofence ?? null);
+            const geofenceRadius = parseInt((G && G.radius) ? G.radius : 200, 10);
+            const accuracyThreshold = Math.min(500, Math.max(50, Math.round(geofenceRadius / 2))); // 50–500m
+
+            let last = { lat: null, lng: null, acc: Infinity, ts: 0 };
+
+            const setGeo = (lat, lng, acc) => {
                 try {
                     @this.set('lat', parseFloat(lat));
                     @this.set('lng', parseFloat(lng));
                     @this.call('validateGeofence');
+                    last = { lat, lng, acc: acc ?? last.acc, ts: Date.now() };
                 } catch(e) { /* swallow */ }
             };
+
+            const distanceMeters = (lat1, lon1, lat2, lon2) => {
+                const R = 6371000;
+                const dLat = (lat2-lat1) * Math.PI/180;
+                const dLon = (lon2-lon1) * Math.PI/180;
+                const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLon/2)**2;
+                return Math.round(R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))));
+            };
+
+            const acceptPosition = (coords) => {
+                const { latitude: lat, longitude: lng, accuracy: acc } = coords;
+                // Filter out very coarse or obviously wrong positions
+                if (!isFinite(acc)) return false;
+                // Accept if within threshold, or accuracy improves significantly, or we've never set a value
+                if (last.lat === null || acc <= accuracyThreshold || acc < (last.acc * 0.7)) {
+                    return true;
+                }
+                // If huge jump (> 2km) with poor accuracy, ignore
+                if (last.lat !== null && distanceMeters(last.lat, last.lng, lat, lng) > 2000 && acc > accuracyThreshold) {
+                    return false;
+                }
+                return false;
+            };
+
+            // Initial fix
             navigator.geolocation.getCurrentPosition(
-                pos => setGeo(pos.coords.latitude, pos.coords.longitude),
+                pos => {
+                    if (acceptPosition(pos.coords)) {
+                        setGeo(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy);
+                    }
+                },
                 err => console.debug('geo error', err),
-                { enableHighAccuracy: true, maximumAge: 20000, timeout: 10000 }
+                { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 }
             );
-            navigator.geolocation.watchPosition(
-                pos => setGeo(pos.coords.latitude, pos.coords.longitude),
+
+            // Continuous updates
+            const watchId = navigator.geolocation.watchPosition(
+                pos => {
+                    if (acceptPosition(pos.coords)) {
+                        setGeo(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy);
+                    }
+                },
                 err => {},
-                { enableHighAccuracy: true }
+                { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
             );
+
+            window.addEventListener('beforeunload', () => {
+                try { navigator.geolocation.clearWatch(watchId); } catch(e) {}
+            });
+        })();
+
+        // Optional: check if face dataset exists for current user (via Flask API)
+        (function(){
+            const el = document.getElementById('face-data-status');
+            if (!el) return;
+            const API_BASE_URL = 'http://127.0.0.1:5001';
+            const TENANT_ID = @json(tenant('id'));
+            const name = @json(auth()->user()->firstName . ' ' . auth()->user()->lastName);
+            const url = `${API_BASE_URL}/has_face`;
+            const fd = new FormData();
+            fd.append('tenant_id', TENANT_ID ?? '');
+            fd.append('name', name);
+            fetch(url, { method: 'POST', headers: { 'X-Tenant-Id': TENANT_ID ?? '' }, body: fd })
+              .then(r => r.ok ? r.json() : Promise.reject())
+              .then(j => {
+                  if (j && (j.registered === true || j.status === 'ok')) {
+                      el.textContent = 'registered';
+                      el.className = 'text-success';
+                  } else if (j && (j.registered === false)) {
+                      el.textContent = 'not registered';
+                      el.className = 'text-danger';
+                  } else {
+                      el.textContent = 'unknown';
+                      el.className = 'text-muted';
+                  }
+              })
+              .catch(() => {
+                  el.textContent = 'unknown';
+                  el.className = 'text-muted';
+              });
         })();
     </script>
 </div>

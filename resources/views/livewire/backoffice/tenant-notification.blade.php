@@ -18,10 +18,10 @@
                     <button type="button" class="btn btn-sm rounded btn-outline-danger" wire:click="toggle"><i class="bi bi-x"></i></button>
                 </div>
                 <div class="d-flex align-items-center justify-content-between px-3 pt-3">
-                    <div class="d-flex gap-3 align-items-center small text-muted">
-                        <a href="#" class="text-decoration-none {{ $tab==='all' ? 'fw-semibold text-dark' : '' }}" wire:click.prevent="changeTab('all')">All</a>
-                        <a href="#" class="text-decoration-none {{ $tab==='new' ? 'fw-semibold text-dark' : '' }}" wire:click.prevent="changeTab('new')">New @if($unreadCount) <span class="badge bg-danger ms-1">{{ $unreadCount }}</span> @endif</a>
-                        <a href="#" class="text-decoration-none {{ $tab==='read' ? 'fw-semibold text-dark' : '' }}" wire:click.prevent="changeTab('read')">Read</a>
+                    <div class="d-flex gap-3 align-items-center small text-muted tenant-notification-link">
+                        <a href="#" class="text-decoration-none {{ $tab==='all' ? 'fw-semibold active' : '' }}" wire:click.prevent="changeTab('all')">All</a>
+                        <a href="#" class="text-decoration-none {{ $tab==='new' ? 'fw-semibold active' : '' }}" wire:click.prevent="changeTab('new')">New @if($unreadCount) <span class="badge bg-danger ms-1">{{ $unreadCount }}</span> @endif</a>
+                        <a href="#" class="text-decoration-none {{ $tab==='read' ? 'fw-semibold active' : '' }}" wire:click.prevent="changeTab('read')">Read</a>
                     </div>
                     <div wire:click="markAllAsRead" class="d-flex align-items-center small text-muted">
                         <p class="text-primer m-0 btn-light btn btn-sm">

@@ -25,7 +25,8 @@ return new class extends Migration
             $table->unsignedTinyInteger('w')->default(2);
             $table->integer('capacity')->default(2);
             $table->string('color')->nullable();
-            
+            $table->string('qr_code')->nullable()->unique('qr_code');
+
             $table->index('tenant_id');
         });
     }

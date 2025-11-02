@@ -91,20 +91,30 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Shift::class);
     }
-
+    public function attendances()
+    {
+        return $this->hasMany(Attendance::class);
+    }
+    public function fullName() {
+        return "{$this->firstName} {$this->lastName}";
+    }
     // Convenience accessors to avoid dealing with hyphenated column names in views/components
     public function getProfileImagePathAttribute(): ?string
     {
         return $this->getAttribute('profile-image');
     }
-    public function attendances()
-    {
-        return $this->hasMany(Attendance::class);
-    }
-
     public function getProfileImageUrlAttribute(): ?string
     {
         $path = $this->getProfileImagePathAttribute();
-        return $path ? Storage::disk('public')->url($path) : null;
+        if (! $path) {
+            return null;
+        }
+        if (function_exists('tenant_asset')) {
+            $tenantId = function_exists('tenant') ? tenant('id') : null;
+            if ($tenantId) {
+                return route('stancl.tenancy.asset', ['path' => $path, 'tenant' => $tenantId]);
+            }
+        }
+        return Storage::disk('public')->url($path);
     }
 }

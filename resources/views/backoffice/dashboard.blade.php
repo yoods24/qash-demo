@@ -1,103 +1,141 @@
 <x-backoffice.layout>
-    <h4 class="mb-3 mb-md-4">{{tenant('id')}} Dashboard</h4>
+    <h4>Welcome, {{ request()->user()->fullName() }}</h4>
     <hr>
-        <!-- Top cards -->
-        <div class="row g-3 mb-4">
+    <!-- Top metrics -->
+    @php
+        $m = $metrics ?? [
+            'totalSales' => 0,
+            'totalOrders' => 0,
+            'activeOrders' => 0,
+            'avgOrderValue' => 0,
+            'totalUsers' => 0,
+            'totalProducts' => 0,
+            'totalCategories' => 0,
+        ];
+        $money = fn($v) => 'Rp '.number_format((float)$v, 0, ',', '.');
+    @endphp
 
-        <div class="col col-lg-3 col-md-6 col-sm-12">
-          <div class="gap-1 bg-green py-3 d-flex justify-content-start align-items-center p-2 rounded">
-            <div class="mx-1 d-flex justify-content-center align-items-center bg-white rounded-circle" style="width: 50px; height: 50px;">
-              <i class="bi bi-cash fs-4 text-green"></i>
-            </div>
-            <div class="d-flex flex-column text-white">
-              <h5 class="mb-0">Total Earning</h5>
-              <p class="m-0">Rp. 245.000</p>
-            </div>
+    <div class="row g-3 mb-3">
+          <div class="col-12 col-md-6 col-lg-3">
+            <a href="{{ route('backoffice.order.index') }}" class="text-decoration-none text-dark">
+              <div class="card shadow-sm h-100">
+                  <div class="card-body d-flex justify-content-between align-items-start">
+                      <div>
+                          <div class="text-muted small">Total Sales</div>
+                          <div class="fs-5 fw-bold">{{ $money($m['totalSales']) }}</div>
+                      </div>
+                      <div class="metric-icon rounded d-flex align-items-center justify-content-center text-primary bg-primary-subtle">
+                          <i class="bi bi-cash-coin"></i>
+                      </div>
+                  </div>
+              </div>
+            </a>
           </div>
+        <div class="col-12 col-md-6 col-lg-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="text-muted small">Total Orders</div>
+                        <div class="fs-5 fw-bold">{{ number_format($m['totalOrders']) }}</div>
+                    </div>
+                    <div class="metric-icon rounded d-flex align-items-center justify-content-center text-success bg-success-subtle">
+                        <i class="bi bi-basket"></i>
+                    </div>
+                </div>
+            </div>
         </div>
+        <div class="col-12 col-md-6 col-lg-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="text-muted small">Total Active Orders</div>
+                        <div class="fs-5 fw-bold">{{ number_format($m['activeOrders']) }}</div>
+                    </div>
+                    <div class="metric-icon rounded d-flex align-items-center justify-content-center text-danger bg-danger-subtle">
+                        <i class="bi bi-receipt"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6 col-lg-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="text-muted small">Average Order Value</div>
+                        <div class="fs-5 fw-bold">{{ $money($m['avgOrderValue']) }}</div>
+                    </div>
+                    <div class="metric-icon rounded d-flex align-items-center justify-content-center text-purple bg-purple-subtle">
+                        <i class="bi bi-person-circle"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        <div class="col col-lg-3 col-md-6 col-sm-12">
-          <div class="gap-1 bg-orange py-3 d-flex justify-content-start align-items-center p-2 rounded">
-            <div class="mx-1 d-flex justify-content-center align-items-center bg-white rounded-circle" style="width: 50px; height: 50px;">
-              <i class="bi bi-receipt fs-4 text-orange"></i>
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-md-6 col-lg-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="text-muted small">Total Users</div>
+                        <div class="fs-5 fw-bold">{{ number_format($m['totalUsers']) }}</div>
+                    </div>
+                    <div class="metric-icon rounded d-flex align-items-center justify-content-center text-warning bg-warning-subtle">
+                        <i class="bi bi-people"></i>
+                    </div>
+                </div>
             </div>
-            <div class="d-flex flex-column text-white">
-              <h5 class="mb-0">Total Order</h5>
-              <p class="m-0">Rp. 245.000</p>
-            </div>
-          </div>
         </div>
-
-        <div class="col col-lg-3 col-md-6 col-sm-12">
-          <div class="gap-1 bg-purple-light py-3 d-flex justify-content-start align-items-center p-2 rounded">
-            <div class="mx-1 d-flex justify-content-center align-items-center bg-white rounded-circle" style="width: 50px; height: 50px;">
-              <i class="bi bi-person-fill fs-4 text-purple-light"></i>
+        <div class="col-12 col-md-6 col-lg-3">
+            <div class="card shadow-sm h-100">
+            <a href="{{ route('backoffice.product.index') }}" class="text-decoration-none text-dark">
+                <div class="card-body d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="text-muted small">Total Products</div>
+                        <div class="fs-5 fw-bold">{{ number_format($m['totalProducts']) }}</div>
+                    </div>
+                    <div class="metric-icon rounded d-flex align-items-center justify-content-center text-danger bg-danger-subtle">
+                        <i class="bi bi-box"></i>
+                    </div>
+                </div>
+                </a>
             </div>
-            <div class="d-flex flex-column text-white">
-              <h5 class="mb-0">Total Customers</h5>
-              <p class="m-0">Rp. 245.000</p>
-            </div>
-          </div>
         </div>
-
-        <div class="col col-lg-3 col-md-6 col-sm-12">
-          <div class="gap-1 bg-blue py-3 d-flex justify-content-start align-items-center p-2 rounded">
-            <div class="mx-1 d-flex justify-content-center align-items-center bg-white rounded-circle" style="width: 50px; height: 50px;">
-              <i class="bi bi-box-fill fs-4 text-blue"></i>
+        <div class="col-12 col-md-6 col-lg-3">
+            <div class="card shadow-sm h-100">
+            <a href="{{ route('backoffice.category.index') }}" class="text-decoration-none text-dark">
+                <div class="card-body d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="text-muted small">Total Categories</div>
+                        <div class="fs-5 fw-bold">{{ number_format($m['totalCategories']) }}</div>
+                    </div>
+                    <div class="metric-icon rounded d-flex align-items-center justify-content-center text-info bg-info-subtle">
+                        <i class="bi bi-folder"></i>
+                    </div>
+                </div>
+            </a>
             </div>
-            <div class="d-flex flex-column text-white">
-              <h5 class="mb-0">Total Products</h5>
-              <p class="m-0"></p>
-            </div>
-          </div>
         </div>
-
-        </div>
+    </div>
         <!-- Charts row -->
         <div class="row g-3">
-          <div class="col-12 col-md-6">
-            <div class="card card-white p-3">
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <h6 class="mb-0">Sales Pipeline by Stage</h6>
-                <select class="form-select form-select-sm w-auto">
-                  <option>Week</option>
-                  <option>Month</option>
-                  <option>Year</option>
-                </select>
-              </div>
-              <div class="chart-placeholder" data-bs-toggle="tooltip" data-bs-placement="top" title="Total New 60%"></div>
-            </div>
-          </div>
-          <div class="col-12 col-md-6">
-            <div class="card card-white p-3">
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <h6 class="mb-0">Sales Won Vs. Open</h6>
-                <select class="form-select form-select-sm w-auto">
-                  <option>Week</option>
-                  <option>Month</option>
-                  <option>Year</option>
-                </select>
-              </div>
-              <div class="chart-placeholder" data-bs-toggle="tooltip" data-bs-placement="top" title="Total Open 80%"></div>
-            </div>
+          <div class="col-12">
+            @livewire(\App\Filament\Widgets\SalesPurchaseChart::class)
           </div>
         </div>
 
   <div class="row gx-3 gy-3 mt-3">
   <!-- Left Column -->
   <div class="col-lg-3 col-md-6 col-sm-12">
-    <div class="border rounded bg-white p-3">
-      <h4 class="mb-4 mt-3">Top 3 Favorite Menus</h4>
-      <div id="favoriteMenuChart"></div>
-    </div>
+        @livewire(\App\Filament\Widgets\CustomersOverviewChart::class)
   </div>
 
   <!-- Right Column -->
   <div class="col-lg-9 col-md-6 col-sm-12">
     <div class="row gx-3 gy-3">
       <!-- Most Ordered Menu -->
-      <div class="col-lg-12 col-md-12 ">
-        <div class="table-responsive border rounded bg-white">
+      <div class="col-lg-12 col-md-12 dlmode-backup">
+        <div class="table-responsive border rounded">
           <div class="panel-header p-3 fw-bold">Most Ordered Menu</div>
           <hr class="m-0">
           <table class="table table-hover text-center text-nowrap mb-0">
@@ -148,14 +186,14 @@
 
       <!-- Top Customers -->
       <div class="col-lg-12 col-md-12">
-        <div class="border rounded bg-white h-100">
+        <div class="border rounded h-100 dlmode-backup">
           <div class="panel-header fw-bold p-3">Top Customers</div>
           <hr class="m-0">
           <!-- Add your top customers content here -->
           <div class="d-flex">
             <div class="card m-3 p-3 justify-content-center align-items-center" style="width: 18rem;">
               <img src="{{ url('/storage/ui/profile.png') }}" 
-                class="card-img-top rounded-circle w-25" 
+                class="card-img-top rounded w-25" 
                 alt="Profile">
               <p class="mt-2">Fadil Ramadhan</p>
               <div class="bg-green w-100 rounded d-flex justify-content-center text-white">
@@ -165,7 +203,7 @@
 
             <div class="card m-3 p-3 justify-content-center align-items-center" style="width: 18rem;">
               <img src="{{ url('/storage/ui/profile.png') }}" 
-                class="card-img-top rounded-circle w-25" 
+                class="card-img-top rounded w-25" 
                 alt="Profile">
               <p class="mt-2">Rio Jenari</p>
               <div class="bg-green w-100 rounded d-flex justify-content-center text-white">
@@ -179,10 +217,6 @@
 
 
     </div>
-  </div>
-
-  <div>
-    @livewire('blog-posts-chart')
   </div>
 </div>
 
@@ -220,5 +254,3 @@
 @endpush
 
 </x-backoffice.layout>
-
-

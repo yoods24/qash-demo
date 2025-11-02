@@ -8,8 +8,8 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Hash;
-use Spatie\Permission\Models\Role;
-use \Spatie\Permission\Models\Permission;
+use App\Models\Role;
+use App\Models\Permission;
 class StaffController extends Controller
 {
     public function index() {
@@ -17,7 +17,7 @@ class StaffController extends Controller
             ->where('is_admin', 0)
             ->with('roles')
             ->paginate(10);
-        $roles = Role::select('name')->pluck('name');
+        $roles = \App\Models\Role::select('name')->pluck('name');
         $staffCount = User::where('tenant_id', tenant('id'))
             ->where('is_admin', 0)
             ->count();
@@ -31,7 +31,7 @@ class StaffController extends Controller
     // New full user create page (collapsible sections)
     public function create() {
         $shifts = Shift::where('tenant_id', tenant('id'))->orderBy('name')->get(['id', 'name']);
-        $roles = Role::all();
+        $roles = \App\Models\Role::all();
         $bloodGroups = BloodGroup::cases();
         return view('backoffice.staff.create', compact(['shifts', 'roles', 'bloodGroups']));
     }
@@ -50,17 +50,17 @@ class StaffController extends Controller
     }
 
     public function indexRoles() {
-        $roles = Role::all();
+        $roles = \App\Models\Role::all();
         return view('backoffice.staff.roles', ['roles' => $roles]);
     }
 
     public function storeRole(Request $request) {
-        Role::firstOrCreate(['name' => $request['role']]);
+        \App\Models\Role::firstOrCreate(['name' => $request['role']]);
         return redirect()->route('backoffice.roles.index')->with('message', 'Role successfully Created!');
     }    
 
     public function storeRoleWr(Request $request) {
-        Role::firstOrCreate(['name' => $request['role']]);
+        \App\Models\Role::firstOrCreate(['name' => $request['role']]);
         Notification::make()
             ->title('Success')
             ->body('Role Successfully created!')
@@ -147,12 +147,12 @@ class StaffController extends Controller
         }
         $user->save();
 
-        // Handle profile image upload (namespace by tenant and user)
+        // Handle profile image upload (store within tenant's public disk, namespaced by user)
+        $imagePath = null;
         if ($request->hasFile('profile-image')) {
-            $file = $request->file('profile-image');
-            $dir = 'tenants/' . tenant('id') . '/users/' . $user->id;
-            $path = $file->store($dir, 'public');
-            $user->setAttribute('profile-image', $path);
+            // Store under users/{user_id}/... on the tenant-scoped 'public' disk
+            $imagePath = $request->file('profile-image')->store('users/' . $user->id, 'public');
+            $user->setAttribute('profile-image', $imagePath);
             $user->save();
         }
 
@@ -160,19 +160,19 @@ class StaffController extends Controller
             ->with('message', 'Employee created successfully.');
     }
 
-    public function indexPermission(Role $role) {
-        $permissions = Permission::all();
+    public function indexPermission(\App\Models\Role $role) {
+        $permissions = \App\Models\Permission::all();
 
         // Group permissions based on the module prefix
         $groupedPermissions = $permissions->groupBy(function ($permission) {
             return ucfirst(explode('_', $permission->name)[0]);
         });
 
-        return view('backoffice.staff.role-create', compact('role', 'groupedPermissions'));
+        return view('backoffice.staff.update-permission', compact('role', 'groupedPermissions'));
     }
 
-    public function updatePermission(Request $request, Role $role) {
-        Role::where('id', $role->id)->update(['name' => $request->role]);
+    public function updatePermission(Request $request, \App\Models\Role $role) {
+        \App\Models\Role::where('id', $role->id)->update(['name' => $request->role]);
         
         $permissions = $request->input('permissions', []);
         $role->syncPermissions($permissions);

@@ -9,8 +9,8 @@
             loop
         ></dotlottie-wc>
     </div>
-<style>
-    /* Accent + base */
+    <style>
+            /* Accent + base */
     .bg-primer { background-color: #FF8343; color: #fff; }
     .bg-primer2 {
         background-color: #142566;
@@ -101,7 +101,7 @@
 
     }
     .modal-card .footer { padding: .75rem 1.25rem 1.25rem; display:flex; gap:.5rem; justify-content:flex-end; }
-</style>
+    </style>
 {{-- resources/views/livewire/cart-page.blade.php (revamped to match design) --}}
 <div class="container cart-shell m-auto my-3 text-black">
     {{-- Header + Stepper --}}
@@ -121,13 +121,14 @@
     </div>
 
     {{-- Pickup Location --}}
+    @if($currentTable)
     <div class="soft-card card mb-3">
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-start">
                 <div>
                     <div class="d-flex align-items-center gap-2 mb-1">
                         <i class="bi bi-tv-fill text-primer"></i>
-                        <span class="fw-semibold">Table 18</span>
+                        <span class="fw-semibold">{{ $currentTable }}</span>
                     </div>
                     <div class="small text-muted">Do you want to change your Table?</div>
                 </div>
@@ -139,6 +140,7 @@
             </div>
         </div>
     </div>
+    @endif
 
     {{-- Your Order --}}
     <div class="mb-2">

@@ -25,7 +25,8 @@
         @include('components.toast-delete')
         {{$slot}}
       </div>
-      <x-modal-delete />
+      <x-modal.delete />
+      <x-modal.cancel />
     </div>
   </div>
   @stack('scripts')

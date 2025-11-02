@@ -26,6 +26,8 @@
     --secondaryBlack : #131313;
     --secondaryWhite : #FAFAFA;
     --bg-opacity-backoffice : 1;
+    /* Alias for convenience */
+    --mainOrange: var(--mainColorOrange);
     /* Backoffice navbar measurements */
     --nav-height: 56px;           /* default, updated by JS */
     --handle-overlap: 16px;       /* how much the handle overlaps when hidden */
@@ -182,15 +184,48 @@ body {
 .min-w-0 { min-width: 0 !important; }
 .layout-main { 
     min-width: 0 !important; 
+    background-color: #F7F7F7 !important;
 }
 
-img, svg, video, canvas { max-width: 100%; height: auto; }
+/* Media should scale responsively, but let Chart.js manage canvas height */
+img, svg, video { max-width: 100%; height: auto; }
+canvas { display: block; max-width: 100%; }
 
 .red-percentage {
     color: #ff5b5b;
 }
 .green-percentage {
     color: #19ff19;
+}
+
+/* =========================
+   Reports landing
+   ========================= */
+.report-card { 
+    border: 1px solid rgba(0,0,0,0.04);
+    transition: box-shadow .2s ease, transform .12s ease, border-color .2s ease;
+}
+.report-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0,0,0,.08);
+    border-color: rgba(0,0,0,0.06);
+}
+.report-icon {
+    flex: 0 0 auto;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #FFF4EC; /* soft orange tint */
+    color: var(--mainOrange);
+    font-size: 1.2rem;
+}
+
+/* Dark mode: emphasize card titles in orange */
+[data-theme="dark"] .report-card .fw-semibold {
+    color: var(--mainOrange) !important;
 }
 
 .sidebar {
@@ -228,6 +263,7 @@ img, svg, video, canvas { max-width: 100%; height: auto; }
 /* =========================
    Dark Theme Overrides
    ========================= */
+html[data-theme='dark'] .text-muted { color: #e5e7eb !important; }
 html[data-theme='dark'] { color-scheme: dark; }
 html[data-theme='dark'] body { background-color: #0b1220; color: #e5e7eb; }
 html[data-theme='dark'] .navbar-custom {
@@ -248,6 +284,57 @@ html[data-theme='dark'] .dropdown-menu {
 
 /* Dark variants */
 html[data-theme='dark'] .ko-tab { background:#0f172a; color:#e5e7eb; border-color:#1f2937; }
+
+/* =========================
+   Settings Nav (Backoffice)
+   ========================= */
+.settings-nav { display: grid; gap: .25rem; }
+.settings-toggle {
+    background: transparent;
+    border: 0;
+    padding: .5rem .5rem;
+    border-radius: .5rem;
+    color: #334155; /* slate-700 */
+    font-weight: 600;
+}
+.settings-toggle:hover { background-color: #f8fafc; }
+.settings-toggle[aria-expanded='true'] {
+    background-color: #fff6ee; /* soft orange */
+    color: #d96a17;
+    border: 1px solid #ffe2cc;
+}
+.settings-caret { transition: transform .2s ease, color .2s ease; color: #64748b; }
+.settings-toggle[aria-expanded='true'] .settings-caret { transform: rotate(180deg); color: #d96a17; }
+.settings-subwrap { margin-left: .5rem; padding-left: .5rem; border-left: 1px solid #eaeaea; margin-top: .25rem; }
+.settings-sublink {
+    display: block;
+    color: #475569; /* slate-600 */
+    text-decoration: none;
+    padding: .4rem .5rem;
+    border-radius: .5rem;
+}
+.settings-sublink:hover { background-color: #f8fafc; color: #0f172a; }
+.settings-sublink.active { background-color: #fff6ee; color: #c0560c; border: 1px solid #ffe2cc; }
+.settings-divider { height: 1px; background-color: #f0f0f0; margin: .35rem 0; }
+/* Dark theme tweaks */
+html[data-theme='dark'] .panel-header * { background-color: #0f172a !important; }
+html[data-theme='dark'] .dlmode-backup * { 
+    background-color: #0f172a !important; 
+    color: #94a3b8;
+}
+
+html[data-theme='dark'] .sekunder { color: #94a3b8; }
+html[data-theme='dark'] .settings-toggle { color: #cbd5e1; }
+html[data-theme='dark'] .settings-toggle:hover { background-color: #0f172a; }
+html[data-theme='dark'] .settings-toggle[aria-expanded='true'] {
+    background-color: rgba(217,106,23,.12);
+    border-color: rgba(217,106,23,.35);
+}
+html[data-theme='dark'] .settings-caret { color: #94a3b8; }
+html[data-theme='dark'] .settings-subwrap { border-left-color: #1f2937; }
+html[data-theme='dark'] .settings-sublink { color: #94a3b8; }
+html[data-theme='dark'] .settings-sublink:hover { background-color: #0f172a; color: #e5e7eb; }
+html[data-theme='dark'] .settings-sublink.active { background-color: rgba(217,106,23,.12); border-color: rgba(217,106,23,.35); color: #f59e0b; }
 html[data-theme='dark'] .ko-tab.active { color:#93c5fd; border-color:#1d4ed8; box-shadow: 0 2px 6px rgba(29,78,216,.25); }
 html[data-theme='dark'] .ko-item-row { border-bottom-color:#1f2937; }
 html[data-theme='dark'] .ko-item-title { color:#e5e7eb; }
@@ -268,6 +355,7 @@ html[data-theme='dark'] .nav-tabs .nav-link { color: #e5e7eb; }
 html[data-theme='dark'] .nav-tabs .nav-link:hover { color: #f05a28; }
 html[data-theme='dark'] .table { color: #e5e7eb; }
 html[data-theme='dark'] .bg-main { background-color: #0e1627 !important; }
+html[data-theme='dark'] .layout-main { background-color: #0e1627 !important; }
 /* Kitchen dark */
 html[data-theme='dark'] .kcol { background: #0f172a; box-shadow: 0 2px 12px rgba(0,0,0,.35); }
 html[data-theme='dark'] .kcol-title { color: #e5e7eb; }
@@ -806,11 +894,59 @@ input:checked + .slider:before {
 
 
 /* notification page */
+.tenant-notification-link a {
+    color: black !important;
+    transition: all 0.3s ease;
+} 
+.tenant-notification-link a:hover {
+    color: var(--mainColorOrange) !important;
+} 
+.tenant-notification-link a.active {
+    color: var(--mainColorOrange) !important;
+} 
 .text-truncate-2 { 
     display:-webkit-box; 
     -webkit-line-clamp:2; 
     -webkit-box-orient:vertical; 
     overflow:hidden; 
+}
+
+/* Dashboard metric icon tint helpers */
+.metric-icon { width: 40px; height: 40px; }
+.text-purple { color: #6f42c1 !important; }
+.bg-purple-subtle { background-color: rgba(111, 66, 193, .12) !important; }
+
+/* -----------------------------------------
+   Card theming (Light / Dark reactive)
+   Applies across backoffice
+------------------------------------------ */
+.card {
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb; /* slate-200 */
+}
+.card .card-header {
+    background-color: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+    color: #0b1220; /* readable */
+}
+.card .card-body {
+    background-color: transparent;
+    color: #0b1220;
+}
+
+/* Dark theme overrides */
+html[data-theme='dark'] .card {
+    background-color: #0f172a; /* slate-900 */
+    border-color: rgba(255,255,255,.12);
+    color: #e5e7eb; /* slate-200 */
+}
+html[data-theme='dark'] .card .card-header {
+    background-color: #0b1220; /* subtle contrast */
+    border-bottom-color: rgba(255,255,255,.12);
+    color: var(--mainColorOrange); /* requested accent */
+}
+html[data-theme='dark'] .card .card-body {
+    color: #e5e7eb;
 }
 
 /* =========================
@@ -836,7 +972,7 @@ input:checked + .slider:before {
 .ko-card-top { display:flex; align-items:center; gap:.5rem; padding:.75rem 1rem; background:#f8fbff; }
 .ko-card-dinein .ko-card-top { background: #eef5ff; }
 .ko-card-takeaway .ko-card-top { background: #f6efff; }
-.ko-card-body { padding: .75rem 1rem; }
+.DD-card-body { padding: .75rem 1rem; }
 .ko-order-link { text-decoration:none; font-weight:700; color:#3b82f6; }
 
 /* Chips */
@@ -844,3 +980,57 @@ input:checked + .slider:before {
 .ko-chip-success { background:#22c55e; color:#fff; }
 .ko-chip-warning { background:#f59e0b; color:#fff; }
 .ko-chip-info { background:#3b82f6; color:#fff; }
+/* Modal headers (migrated from app.css) */
+.modal-header.delete{
+    border-bottom: none;
+    padding: 1.5rem 1.5rem 0.5rem;
+    background: linear-gradient(to right, #ff6b6b, #ff8787);
+    border-radius: 1rem 1rem 0 0;
+    color: white;
+}
+.modal-header.create{
+    border-bottom: none;
+    padding: 1.5rem 1.5rem 0.5rem;
+    background: linear-gradient(to right, #13283F, #2f465f);
+    border-radius: 1rem 1rem 0 0;
+    color: white;
+}
+
+/* Role Permissions Editor styles */
+.permission-card .card-header { border-bottom: 1px solid rgba(0,0,0,.075); }
+html[data-theme='dark'] .permission-card .card-header { border-bottom-color: rgba(255,255,255,.12); }
+
+.permission-card .card-header .fw-semibold { color: var(--mainColorOrange); }
+
+.permission-card .form-check-input:checked {
+  background-color: var(--mainColorOrange);
+  border-color: var(--mainColorOrange);
+}
+.permission-card .form-check-input:focus {
+  box-shadow: 0 0 0 .25rem rgba(249, 115, 22, .25); /* #F97316 @ 25% */
+  border-color: var(--mainColorOrange);
+}
+
+html[data-theme='dark'] .bg-light-subtle { background-color: rgba(255,255,255,.04); }
+
+html[data-theme='dark'] .permission-sticky-save {
+  background: #0f172a; /* slate-900 */
+  border-top-color: rgba(255,255,255,.12);
+}
+
+/* footer for permission page */
+.permission-card .card-header { border-bottom: 1px solid rgba(0,0,0,.075); }
+.sub-card { transition: background-color .2s ease, border-color .2s ease; }
+.bg-light-subtle { background-color: rgba(0,0,0,.03); }
+
+.permission-sticky-save {
+  position: fixed;
+  right: 0; 
+  bottom: 0;
+  width: 50%;
+  padding: 1rem 0.75rem;
+  background: var(--bs-body-bg, #ffffff);
+  border-top: 1px solid rgba(0,0,0,.075);
+  z-index: 1030;
+  border-radius: 9px;
+}

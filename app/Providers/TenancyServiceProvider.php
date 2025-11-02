@@ -4,16 +4,18 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\URL;
-use Illuminate\Support\Facades\View;
-use Illuminate\Support\ServiceProvider;
-use Stancl\JobPipeline\JobPipeline;
-use Stancl\Tenancy\Events;
 use Stancl\Tenancy\Jobs;
+use Stancl\Tenancy\Events;
 use Stancl\Tenancy\Listeners;
 use Stancl\Tenancy\Middleware;
+use Illuminate\Support\Facades\URL;
+use Stancl\JobPipeline\JobPipeline;
+use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\ServiceProvider;
+use Stancl\Tenancy\Controllers\TenantAssetsController;
+use Stancl\Tenancy\Middleware\InitializeTenancyByPath;
 
 class TenancyServiceProvider extends ServiceProvider
 {
@@ -26,8 +28,19 @@ class TenancyServiceProvider extends ServiceProvider
             // Tenant events
             Events\CreatingTenant::class => [],
             Events\TenantCreated::class => [
-                // Shared-DB mode: no separate tenant databases. Remove DB create/migrate jobs.
-                // You can add custom provisioning jobs here if needed.
+                // Seed default navigation/action permissions for the new tenant (shared DB)
+                function ($event) {
+                    try {
+                        if (function_exists('tenancy')) {
+                            tenancy()->initialize($event->tenant);
+                        }
+                        (new \Database\Seeders\TenantNavigationPermissionsSeeder())->run();
+                    } finally {
+                        if (function_exists('tenancy')) {
+                            tenancy()->end();
+                        }
+                    }
+                },
             ],
             Events\SavingTenant::class => [],
             Events\TenantSaved::class => [],
@@ -92,6 +105,8 @@ class TenancyServiceProvider extends ServiceProvider
         $this->mapRoutes();
 
         $this->makeTenancyMiddlewareHighestPriority();
+        TenantAssetsController::$tenancyMiddleware = InitializeTenancyByPath::class;
+
 
         // Provide default {tenant} param to route() when tenancy is active (path-based)
         Event::listen(Events\TenancyInitialized::class, function ($event) {

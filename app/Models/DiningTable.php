@@ -19,6 +19,7 @@ class DiningTable extends Model
         'x', 'y', 'w', 'h',
         'capacity',
         'color',
+        'qr_code',
     ];
 
     protected $casts = [

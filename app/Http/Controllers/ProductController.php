@@ -28,7 +28,6 @@ class ProductController extends Controller
 }
     public function store(Request $request)
     {
-
         // Get tenant model
         $tenant = tenant(); // or Tenancy::getTenant()
 
@@ -45,7 +44,22 @@ class ProductController extends Controller
             'goods_price' => 'nullable|numeric|min:0',
             'product_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'featured' => 'nullable|boolean',
-            'description' => 'nullable|max:255|string'
+            'description' => 'nullable|max:255|string',
+            'active' => 'nullable|boolean',
+            'stock_qty' => 'nullable|integer|min:0',
+            // Optional option payload on create
+            'option_name' => 'nullable|string|max:255',
+            'values' => 'nullable|array',
+            'values.*.value' => 'nullable|string|max:255',
+            'values.*.price_change' => 'nullable|numeric',
+            // Multi-option payload
+            'options' => 'nullable|array',
+            'options.*.name' => 'required_with:options|string|max:255',
+            'options.*.default_only' => 'nullable|boolean',
+            'options.*.default_value' => 'nullable|string|max:255',
+            'options.*.values' => 'nullable|array',
+            'options.*.values.*.value' => 'nullable|string|max:255',
+            'options.*.values.*.price_change' => 'nullable|numeric',
         ]);
 
          $imagePath = null;
@@ -56,6 +70,8 @@ class ProductController extends Controller
 
         // Ensure featured is properly set
         $validated['featured'] = $request->has('featured') ? 1 : 0;
+        $validated['active'] = $request->has('active') ? 1 : 0;
+        $validated['stock_qty'] = (int) ($validated['stock_qty'] ?? 0);
         // Store Product
         $product = Product::create([
             'category_id' => $validated['category_id'],
@@ -66,7 +82,65 @@ class ProductController extends Controller
             'product_image' => $imagePath,
             'description' => $validated['description'] ?? null,
             'featured' => $validated['featured'],
+            'active' => $validated['active'],
+            'stock_qty' => $validated['stock_qty'],
         ]);
+        // Optionally create an option + values for the product (single option at create time)
+        $optionName = trim((string)($validated['option_name'] ?? ''));
+        $values = $validated['values'] ?? null;
+        if ($optionName && is_array($values)) {
+            DB::transaction(function () use ($product, $optionName, $values) {
+                $productOption = ProductOption::create([
+                    'product_id' => $product->id,
+                    'name' => $optionName,
+                ]);
+                foreach ($values as $valueData) {
+                    $val = trim((string)($valueData['value'] ?? ''));
+                    if ($val === '') continue; // skip empty
+                    \App\Models\ProductOptionValue::create([
+                        'product_option_id' => $productOption->id,
+                        'value' => $val,
+                        'price_adjustment' => isset($valueData['price_change']) ? (float)$valueData['price_change'] : 0,
+                    ]);
+                }
+            });
+        }
+
+        // Multi-option groups support
+        $groups = $validated['options'] ?? null;
+        if (is_array($groups)) {
+            DB::transaction(function () use ($product, $groups) {
+                foreach ($groups as $group) {
+                    $name = trim((string)($group['name'] ?? ''));
+                    if ($name === '') continue;
+                    $defaultOnly = !empty($group['default_only']);
+                    $defaultValue = trim((string)($group['default_value'] ?? 'Default'));
+                    $opt = ProductOption::create([
+                        'product_id' => $product->id,
+                        'name' => $name,
+                    ]);
+                    if ($defaultOnly) {
+                        \App\Models\ProductOptionValue::create([
+                            'product_option_id' => $opt->id,
+                            'value' => $defaultValue ?: 'Default',
+                            'price_adjustment' => 0,
+                        ]);
+                    } else {
+                        $vals = is_array($group['values'] ?? null) ? $group['values'] : [];
+                        foreach ($vals as $v) {
+                            $vv = trim((string)($v['value'] ?? ''));
+                            if ($vv === '') continue;
+                            \App\Models\ProductOptionValue::create([
+                                'product_option_id' => $opt->id,
+                                'value' => $vv,
+                                'price_adjustment' => isset($v['price_change']) ? (float)$v['price_change'] : 0,
+                            ]);
+                        }
+                    }
+                }
+            });
+        }
+
         try {
             TenantNotification::create([
                 'tenant_id'    => $tenantId,
@@ -109,6 +183,8 @@ class ProductController extends Controller
             'product_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'featured'      => 'nullable|boolean',
             'description'   => 'nullable|string|max:255',
+            'active'        => 'nullable|boolean',
+            'stock_qty'     => 'nullable|integer|min:0',
         ]);
 
         // Handle image update
@@ -124,6 +200,8 @@ class ProductController extends Controller
 
         // Set featured (checkbox handling)
         $validated['featured'] = $request->has('featured') ? 1 : 0;
+        $validated['active'] = $request->has('active') ? 1 : 0;
+        $validated['stock_qty'] = (int) ($validated['stock_qty'] ?? $product->stock_qty ?? 0);
 
         // Update product
         $product->update([
@@ -135,8 +213,10 @@ class ProductController extends Controller
             'product_image' => $imagePath,
             'description'   => $validated['description'] ?? null,
             'featured'      => $validated['featured'],
+            'active'        => $validated['active'],
+            'stock_qty'     => $validated['stock_qty'],
         ]);
-
+        ds('test');
         return redirect()
             ->route('backoffice.product.index')
             ->with('message', 'Product updated successfully.');

@@ -21,20 +21,42 @@
     {{-- User Greeting + Order Box --}}
     <div class="bg-white rounded shadow p-3 mb-4">
         <div class="d-flex justify-content-between">
-                <div class="d-flex flex-column">
-                    <span class="fw-bold text-dark">Hi, {{ $username ?? 'Guest' }} </span>
-                    <span class="text-muted">{{ $customerEmail ?? ''}}</span>
-                </div>
+            <div class="d-flex flex-column">
+                <span class="fw-bold text-dark">Hi, {{ $username ?? 'Guest' }} </span>
+                <span class="text-muted">{{ $customerEmail ?? ''}}</span>
+            </div>
                 <div>
                 @if (session()->has('customer_detail_id'))
                     <button wire:click="openCustomerEdit" class="btn btn-primer">Change data</button>
                 @endif
-                </div>
+            </div>
         </div>
+            <hr>
 
         <div class="mt-3 align-content-center">
-            <p class="text-black bold h3 mb-4">Oops your not on a table yet</p>
-            <button wire:click="Scan" class="btn btn-dark">Scan QR</button>
+    {{-- Pickup Location --}}
+    @if($currentTable)
+    <div class="soft-card  mb-3">
+        <div class="card-body border-none">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <i class="bi bi-tv-fill text-primer"></i>
+                        <span class="fw-semibold">{{ $currentTable }}</span>
+                    </div>
+                    <div class="small text-muted">Do you want to change your Table?</div>
+                </div>
+            </div>
+            <div class="rounded-3 mt-3 p-2 d-flex justify-content-between text-center align-items-center" style="background:#fff7f2; color:#815f4e;">
+                <div>
+                    <i class="bi bi-clock me-1"></i>
+                    <small>Want to change Tables?</small>
+                </div>
+                <button class="btn btn-sm btn-light border">Change</button>
+            </div>
+        </div>
+    </div>
+    @endif
         </div>
     </div>
 
@@ -328,7 +350,31 @@
             @endif
         </div>
     </div>
+ </div>
+@endif
+
+@if($showTableModal)
+<div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.4);">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Scan Table First</h5>
+        <button type="button" class="btn-close" aria-label="Close" wire:click="closeTableModal"></button>
+      </div>
+      <div class="modal-body">
+        <p class="mb-0">Please scan the QR code on your dining table before adding items to your cart.</p>
+        <small class="text-muted">Tip: Open your phone camera and scan the table QR. This page will automatically detect your table when opened from the QR.</small>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primer" wire:click="closeTableModal">OK</button>
+      </div>
+    </div>
+  </div>
 </div>
+<style>
+  /* prevent page scroll when modal visible */
+  body { overflow: hidden; }
+</style>
 @endif
 
 {{-- Customer Details Modal --}}

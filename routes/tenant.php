@@ -2,29 +2,31 @@
 
 declare(strict_types=1);
 
-use Illuminate\Support\Facades\Route;
-use Stancl\Tenancy\Middleware\InitializeTenancyByPath;
+use Livewire\Livewire;
+use App\Models\Product;
 
 // Controllers
+use App\Livewire\Customer\CartPage;
+use App\Livewire\Customer\OrderPage;
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\FloorController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\CareerController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\FaceRecognitionController;
+use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\TenantNotificationController;
-use App\Http\Controllers\DiningTableController;
-use App\Http\Controllers\FloorController;
 use App\Http\Controllers\Hrm\ShiftController;
-use App\Livewire\Backoffice\TenantNotification;
-use Livewire\Livewire;
 // Models
-use App\Models\Product;
+use App\Http\Controllers\DiningTableController;
 
 // Livewire
-use App\Livewire\Customer\CartPage;
-use App\Livewire\Customer\OrderPage;
+use App\Livewire\Backoffice\TenantNotification;
+use App\Http\Controllers\TenantNotificationController;
+use Stancl\Tenancy\Middleware\InitializeTenancyByPath;
 
 /*
 |--------------------------------------------------------------------------
@@ -73,36 +75,56 @@ Route::middleware([
           Route::get('/career', [CareerController::class, 'indexBackoffice'])->name('backoffice.careers.index');
 
           // Staffs
-          Route::get('/staff', [StaffController::class, 'index'])->name('backoffice.staff.index');
+          Route::get('/staff', [StaffController::class, 'index'])->name('backoffice.staff.index')
+              ->middleware('permission:hrm_employees_view');
           Route::get('/staff/{staff}/view', [StaffController::class, 'view'])->name('backoffice.staff.view');
           Route::get('staff/create', [StaffController::class, 'create'])->name('backoffice.staff.create');
           Route::post('/staff/store', [StaffController::class, 'storeStaff'])->name('backoffice.staff.store');
           // New full create form with collapsible sections
           Route::get('/user/create', [StaffController::class, 'createFull'])->name('backoffice.user.create');
           Route::post('/user/store', [StaffController::class, 'storeFull'])->name('backoffice.user.store');
-          Route::get('/roles', [StaffController::class, 'indexRoles'])->name('backoffice.roles.index');
+          Route::get('/roles', [StaffController::class, 'indexRoles'])->name('backoffice.roles.index')
+              ->middleware('permission:hrm_roles_view');
           Route::delete('/staff/{staff}/delete', [StaffController::class, 'destroy'])->name('backoffice.staff.destroy');
           
 
-          //   Shifts
-          Route::get('/shift', [ShiftController::class, 'index'])->name('backoffice.shift.index');
+          //  Shifts
+          Route::get('/shift', [ShiftController::class, 'index'])->name('backoffice.shift.index')
+              ->middleware('permission:hrm_shifts_view');
 
           // Sales
-          Route::get('/order', [OrderController::class, 'index'])->name('backoffice.order.index');
+          Route::get('/order', [OrderController::class, 'index'])->name('backoffice.order.index')
+              ->middleware('permission:sales_view');
           Route::get('/order/{order}/view', [OrderController::class, 'view'])->name('backoffice.order.view');
 
           // Kitchen Board
           Route::get('/kitchen', function() {
               return view('backoffice.kitchen.kitchen-order-index');
-          })->name('backoffice.kitchen.index');
+          })->name('backoffice.kitchen.index')
+            ->middleware('permission:kitchen_view');
+
+          // Reports
+          Route::get('/reports', [\App\Http\Controllers\ReportsController::class, 'index'])->name('backoffice.reports.index');
+          Route::get('/reports/sales', [\App\Http\Controllers\ReportsController::class, 'sales'])->name('backoffice.reports.sales');
+          Route::get('/reports/products', [\App\Http\Controllers\ReportsController::class, 'productsPurchase'])->name('backoffice.reports.products');
 
           // Dining Tables
-          Route::get('/tables', [DiningTableController::class, 'index'])->name('backoffice.tables.index');
+          Route::get('/diningTable', [DiningTableController::class, 'index'])->name('backoffice.tables.index')
+              ->middleware('permission:pos_table_orders_view');
+          // Table Information (Filament table list with filters)
+          Route::get('/tables/info',[DiningTableController::class, 'information'])->name('backoffice.tables.info')
+              ->middleware('permission:pos_table_orders_view');
+          // QR for a specific table
+          Route::get('/tables/{dining_table}/qr', [DiningTableController::class, 'qr'])->name('backoffice.tables.qr')
+              ->middleware('permission:pos_table_orders_view');
+          Route::post('/tables/{dining_table}/qr/generate', [DiningTableController::class, 'generateQr'])->name('backoffice.tables.qr.generate')
+              ->middleware('permission:pos_table_orders_view');
           Route::post('/tables', [DiningTableController::class, 'store'])->name('backoffice.tables.store');
           Route::put('/tables/positions', [DiningTableController::class, 'updatePositions'])->name('backoffice.tables.positions');
           Route::put('/tables/{dining_table}', [DiningTableController::class, 'update'])->name('backoffice.tables.update');
           Route::delete('/tables/{dining_table}', [DiningTableController::class, 'destroy'])->name('backoffice.tables.destroy');
 
+          
           // Floors
           Route::post('/floors', [FloorController::class, 'store'])->name('backoffice.floors.store');
           Route::put('/floors/{floor}', [FloorController::class, 'update'])->name('backoffice.floors.update');
@@ -117,13 +139,15 @@ Route::middleware([
           Route::put('/roles/{role}/permissions/update', [StaffController::class, 'updatePermission'])->name('backoffice.permission.update');
 
           // Category
-          Route::get('/category', [CategoryController::class, 'index'])->name('backoffice.category.index');
+          Route::get('/category', [CategoryController::class, 'index'])->name('backoffice.category.index')
+              ->middleware('permission:inventory_category_view');
           Route::post('/store', [CategoryController::class, 'store'])->name('backoffice.category.store');
           Route::delete('/category/{category}/delete', [CategoryController::class, 'destroy'])->name('backoffice.category.destroy');
 
           // Product
           Route::get('/product', [ProductController::class, 'index'])
-              ->name('backoffice.product.index');
+              ->name('backoffice.product.index')
+              ->middleware('permission:inventory_products_view');
           Route::get('/product/create', [ProductController::class, 'create'])
               ->name('backoffice.product.create');
           Route::post('/product/store', [ProductController::class, 'store'])
@@ -149,7 +173,8 @@ Route::middleware([
           Route::put('/user/{user}/update-notifications', [UserController::class, 'notificationUpdate'])->name('backoffice.profile.notification.update');
 
           // HRM - Shifts
-          Route::get('/hrm/shifts', [ShiftController::class, 'index'])->name('backoffice.shift.index');
+          Route::get('/hrm/shifts', [ShiftController::class, 'index'])->name('backoffice.shift.index')
+              ->middleware('permission:hrm_shifts_view');
           Route::post('/hrm/shifts', [ShiftController::class, 'store'])->name('backoffice.shift.store');
 
           // HRM - Attendance (self service)
@@ -157,15 +182,25 @@ Route::middleware([
               return view('backoffice.hrm.attendance.index');
           })->name('backoffice.attendance.index');
 
-          // Settings (non-Filament)
-          Route::get('/settings', function () {
-              return view('backoffice.settings.index');
-          })->name('backoffice.settings.index');
 
-          // Face verification placeholder
-          Route::get('/hrm/attendance/face', function () {
-              return view('backoffice.hrm.attendance.face-verify');
-          })->name('backoffice.attendance.face');
+          Route::controller(SettingsController::class)
+            ->prefix('/settings')
+                ->group(function () {
+            Route::get('/', 'index')
+                ->name('backoffice.settings.index');
+            Route::get('/attendance', 'attendanceShow')
+                ->name('backoffice.settings.attendance-settings');
+            Route::get('/geolocation', 'geolocationShow')
+                    ->name('backoffice.settings.geolocation-settings');
+          });
+
+          // Facial Recognition routes 
+          Route::get('/hrm/face-attendance', [FaceRecognitionController::class, 'attendance'])
+            ->name('backoffice.face.attendance');   
+          Route::get('/hrm/face-register', [FaceRecognitionController::class, 'register'])
+            ->name('backoffice.face.register');   
+          Route::post('/hrm/face-attendance/confirm', [FaceRecognitionController::class, 'confirm'])
+            ->name('backoffice.face.confirm');
 
           //  notification page
           Route::get('/notification', [TenantNotificationController::class, 'index'])->name('backoffice.notification.index');

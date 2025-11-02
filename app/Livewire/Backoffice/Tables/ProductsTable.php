@@ -53,15 +53,14 @@ class ProductsTable extends Component implements HasActions, HasSchemas, HasTabl
                     ->exports([
                         ExcelExport::make('table')
                             ->fromTable()
-                            ->except('created_at', 'product_image', 'featured')
+                            ->except('created_at', 'product_image')
                             ->ignoreFormatting()
                     ])
             ])
             ->defaultSort('created_at', 'desc')
             ->columns([
-                ImageColumn::make('product_image')
+                ImageColumn::make('product_image_url')
                     ->label('Image')
-                    ->url(tenant_asset(''))
                     ->square()
                     ->imageSize(44)
                     ->toggleable(),
@@ -81,8 +80,12 @@ class ProductsTable extends Component implements HasActions, HasSchemas, HasTabl
                     ->money('IDR')
                     ->sortable(),
 
-                ToggleColumn::make('featured')
-                    ->label('Featured')
+                TextColumn::make('stock_qty')
+                    ->label('Qty')
+                    ->sortable(),
+
+                ToggleColumn::make('active')
+                    ->label('Active')
                     ->sortable(),
 
                 TextColumn::make('created_at')
@@ -103,8 +106,8 @@ class ProductsTable extends Component implements HasActions, HasSchemas, HasTabl
                     ->label('Category')
                     ->relationship('category', 'name'),
 
-                TernaryFilter::make('featured')
-                    ->label('Featured'),
+                TernaryFilter::make('active')
+                    ->label('Active'),
             ])
 
             ->recordActions([

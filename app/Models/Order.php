@@ -15,6 +15,8 @@ class Order extends Model
         'customer_detail_id',
         'total',
         'status',
+        'payment_status',
+        'reference_no',
     ];
 
     public function customerDetail()

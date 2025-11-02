@@ -34,7 +34,7 @@
       <input type="text" class="form-control w-25" placeholder="Search order...">
       <button class="btn btn-outline-secondary">Filter</button>
     </div>
-    @livewire('backoffice.tables.staff-table')
+      @livewire('backoffice.tables.staff-table')
       </div>
 
       <!-- Add other tabs like #unpaid, #ship etc. as needed -->

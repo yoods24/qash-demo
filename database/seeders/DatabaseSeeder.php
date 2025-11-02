@@ -9,8 +9,8 @@ use App\Models\Category;
 use App\Models\Tenant;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Database\Eloquent\Factories\Sequence;
-use Spatie\Permission\Models\Role;
-use Spatie\Permission\Models\Permission;
+use App\Models\Role;
+use App\Models\Permission;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -23,10 +23,7 @@ class DatabaseSeeder extends Seeder
         // 1) Create the central Qash admin first
         $this->call(QashAdminSeeder::class);
 
-        // 2) Ensure base permissions/roles exist (global via Spatie)
-        $this->call(PermissionRoleSeeder::class);
-
-        // 3) Create a demo tenant
+        // 2) Create a demo tenant (single shared DB)
         $tenant = Tenant::firstOrCreate([
             'id' => 'demo-cafe',
         ], [
@@ -36,11 +33,11 @@ class DatabaseSeeder extends Seeder
             ],
         ]);
 
-        // 4) Seed default shifts for the tenant
+        // 3) Seed default shifts for the tenant
         $this->call(ShiftSeeder::class);
         $fixedShift = \App\Models\Shift::where('tenant_id', $tenant->id)->where('name', 'Fixed 9-6')->first();
 
-        // 5) Create a primary admin within the tenant
+        // 4) Create a primary admin within the tenant
         $admin = User::firstOrCreate([
             'email' => 'admin@demo-cafe.test',
         ], [
@@ -53,10 +50,21 @@ class DatabaseSeeder extends Seeder
             'shift_id' => $fixedShift->id,
         ]);
 
-        // Assign Super Admin role and all permissions
+        // 5) Seed base permissions/roles & assign within the tenant context
+        if (function_exists('tenancy')) {
+            tenancy()->initialize($tenant);
+        }
+
+        $this->call(PermissionRoleSeeder::class);
+        $this->call(TenantNavigationPermissionsSeeder::class);
+
         $superAdminRole = Role::firstOrCreate(['name' => 'Super Admin']);
         $admin->assignRole($superAdminRole);
         $admin->syncPermissions(Permission::all());
+
+        if (function_exists('tenancy')) {
+            tenancy()->end();
+        }
 
         // 6) Seed tenant-scoped data (categories, products, careers)
         $categories = Category::factory()

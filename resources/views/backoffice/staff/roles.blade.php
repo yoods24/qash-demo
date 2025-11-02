@@ -23,41 +23,7 @@
       <input type="text" class="form-control w-25" placeholder="Search order...">
       <button class="btn btn-outline-secondary">Filter</button>
     </div>
-
-    <x-backoffice.table>
-      <x-slot name="thead">
-        <th scope="col">Id</th>
-        <th scope="col">Name</th>
-        <th scope="col">Action</th>
-      </x-slot>
-      <x-slot name="tbody">
-          @foreach ($roles as $role)
-            <tr>
-            <td>{{$role->id}}</td>
-            <td>{{$role->name}}</td>
-          <td>
-              <a href="{{route('backoffice.permission.index', $role->id)}}" class="action-btn" title="Edit" aria-label="Edit">
-                  <i class="bi bi-pencil-fill"></i>
-              </a>
-
-          <button
-              class="action-btn delete-btn"
-              title="Delete"
-              aria-label="Delete"
-              data-bs-toggle="modal"
-              data-bs-target="#confirmModal"
-              data-id="{{ $role->id }}"
-              data-title="{{ $role->name }}"
-              data-url="{{ route('backoffice.role.destroy', $role->id) }}"
-          >
-              <i class="bi bi-trash-fill"></i>
-          </button>
-          </td>
-          </tr>
-          @endforeach
-      </x-slot>
-    </x-backoffice.table>
-
+    @livewire('backoffice.tables.roles-table')
         <div class="d-flex justify-content-end align-items-center">
           <div>
             {{-- <label for="itemsPerPage" class="form-label mx-3">{{$careerData->links()}}</label> --}}
@@ -74,12 +40,12 @@
     </div>
 
 
-<x-modal-create id="addProductModal" title="Tambah Role" action="{{ route('backoffice.role.store') }}">
+<x-modal.create id="addProductModal" title="Tambah Role" action="{{ route('backoffice.role.store') }}">
     <div class="mb-3">
         <label for="product" class="form-label">Add Role</label>
         <input type="text" class="form-control" id="role" name="role" placeholder="Masukkan Role">
     </div>
-</x-modal-create>
+</x-modal.create>
 
 <!-- Modal -->
 </x-backoffice.layout>

@@ -25,9 +25,17 @@ return new class extends Migration
             $table->bigIncrements('id'); // permission id
             $table->string('name');       // For MyISAM use string('name', 225); // (or 166 for InnoDB with Redundant/Compact row format)
             $table->string('guard_name'); // For MyISAM use string('guard_name', 25);
+            // Tenant scope (single shared database)
+            $table->string('tenant_id');
             $table->timestamps();
 
-            $table->unique(['name', 'guard_name']);
+            // Indexes
+            $table->index('tenant_id');
+            // Ensure permission names are unique per-tenant per-guard
+            $table->unique(['tenant_id', 'name', 'guard_name']);
+
+            // FK to tenants
+            $table->foreign('tenant_id')->references('id')->on('tenants')->cascadeOnDelete();
         });
 
         Schema::create($tableNames['roles'], static function (Blueprint $table) use ($teams, $columnNames) {
@@ -39,12 +47,19 @@ return new class extends Migration
             }
             $table->string('name');       // For MyISAM use string('name', 225); // (or 166 for InnoDB with Redundant/Compact row format)
             $table->string('guard_name'); // For MyISAM use string('guard_name', 25);
+            // Tenant scope (single shared database)
+            $table->string('tenant_id');
             $table->timestamps();
             if ($teams || config('permission.testing')) {
                 $table->unique([$columnNames['team_foreign_key'], 'name', 'guard_name']);
             } else {
-                $table->unique(['name', 'guard_name']);
+                // Ensure role names are unique per-tenant per-guard
+                $table->unique(['tenant_id', 'name', 'guard_name']);
             }
+            // Indexes
+            $table->index('tenant_id');
+            // FK to tenants
+            $table->foreign('tenant_id')->references('id')->on('tenants')->cascadeOnDelete();
         });
 
         Schema::create($tableNames['model_has_permissions'], static function (Blueprint $table) use ($tableNames, $columnNames, $pivotPermission, $teams) {

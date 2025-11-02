@@ -92,10 +92,14 @@
                                     </div>
                                 @endforeach
                                 <div class="text-end mt-2">
-                                    @if($order->status === 'pending')
-                                        <button wire:click="startPreparing({{ $order->id }})" class="btn btn-sm btn-kitchen-primary">Start Preparing</button>
+                                    @if($order->status === 'confirmed')
+                                        @can('kitchen_kds_update_order')
+                                            <button wire:click="startPreparing({{ $order->id }})" class="btn btn-sm btn-kitchen-primary">Start Preparing</button>
+                                        @endcan
                                     @elseif($order->status === 'preparing')
-                                        <button wire:click="markReady({{ $order->id }})" class="btn btn-sm btn-kitchen-secondary">Mark as Ready</button>
+                                        @can('kitchen_kds_confirm_order')
+                                            <button wire:click="markReady({{ $order->id }})" class="btn btn-sm btn-kitchen-secondary">Mark as Ready</button>
+                                        @endcan
                                     @endif
                                 </div>
                             </div>

@@ -50,9 +50,8 @@ class StaffTable extends Component implements HasTable, HasActions, HasSchemas
                     ])
             ])
             ->columns([
-                ImageColumn::make('product_image')
-                    ->label('Image')
-                    ->url(tenant_asset(''))
+                ImageColumn::make('profile_image_url')
+                    ->label('Photo')
                     ->square()
                     ->imageSize(44)
                     ->toggleable(),

@@ -15,11 +15,17 @@ class CustomerDetail extends Model
         'name',
         'email',
         'gender',
+        'dining_table_id',
     ];
 
     public function orders()
     {
         return $this->hasMany(Order::class);
+    }
+
+    public function diningTable()
+    {
+        return $this->belongsTo(DiningTable::class);
     }
 
 }

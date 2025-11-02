@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\DiningTable;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Str;
 
 class DiningTableController extends Controller
 {
@@ -114,5 +115,39 @@ class DiningTableController extends Controller
         $table = DiningTable::where('tenant_id', $tenantId)->findOrFail($dining_table);
         $table->delete();
         return response()->json(['ok' => true]);
+    }
+
+    public function qr(Request $request, int $dining_table)
+    {
+        $tenantId = (string) (tenant()?->id ?? $request->route('tenant'));
+        $table = \App\Models\DiningTable::where('tenant_id', $tenantId)->findOrFail($dining_table);
+        $scanParam = $table->qr_code ? ('code=' . urlencode($table->qr_code)) : ('table=' . $table->id);
+        $scanUrl = route('customer.order', ['tenant' => $tenantId]) . '?' . $scanParam;
+        return view('backoffice.tables.qr', [
+            'table' => $table,
+            'tenantId' => $tenantId,
+            'scanUrl' => $scanUrl,
+        ]);
+    }
+    
+    public function generateQr(Request $request, int $dining_table)
+    {
+        $tenantId = (string) (tenant()?->id ?? $request->route('tenant'));
+        $table = DiningTable::where('tenant_id', $tenantId)->findOrFail($dining_table);
+
+        // Generate a new unique code and persist
+        do {
+            $code = Str::upper(Str::random(10));
+        } while (DiningTable::where('qr_code', $code)->exists());
+
+        $table->qr_code = $code;
+        $table->save();
+
+        return redirect()
+            ->route('backoffice.tables.qr', ['tenant' => $tenantId, 'dining_table' => $table->id])
+            ->with('status', 'QR code generated.');
+    }
+    public function information() {
+        return view ('backoffice.tables.information');
     }
 }
