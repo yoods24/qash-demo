@@ -225,6 +225,7 @@ class OrderPage extends Component
                 'image'       => $this->selectedProduct->product_image ?? null,
                 'description' => $this->selectedProduct->description ?? null,
                 'category'    => $this->selectedProduct->category->name ?? null,
+                'estimated_seconds' => (int) ($this->selectedProduct->estimated_seconds ?? 0),
             ],
         ]);
 

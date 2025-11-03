@@ -6,11 +6,9 @@
         </div>
     </div>
 
-    <div class="card">
-        <div class="card-body">
+
             @livewire('backoffice.tables.table-info')
-        </div>
-    </div>
+
 
     <div class="mt-3 small text-muted">
         Tip: Generate a QR for a table by constructing a URL to the customer order page with the table id, for example:

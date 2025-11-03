@@ -17,6 +17,8 @@ return new class extends Migration
             $table->string('product_name');
             $table->decimal('unit_price', 10, 2);
             $table->integer('quantity');
+            // Estimated preparation seconds per unit (copied from product at order time)
+            $table->integer('estimate_seconds')->nullable();
             $table->json('options')->nullable();
             $table->timestamps();
         });

@@ -1,4 +1,4 @@
-<div class="position-relative" wire:poll.8s="refreshNotifications">
+<div class="position-relative tenant-notification" wire:poll.8s="refreshNotifications">
     <button class="sekunder nav-icon text-decoration-none" wire:click="toggle">
         <i class="bi bi-bell"></i>
         @if($unreadCount > 0)
@@ -9,7 +9,7 @@
     </button>
 
     @if($open)
-        <div class="card shadow border-0" style="position: absolute; right: 0; top: 120%; width: 360px; z-index: 1050;">
+        <div class="card shadow border-0 tenant-notification-card" style="position: absolute; right: 0; top: 120%; width: 360px; z-index: 1050;">
             <div class="card-body p-0">
                 <div class="d-flex align-items-end justify-content-between p-3">
                     <div>

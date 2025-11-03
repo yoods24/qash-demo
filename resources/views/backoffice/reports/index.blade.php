@@ -1,6 +1,6 @@
 <x-backoffice.layout>
     <div class="d-flex align-items-center mb-4">
-        <i class="bi bi-bar-chart-line text-orange fs-3 me-2"></i>
+        <i class="bi bi-bar-chart-line primer fs-3 me-2"></i>
         <h4 class="mb-0">Reports</h4>
     </div>
 
@@ -153,6 +153,21 @@
                     <div class="flex-grow-1">
                         <div class="fw-semibold text-dark">Inventory Valuation</div>
                         <div class="text-muted small">Valuation of stock by cost method to support accounting.</div>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <h6 class="text-muted fw-bold mb-3 mt-4">Employee Performance</h6>
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-md-6 col-xl-4">
+            <a href="{{ route('backoffice.reports.kitchen', ['tenant' => tenant('id')]) }}" class="report-card d-block p-3 rounded-4 bg-white text-decoration-none shadow-sm h-100">
+                <div class="d-flex align-items-start">
+                    <div class="report-icon me-3"><i class="bi bi-speedometer2"></i></div>
+                    <div class="flex-grow-1">
+                        <div class="fw-semibold text-dark">Kitchen Performance</div>
+                        <div class="text-muted small">On-time vs late order completion metrics by day, user, and shift.</div>
                     </div>
                 </div>
             </a>

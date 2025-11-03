@@ -38,6 +38,8 @@
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 </head>
 <body>
+  @include('components.logo-loader')
+
   <div class="d-flex">
     <!-- Sidebar -->
     <x-backoffice.sidebar></x-backoffice.sidebar>

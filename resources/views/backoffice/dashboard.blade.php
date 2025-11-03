@@ -1,5 +1,5 @@
 <x-backoffice.layout>
-    <h4>Welcome, {{ request()->user()->fullName() }}</h4>
+    <h4>Welcome, <span class="text-primer"> {{ request()->user()->fullName() }}</span></h4>
     <hr>
     <!-- Top metrics -->
     @php
@@ -11,13 +11,31 @@
             'totalUsers' => 0,
             'totalProducts' => 0,
             'totalCategories' => 0,
+            'presentToday' => 0,
+            'totalEmployees' => 0,
         ];
         $money = fn($v) => 'Rp '.number_format((float)$v, 0, ',', '.');
     @endphp
+    <!-- Attendance summary -->
+    <div class="row g-3 mb-3">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-muted small ">Today's Attendance</div>
+                        <div class="fs-5 fw-bold">{{ number_format($m['presentToday']) }}/{{ number_format($m['totalEmployees']) }} employees attended</div>
+                    </div>
+                    <div class="metric-icon rounded d-flex align-items-center justify-content-center text-success bg-success-subtle">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="row g-3 mb-3">
           <div class="col-12 col-md-6 col-lg-3">
-            <a href="{{ route('backoffice.order.index') }}" class="text-decoration-none text-dark">
+            <a href="{{ route('backoffice.reports.sales') }}" class="text-decoration-none text-dark">
               <div class="card shadow-sm h-100">
                   <div class="card-body d-flex justify-content-between align-items-start">
                       <div>
@@ -32,6 +50,7 @@
             </a>
           </div>
         <div class="col-12 col-md-6 col-lg-3">
+          <a href="{{ route('backoffice.order.index') }}" class="text-decoration-none text-dark">
             <div class="card shadow-sm h-100">
                 <div class="card-body d-flex justify-content-between align-items-start">
                     <div>
@@ -43,6 +62,7 @@
                     </div>
                 </div>
             </div>
+          </a>
         </div>
         <div class="col-12 col-md-6 col-lg-3">
             <div class="card shadow-sm h-100">
@@ -132,10 +152,10 @@
 
   <!-- Right Column -->
   <div class="col-lg-9 col-md-6 col-sm-12">
-    <div class="row gx-3 gy-3">
+    <div class="row gx-0 gy-3">
       <!-- Most Ordered Menu -->
-      <div class="col-lg-12 col-md-12 dlmode-backup">
-        <div class="table-responsive border rounded">
+      <div class="col-lg-12 col-md-12 dlmode-backup card">
+        <div class="table-responsive ">
           <div class="panel-header p-3 fw-bold">Most Ordered Menu</div>
           <hr class="m-0">
           <table class="table table-hover text-center text-nowrap mb-0">
@@ -186,8 +206,8 @@
 
       <!-- Top Customers -->
       <div class="col-lg-12 col-md-12">
-        <div class="border rounded h-100 dlmode-backup">
-          <div class="panel-header fw-bold p-3">Top Customers</div>
+        <div class="h-100 card">
+          <div class="panel-header fw-bold p-3 ">Top Customers</div>
           <hr class="m-0">
           <!-- Add your top customers content here -->
           <div class="d-flex">

@@ -80,6 +80,16 @@ class ProductsTable extends Component implements HasActions, HasSchemas, HasTabl
                     ->money('IDR')
                     ->sortable(),
 
+                TextColumn::make('estimated_seconds')
+                    ->label('Est. Time')
+                    ->formatStateUsing(function ($state) {
+                        $s = (int)($state ?? 0);
+                        if ($s <= 0) return '-';
+                        $m = intdiv($s, 60); $r = $s % 60;
+                        return $r ? sprintf('%dm %02ds', $m, $r) : sprintf('%dm', $m);
+                    })
+                    ->sortable(),
+
                 TextColumn::make('stock_qty')
                     ->label('Qty')
                     ->sortable(),

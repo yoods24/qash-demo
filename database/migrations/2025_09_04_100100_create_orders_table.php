@@ -18,6 +18,17 @@ return new class extends Migration
             $table->enum('payment_status', ['paid', 'unpaid', 'cancelled'])->default('unpaid');
             $table->string('reference_no')->nullable();
             $table->index(['tenant_id', 'reference_no']);
+            // Timing + performance fields
+            $table->timestamp('confirmed_at')->nullable();
+            $table->timestamp('preparing_at')->nullable();
+            $table->timestamp('ready_at')->nullable();
+            // Expected duration for full order (sum of item estimates)
+            $table->integer('expected_seconds_total')->default(0);
+            // Actual durations
+            $table->integer('queue_seconds')->default(0);   // confirmed -> preparing
+            $table->integer('prep_seconds')->default(0);    // preparing -> ready
+            $table->integer('total_seconds')->default(0);   // full lifecycle
+            // Responsibility fields removed — kitchen works as a single entity
             $table->timestamps();
         });
     }

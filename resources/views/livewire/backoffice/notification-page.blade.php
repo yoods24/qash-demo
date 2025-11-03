@@ -1,4 +1,4 @@
-<div class="container-fluid p-0" wire:poll.15s>
+<div class="container-fluid p-0 notification-page" wire:poll.15s>
     <div class="d-flex align-items-center justify-content-between mb-3">
         <div class="d-flex align-items-center gap-2 flex-wrap">
             <h3 class="m-0">Notifications</h3>
@@ -49,7 +49,7 @@
                 <div class="list-group-item py-3">
                     <div class="d-flex gap-3 align-items-start">
                         <div class="flex-shrink-0">
-                            <div class="rounded-circle d-inline-flex align-items-center justify-content-center" style="width:42px;height:42px;background:#e8f0fe;">
+                            <div class="rounded-circle note-icon d-inline-flex align-items-center justify-content-center" style="width:42px;height:42px;background:#e8f0fe;">
                                 @php
                                     $icon = match($note->type) {
                                         'order.created' => 'bi-bag-check',

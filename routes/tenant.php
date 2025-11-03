@@ -107,6 +107,7 @@ Route::middleware([
           Route::get('/reports', [\App\Http\Controllers\ReportsController::class, 'index'])->name('backoffice.reports.index');
           Route::get('/reports/sales', [\App\Http\Controllers\ReportsController::class, 'sales'])->name('backoffice.reports.sales');
           Route::get('/reports/products', [\App\Http\Controllers\ReportsController::class, 'productsPurchase'])->name('backoffice.reports.products');
+          Route::get('/reports/kitchen', [\App\Http\Controllers\ReportsController::class, 'kitchenPerformance'])->name('backoffice.reports.kitchen');
 
           // Dining Tables
           Route::get('/diningTable', [DiningTableController::class, 'index'])->name('backoffice.tables.index')

@@ -74,6 +74,12 @@
                                 <div class="mt-2"><img src="{{ asset('storage/'.$product->product_image) }}" alt="Current image" style="height:64px; border-radius:8px"></div>
                             @endif
                         </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Estimated Time (minutes)</label>
+                            <input type="number" min="0" step="1" name="estimated_minutes" class="form-control" value="{{ (int) floor(($product->estimated_seconds ?? 0) / 60) }}">
+                            <div class="form-text">Average time to prepare one unit.</div>
+                            @error('estimated_minutes')<small class="text-danger">{{ $message }}</small>@enderror
+                        </div>
                     </div>
                 </div>
             </div>

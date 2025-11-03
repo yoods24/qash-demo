@@ -1,5 +1,8 @@
 @import 'bootstrap';
-
+:root{
+  --loader-size: 96px;
+  --spin-duration: 1.2s;
+}
 .primer{
     color: #ff8c00;
 }
@@ -169,3 +172,55 @@ html[data-theme='dark'] .toast-success-container .text-black { color: #e5e7eb !i
 html[data-theme='dark'] .toast-success-icon { color: #22c55e; }
 html[data-theme='dark'] .toast-progress { background: #374151; }
 html[data-theme='dark'] .toast-success-container .btn.text-muted { color: #cbd5e1 !important; }
+
+
+
+/* container for loader overlay */
+.logo-loader-overlay {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(255,255,255,0.75); /* semi-opaque: change to rgba(255,255,255,0.0) for transparent */
+  z-index: 9999;
+  transition: opacity 220ms ease, visibility 220ms ease;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* when active show it */
+.logo-loader-overlay.is-active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+/* card that holds the image */
+.logo-loader-card {
+  display: grid;
+  place-items:center;
+  gap:10px;
+  background: transparent;
+  border-radius: 10px;
+  padding: 8px;
+}
+
+/* image sizing */
+.logo-loader-card img {
+  width: var(--loader-size);
+  height: var(--loader-size);
+  object-fit: contain;
+  display:block;
+}
+
+/* simple continuous spinner */
+.logo-spin {
+  transform-origin: 50% 50%;
+  animation: logoSpin var(--spin-duration) linear infinite;
+}
+
+@keyframes logoSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}

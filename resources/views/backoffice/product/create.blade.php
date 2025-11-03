@@ -69,6 +69,12 @@
                             <input type="file" name="product_image" class="form-control">
                             @error('product_image')<small class="text-danger">{{ $message }}</small>@enderror
                         </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Estimated Time (minutes)</label>
+                            <input type="number" min="0" step="1" name="estimated_minutes" class="form-control" placeholder="e.g. 3">
+                            <div class="form-text">Average time to prepare one unit.</div>
+                            @error('estimated_minutes')<small class="text-danger">{{ $message }}</small>@enderror
+                        </div>
                     </div>
                 </div>
             </div>

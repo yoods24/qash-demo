@@ -301,6 +301,8 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
+    // (reverted) removed kitchen display layout toggle and list icon rotation handlers
+
 });
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -469,6 +471,55 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
+// KDS live timers: update every second without fighting Livewire
+(function(){
+    const fmt = (secs) => {
+        secs = Math.max(0, Math.floor(secs));
+        const m = Math.floor(secs / 60), s = secs % 60;
+        return `${m}:${String(s).padStart(2,'0')}`;
+    };
+    const tick = () => {
+        const now = Date.now();
+        document.querySelectorAll('[data-role="kds-timer"]').forEach(el => {
+            if ((el.dataset.stage || '') === 'ready') return; // do not tick done orders
+            const card = el.closest('.ko-card');
+            const epochSec = parseInt(el.dataset.startEpoch || '0', 10);
+            // Convert seconds -> ms when epoch is provided
+            let start = epochSec > 0 ? (epochSec * 1000) : Date.parse(el.dataset.start || '');
+            if (!isFinite(start)) start = now;
+            const warn = parseInt(el.dataset.warn || '300', 10);
+            const danger = parseInt(el.dataset.danger || '600', 10);
+            const elapsed = Math.floor((now - start) / 1000);
+            el.textContent = fmt(elapsed);
+            // colorize timer background
+            el.classList.remove('kds-time-ok','kds-time-warn','kds-time-danger');
+            let pr = '';
+            if (elapsed >= danger) pr = 'priority-danger';
+            else if (elapsed >= warn) pr = 'priority-warn';
+            else pr = 'priority-ok';
+            if (pr === 'priority-danger') el.classList.add('kds-time-danger');
+            else if (pr === 'priority-warn') el.classList.add('kds-time-warn');
+            else el.classList.add('kds-time-ok');
+            if (!card) return;
+            // keep reordering to surface danger items
+            card.style.order = (pr === 'priority-danger') ? '-1' : (pr === 'priority-warn' ? '0' : '1');
+        });
+    };
+    setInterval(tick, 1000);
+    if (document.readyState !== 'loading') tick();
+    else document.addEventListener('DOMContentLoaded', tick);
+    // Nudge updates after Livewire morphs insert new nodes
+    // Throttle DOM-mutation-driven updates to avoid floods
+    let moQueued = false;
+    const scheduleTick = () => {
+        if (moQueued) return;
+        moQueued = true;
+        requestAnimationFrame(() => { moQueued = false; tick(); });
+    };
+    const mo = new MutationObserver(scheduleTick);
+    const target = document.querySelector('.kitchen-board') || document.body;
+    mo.observe(target, { childList: true, subtree: true });
+})();
 
 
 // Toast success

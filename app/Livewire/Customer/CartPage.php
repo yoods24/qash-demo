@@ -203,6 +203,7 @@ class CartPage extends Component
             'image'       => $this->selectedProduct->product_image ?? null,
             'description' => $this->selectedProduct->description ?? null,
             'category'    => $this->selectedProduct->category->name ?? null,
+            'estimated_seconds' => (int) ($this->selectedProduct->estimated_seconds ?? 0),
         ];
 
         if ($this->editingItemId) {
@@ -312,6 +313,13 @@ class CartPage extends Component
             $rand = strtoupper(substr(bin2hex(random_bytes(8)), 0, 10));
             $reference = ($tenantCode ?: 'REF') . '-' . $rand;
 
+            // Compute expected total seconds from cart
+            $expectedSeconds = 0;
+            foreach (Cart::getContent() as $ci) {
+                $est = (int) (($ci->attributes['estimated_seconds'] ?? 0));
+                $expectedSeconds += $est * (int)$ci->quantity;
+            }
+
             $order = Order::create([
                 'reference_no'    => $reference,
                 'customer_detail_id' => session('customer_detail_id'),
@@ -321,6 +329,8 @@ class CartPage extends Component
                 // Payment: mark as paid in development until gateway is integrated
                 'payment_status' => 'paid',
                 'tenant_id' => $tenantId,
+                'confirmed_at' => now(),
+                'expected_seconds_total' => $expectedSeconds,
             ]);
 
         foreach (Cart::getContent() as $item) {
@@ -338,6 +348,7 @@ class CartPage extends Component
                 'unit_price'   => $item->price,
                 'quantity'     => $item->quantity,
                 'options'      => $options,
+                'estimate_seconds' => (int) ($options['estimated_seconds'] ?? 0),
                 'tenant_id'    => $tenantId ?? $this->tenantId,
             ]);
 

@@ -23,6 +23,8 @@ return new class extends Migration
             $table->string('description');
             $table->decimal('price', 10, 2);
             $table->decimal('goods_price', 10, 2)->nullable();
+            // Estimated preparation time in seconds (nullable = unknown)
+            $table->integer('estimated_seconds')->nullable();
             $table->boolean('featured')->default(0)->nullable();
             $table->timestamps();
         });
