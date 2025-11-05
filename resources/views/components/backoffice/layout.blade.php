@@ -24,6 +24,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
     {{-- map for geolocation --}}
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+    <link rel="icon" href="{{ asset('storage/logos/Qash_single_logogram.png') }}" type="image/png">
 
     @vite([
       'resources/css/backoffice.css',

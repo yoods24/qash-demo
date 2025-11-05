@@ -3,6 +3,40 @@
   --loader-size: 96px;
   --spin-duration: 1.2s;
 }
+
+
+/* =========================
+   Global Loading Overlay
+   ========================= */
+.logo-loader-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 3000; /* above navbar, dropdowns, modals */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(255,255,255, 0.98);
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+    transition: opacity .2s ease, visibility 0s linear .2s;
+    will-change: opacity;
+}
+.logo-loader-overlay.show {
+    opacity: 1;
+    pointer-events: all;
+    visibility: visible;
+    transition: opacity .2s ease, visibility 0s;
+}
+.logo-loader-card img.logo-spin { width: 64px; height: 64px; animation: qash-spin 1s infinite; }
+@keyframes qash-spin { from { transform: rotate(360deg); } to { transform: rotate(0); } }
+
+/* Dark mode backdrop */
+html[data-theme='dark'] .logo-loader-overlay { background-color: rgba(11,18,32, 0.98); }
+
+/* Prevent page scroll while overlay is visible */
+body.qash-loading { overflow: hidden; }
+
 .primer{
     color: #ff8c00;
 }
@@ -15,7 +49,15 @@
     background-color: #ffffff;
 
 }
-
+.btn-back {
+    background-color:#092C4C !important ;
+    border:1px solid #092C4C !important ;
+    color:#ffffff !important;
+    box-shadow:0 4px 20px rgba(9, 44, 76, 0.15) ;
+}
+.btn-back:hover {
+    box-shadow:0 8px 26px rgba(9, 44, 76, 0.336) !important;
+}
 .btn-primer {
     color: #ffffff;
     background-color: #ff8c00;
@@ -223,4 +265,85 @@ html[data-theme='dark'] .toast-success-container .btn.text-muted { color: #cbd5e
 @keyframes logoSpin {
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }
+}
+
+/* Dark mode overrides for Bootstrap components */
+html[data-theme='dark'] {
+  color-scheme: dark;
+
+  /* Base */
+  --bs-body-bg: #0b1220;
+  --bs-body-color: #e5e7eb;
+  --bs-border-color: #1f2937;
+  --bs-secondary-bg: #0f172a;
+  --bs-secondary-color: #94a3b8;
+  --bs-link-color: #93c5fd;
+  --bs-link-hover-color: #bfdbfe;
+
+  /* Forms */
+  --bs-form-control-bg: var(--bs-secondary-bg);
+  --bs-form-control-color: var(--bs-body-color);
+  --bs-form-control-border-color: #334155;
+  --bs-form-control-placeholder-color: #94a3b8;
+  --bs-form-control-focus-bg: #0f172a;
+  --bs-form-control-focus-border-color: #2563eb;
+  --bs-input-group-addon-bg: #0f172a;
+  --bs-input-group-addon-color: #cbd5e1;
+  --bs-form-select-bg: var(--bs-secondary-bg);
+  --bs-form-select-color: var(--bs-body-color);
+  --bs-form-select-border-color: #334155;
+  --bs-form-check-bg: #0f172a;
+  --bs-form-check-input-bg: #0b1220;
+  --bs-form-check-input-checked-bg-color: #2563eb;
+  --bs-form-check-input-checked-border-color: #2563eb;
+  --bs-focus-ring-color: rgba(37,99,235,.35);
+
+  /* Tables */
+  --bs-table-color: var(--bs-body-color);
+  --bs-table-bg: #0b1220;
+  --bs-table-border-color: #1f2937;
+  --bs-table-striped-bg: rgba(148,163,184,.08);
+  --bs-table-hover-bg: rgba(147,197,253,.08);
+
+  /* Dropdowns */
+  --bs-dropdown-bg: #0f172a;
+  --bs-dropdown-color: var(--bs-body-color);
+  --bs-dropdown-link-hover-bg: rgba(147,197,253,.12);
+  --bs-dropdown-border-color: #1f2937;
+
+  /* Modals */
+  --bs-modal-bg: #0f172a;
+  --bs-modal-color: var(--bs-body-color);
+  --bs-modal-header-border-color: #1f2937;
+  --bs-modal-footer-border-color: #1f2937;
+
+  /* Pagination / neutrals */
+  --bs-pagination-bg: #0f172a;
+  --bs-pagination-border-color: #1f2937;
+  --bs-pagination-hover-bg: rgba(147,197,253,.12);
+  --bs-pagination-color: #cbd5e1;
+
+  /* Tooltips / Popovers */
+  --bs-tooltip-bg: #111827;
+  --bs-tooltip-color: #e5e7eb;
+  --bs-popover-bg: #0f172a;
+  --bs-popover-border-color: #1f2937;
+}
+
+/* Fine-tuning */
+html[data-theme='dark'] .form-control::placeholder { color: #94a3b8; opacity: 1; }
+html[data-theme='dark'] .input-group-text {
+  background-color: var(--bs-input-group-addon-bg);
+  color: var(--bs-input-group-addon-color);
+  border-color: var(--bs-form-control-border-color);
+}
+html[data-theme='dark'] .table thead th {
+  background-color: #0f172a;
+  color: #cbd5e1;
+  border-bottom-color: #1f2937;
+}
+html[data-theme='dark'] .table td {
+  background-color: #0f172a;
+  color: #cbd5e1;
+  border-bottom-color: #1f2937;
 }

@@ -375,6 +375,23 @@ html[data-theme='dark'] .report-card .report-icon {
     background-color: var(--mainColorOrange) !important;
     color: white !important;
 }
+/* Smooth navbar dropdown animation (avoid conflict with Popper's inline transform) */
+.navbar .dropdown-menu {
+    display: block; /* allow transitions on hide/show */
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity .16s ease, visibility 0s linear .16s;
+}
+.navbar .dropdown-menu.show {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition: opacity .16s ease, visibility 0s;
+}
+/* Slide the inner content vertically so Popper's X positioning stays intact */
+.navbar .dropdown-menu > * { transform: translateY(-6px); transition: transform .16s ease; }
+.navbar .dropdown-menu.show > * { transform: translateY(0); }
 /* =========================
    Dark Theme Overrides
    ========================= */
@@ -440,6 +457,22 @@ html[data-theme='dark'] .dlmode-backup * {
 }
 
 html[data-theme='dark'] .sekunder { color: #94a3b8; }
+
+/* Tenant notification panel animation */
+.tenant-notification .tenant-notification-card {
+    opacity: 0;
+    transform: translateY(-8px);
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity .2s ease, transform .2s ease, visibility 0s linear .2s;
+}
+.tenant-notification .tenant-notification-card.is-open {
+    opacity: 1;
+    transform: translateY(0);
+    visibility: visible;
+    pointer-events: auto;
+    transition: opacity .2s ease, transform .2s ease, visibility 0s;
+}
 html[data-theme='dark'] .settings-toggle { color: #cbd5e1; }
 html[data-theme='dark'] .settings-toggle:hover { background-color: #0f172a; }
 html[data-theme='dark'] .settings-toggle[aria-expanded='true'] {
@@ -553,6 +586,13 @@ html[data-theme='dark'] .sidebar::-webkit-scrollbar-thumb { background-color: #3
     transition: all 0.1s ease;
     display: none;
 }
+.sidebar .brand-wrap { margin-left: -1rem; margin-right: -1rem; margin-top: -1rem; padding: 1rem; }
+.sidebar .brand-wrap > a { display: block; width: 100%; }
+.sidebar .brand-img { width: 100%; height: auto; display: block; max-height: 44px; }
+.sidebar .brand-compact { display: none; }
+.sidebar .brand-full { width: 70% !important; height: 5rem !important; }
+.sidebar.shrunk .brand-full { display: none; }
+.sidebar.shrunk .brand-compact { display: block; max-height: 36px; }
 
 .sidebar.shrunk .sidebar-wrapper {
     margin-top: 2rem;

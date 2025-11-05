@@ -8,8 +8,7 @@
         @endif
     </button>
 
-    @if($open)
-        <div class="card shadow border-0 tenant-notification-card" style="position: absolute; right: 0; top: 120%; width: 360px; z-index: 1050;">
+        <div class="card shadow border-0 tenant-notification-card {{ $open ? 'is-open' : '' }}" style="position: absolute; right: 0; top: 120%; width: 360px; z-index: 1050;" aria-hidden="{{ $open ? 'false' : 'true' }}">
             <div class="card-body p-0">
                 <div class="d-flex align-items-end justify-content-between p-3">
                     <div>
@@ -68,5 +67,4 @@
                 </div>
             </div>
         </div>
-    @endif
 </div>

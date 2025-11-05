@@ -1,13 +1,20 @@
 <x-backoffice.layout>
-    <div class="d-flex align-items-center justify-content-between mb-3 mb-md-4">
+    <div class="d-flex align-items-center flex-wrap justify-content-between mb-3 mb-md-4">
         <div class="d-flex align-items-center">
             <i class="bi bi-box-seam text-orange fs-3 me-2"></i>
             <h4 class="mb-0">Products Purchase Report</h4>
         </div>
-        <div>
-            <a href="{{ route('backoffice.reports.products', array_merge(request()->route()->parameters(), request()->query(), ['export' => 1])) }}" class="btn btn-sm btn-warning">
-                <i class="bi bi-box-arrow-down me-1"></i> Export
-            </a>
+        <div class="d-flex justify-content-between gap-3">
+            <div>
+                <a href="{{ route('backoffice.reports.products', array_merge(request()->route()->parameters(), request()->query(), ['export' => 1])) }}" class="btn btn-warning">
+                    <i class="bi bi-box-arrow-down me-1"></i> Export
+                </a>
+            </div>
+            <div>
+                <button class="btn btn-back">
+                    <i class="bi bi-box-arrow-down me-1"></i> Back To Reports
+                </button>
+            </div>
         </div>
     </div>
 
@@ -40,8 +47,8 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-12 col-md-1 text-end">
-                    <button class="btn btn-primary w-100"><i class="bi bi-funnel me-1"></i> Filter</button>
+                <div class="col-lg-12 text-end">
+                    <button class="btn btn-outline-warning w-100"><i class="bi bi-funnel me-1"></i> Filter</button>
                 </div>
             </form>
         </div>

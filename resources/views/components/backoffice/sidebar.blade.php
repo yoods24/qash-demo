@@ -1,6 +1,10 @@
 <nav class="sidebar shrunk d-flex flex-column flex-shrink-0 p-3">
-      <div class="d-flex justify-content-between align-items-center mb-3 text-white text-decoration-none">
-        <span class="fs-4 fw-bold primer nav-brand">Qash</span>
+      <div class="brand-wrap d-flex justify-content-between align-items-center text-white text-decoration-none">
+        <a href="{{ route('backoffice.dashboard') }}" class="d-inline-flex align-items-center text-decoration-none">
+          <!-- Expanded: full logo | Shrunk: compact mark -->
+          <img src="{{ asset('storage/logos/Qash_full_logo_logogram.png') }}" alt="Qash" class="brand-img brand-compact" />
+          <img src="{{ asset('storage/logos/Qash_main_logo_logogram.png') }}" alt="Qash" class="brand-img brand-full" />
+        </a>
         <button id="sidebarToggleMobile" title="Toggle Sidebar"><i class="bi bi-list"></i></button>
       </div>
 

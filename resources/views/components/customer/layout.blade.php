@@ -12,7 +12,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@stpageflip/pageflip/dist/css/page-flip.min.css" />
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@splidejs/splide/dist/css/splide.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@splidejs/splide/dist/css/splide.min.css">
+    <link rel="icon" href="{{ asset('storage/logos/Qash_single_logogram.png') }}" type="image/png">
 
     <title>Qash</title>
     @vite(['resources/css/customer.css', 'resources/js/customer.js', 'resources/css/app.css'])

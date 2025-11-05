@@ -122,9 +122,7 @@
                 </div>
             </div>
         </div>
-    </div>
-
-    {{-- facial recognition --}}
+        <!-- Facial recognition -->
         <div class="tab-pane fade" id="tab-facial-recognition" role="tabpanel">
             <div class="card card-white border-0 shadow-sm">
                 <div class="card-header bg-white border-0 border-bottom">
