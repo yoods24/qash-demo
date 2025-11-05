@@ -58,13 +58,16 @@ def validate_pose(faces, required_pose_index):
 
 
 # === FUNGSI INTI: MENANGANI REGISTRASI 1 FRAME ===
-def handle_register_frame(app_insight, LOADED_EMBEDDINGS, LOADED_NAMES, form_data, image_file):
+def handle_register_frame(app_insight, LOADED_EMBEDDINGS, LOADED_NAMES, form_data, image_file, dataset_base_dir=None, emb_dir=None):
     name = form_data.get("name")
     frame_index = int(form_data.get("frame_index", 0))
     total_frames = int(form_data.get("total_frames", 5))
     required_pose = int(form_data.get("required_pose", 0))
 
-    person_dir = os.path.join(DATASET_PATH, name)
+    # Tentukan root dataset (default ke config jika tidak diberikan)
+    base_dir = dataset_base_dir or DATASET_PATH
+    # Struktur target: users/{name}/{FACIAL_SUBDIR_NAME}
+    person_dir = os.path.join(base_dir, name, config.FACIAL_SUBDIR_NAME)
 
     try:
         # --- Pengecekan Awal (Sama) ---
@@ -124,7 +127,7 @@ def handle_register_frame(app_insight, LOADED_EMBEDDINGS, LOADED_NAMES, form_dat
         if done:
             print(f"💡 Pendaftaran {name} selesai. Memulai proses retrain...")
             try:
-                retrain_success = main.retrain_model() # Panggil fungsi langsung
+                retrain_success = main.retrain_model(dataset_path=base_dir, emb_dir=(emb_dir or EMB_DIR)) # Panggil fungsi langsung
                 if retrain_success: message = "🎉 Pendaftaran selesai! Model diperbarui."; status = "finished"
                 else: message = "❌ Pendaftaran selesai, GAGAL update model."; status = "error"
             except Exception as e:

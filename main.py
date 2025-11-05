@@ -9,8 +9,6 @@ import config
 # === KONFIGURASI DASAR (diambil dari config.py) ===
 DATASET_PATH = config.DATASET_PATH
 EMB_DIR = config.EMB_DIR
-MODEL_PATH = config.MODEL_PATH
-NAMES_PATH = config.NAMES_PATH
 
 # === INISIALISASI INSIGHTFACE ===
 # Script ini perlu inisialisasi sendiri
@@ -20,21 +18,28 @@ app_main.prepare(ctx_id=0, det_size=(640, 640))
 print("(main.py) ✅ InsightFace siap.")
 
 # === FUNGSI MUAT DATASET & EKSTRAKSI EMBEDDING ===
-def load_dataset_and_extract_embeddings():
+def load_dataset_and_extract_embeddings(dataset_path: str = DATASET_PATH):
     embeddings = []
     labels = []
 
-    print(f"(main.py) 📂 Memindai dataset di: {DATASET_PATH}...") # Gunakan path dari config
+    print(f"(main.py) 📂 Memindai dataset di: {dataset_path}...") # Gunakan path dari config / arg
     # Iterasi melalui setiap folder nama di dalam Dataset
-    for person_name in os.listdir(DATASET_PATH):
-        person_dir = os.path.join(DATASET_PATH, person_name)
+    for person_name in os.listdir(dataset_path):
+        person_dir = os.path.join(dataset_path, person_name)
         if not os.path.isdir(person_dir) or len(os.listdir(person_dir)) == 0:
             continue
 
         print(f"(main.py)   Memproses gambar untuk: {person_name}")
         image_count = 0
-        for img_file in os.listdir(person_dir):
-            img_path = os.path.join(person_dir, img_file)
+        # Jika struktur memiliki subfolder foto, gunakan itu sebagai sumber gambar
+        scan_dir = os.path.join(person_dir, config.FACIAL_SUBDIR_NAME)
+        if os.path.isdir(scan_dir) and len(os.listdir(scan_dir)) > 0:
+            base_scan = scan_dir
+        else:
+            base_scan = person_dir
+
+        for img_file in os.listdir(base_scan):
+            img_path = os.path.join(base_scan, img_file)
             if not os.path.isfile(img_path):
                 continue
 
@@ -65,30 +70,38 @@ def load_dataset_and_extract_embeddings():
     return embeddings_np, labels_np
 
 # === FUNGSI SIMPAN EMBEDDING ===
-def save_embeddings(embeddings, labels):
+def save_embeddings(embeddings, labels, emb_dir: str = EMB_DIR):
     try:
-        # Gunakan path dari config
-        with open(MODEL_PATH, "wb") as f:
+        # Simpan ke direktori embeddings yang ditentukan
+        os.makedirs(emb_dir, exist_ok=True)
+        model_path = os.path.join(emb_dir, "knn_model.pkl")
+        names_path = os.path.join(emb_dir, "names.pkl")
+        with open(model_path, "wb") as f:
             pickle.dump(embeddings, f)
-        with open(NAMES_PATH, "wb") as f:
+        with open(names_path, "wb") as f:
             pickle.dump(labels, f)
-        print(f"(main.py) 💾 Embedding berhasil disimpan ke: {EMB_DIR}/")
+        print(f"(main.py) 💾 Embedding berhasil disimpan ke: {emb_dir}/")
         return True
     except Exception as e:
         print(f"(main.py) ❌ Gagal menyimpan file embedding: {e}")
         return False
 
 # === FUNGSI UTAMA RETRAIN ===
-def retrain_model():
+def retrain_model(dataset_path: str = None, emb_dir: str = None):
     print("\n(main.py) === MEMULAI PROSES RETRAIN MODEL ===")
-    embeddings, labels = load_dataset_and_extract_embeddings()
+    if dataset_path is None:
+        dataset_path = DATASET_PATH
+    if emb_dir is None:
+        emb_dir = EMB_DIR
+
+    embeddings, labels = load_dataset_and_extract_embeddings(dataset_path)
 
     if embeddings.size == 0:
         embeddings = np.array([], dtype=np.float32)
         labels = np.array([], dtype=np.str_)
         print("(main.py) ⚠️ Tidak ada data wajah ditemukan di Dataset. Menyimpan model kosong.")
 
-    save_success = save_embeddings(embeddings, labels)
+    save_success = save_embeddings(embeddings, labels, emb_dir)
     if save_success:
         print("(main.py) === PROSES RETRAIN SELESAI ===\n")
     else:
@@ -100,5 +113,5 @@ if __name__ == "__main__":
     # Pastikan folder ada sebelum menjalankan (meskipun config.py juga mengecek)
     os.makedirs(DATASET_PATH, exist_ok=True)
     os.makedirs(EMB_DIR, exist_ok=True)
-    retrain_model()
+    retrain_model(DATASET_PATH, EMB_DIR)
 

@@ -12,6 +12,7 @@ from flask import Flask, request, jsonify
 from werkzeug.utils import secure_filename
 from insightface.app import FaceAnalysis
 from flask_cors import CORS
+import config
 # Impor layanan
 import face_register_service
 import face_recognize_service
@@ -22,16 +23,9 @@ from attendance_logger import CSV_PATH as ATTENDANCE_CSV_PATH
 app = Flask(__name__)
 CORS(app) # Mengizinkan akses dari origin berbeda (Laravel)
 
-# Ambil path dari service agar konsisten
-# Diasumsikan path ini didefinisikan di face_register_service.py
+# Ambil path default dari service (legacy, non-tenant)
 DATASET_PATH = face_register_service.DATASET_PATH
 EMB_DIR = face_register_service.EMB_DIR
-MODEL_PATH = os.path.join(EMB_DIR, "knn_model.pkl")
-NAMES_PATH = os.path.join(EMB_DIR, "names.pkl")
-
-# Pastikan direktori ada
-os.makedirs(DATASET_PATH, exist_ok=True)
-os.makedirs(EMB_DIR, exist_ok=True)
 
 # Inisialisasi InsightFace (Diperlukan oleh kedua layanan dan diteruskan sebagai argumen)
 print("🚀 Inisialisasi InsightFace...")
@@ -46,62 +40,41 @@ except Exception as e:
     exit()
 
 
-# Variabel global untuk menyimpan embeddings di memori
-LOADED_EMBEDDINGS = np.array([])
-LOADED_NAMES = np.array([])
-
-
-# === Fungsi: Muat Model Embedding ===
-def load_embeddings():
-    """Memuat data embeddings wajah dan nama dari file pickle."""
-    global LOADED_EMBEDDINGS, LOADED_NAMES
-    print("🧠 Memuat model embedding...")
-
-    if os.path.exists(MODEL_PATH) and os.path.exists(NAMES_PATH):
+def _load_embeddings_from_dir(emb_dir: str):
+    """Memuat embeddings & names dari direktori embeddings tertentu."""
+    model_path = os.path.join(emb_dir, "knn_model.pkl")
+    names_path = os.path.join(emb_dir, "names.pkl")
+    if os.path.exists(model_path) and os.path.exists(names_path):
         try:
-            # Jeda singkat (0.5s) untuk memastikan file selesai ditulis ke disk
-            # oleh proses retrain sebelum mencoba membacanya.
-            time.sleep(0.5)
-
-            with open(MODEL_PATH, "rb") as f:
-                LOADED_EMBEDDINGS = pickle.load(f)
-            with open(NAMES_PATH, "rb") as f:
-                LOADED_NAMES = pickle.load(f)
-
-            # Validasi tipe data setelah loading
-            if not isinstance(LOADED_EMBEDDINGS, np.ndarray):
-                print("⚠️ Tipe data embeddings tidak valid setelah dimuat. Resetting.")
-                LOADED_EMBEDDINGS = np.array([])
-                LOADED_NAMES = np.array([])
-            elif LOADED_EMBEDDINGS.size > 0:
-                print(f"✅ Model berhasil dimuat: {len(LOADED_EMBEDDINGS)} total embeddings dari {len(set(LOADED_NAMES))} orang.")
-            else:
-                print("⚠️ File embedding kosong. Model siap digunakan.")
-                LOADED_EMBEDDINGS = np.array([])
-                LOADED_NAMES = np.array([])
-
-        except (pickle.UnpicklingError, EOFError, FileNotFoundError) as e:
-            print(f"❌ Gagal memuat file embedding (mungkin rusak atau belum ada): {e}")
-            LOADED_EMBEDDINGS = np.array([])
-            LOADED_NAMES = np.array([])
+            time.sleep(0.2)
+            with open(model_path, "rb") as f:
+                embs = pickle.load(f)
+            with open(names_path, "rb") as f:
+                names = pickle.load(f)
+            if not isinstance(embs, np.ndarray):
+                return np.array([]), np.array([])
+            return embs, names
         except Exception as e:
-            print(f"❌ Gagal memuat file embedding karena error tak terduga: {e}")
-            LOADED_EMBEDDINGS = np.array([])
-            LOADED_NAMES = np.array([])
-    else:
-        print("⚠️ File model embedding tidak ditemukan. Jalankan main.py atau lakukan pendaftaran pertama.")
-        LOADED_EMBEDDINGS = np.array([])
-        LOADED_NAMES = np.array([])
+            print(f"❌ Gagal memuat embeddings di {emb_dir}: {e}")
+            return np.array([]), np.array([])
+    return np.array([]), np.array([])
 
-
-# Panggil load_embeddings saat server pertama kali dijalankan
-load_embeddings()
+def _require_tenant_id():
+    tenant_id = request.headers.get("X-Tenant-Id") or request.form.get("tenant_id") or request.args.get("tenant_id")
+    if not tenant_id:
+        return None, (jsonify({"message": "❌ tenant_id tidak diterima. Sertakan header X-Tenant-Id atau field tenant_id.", "status": "error"}), 400)
+    return tenant_id, None
 
 
 # --- Endpoint: Register wajah (Hanya Routing) ---
 @app.route('/register', methods=['POST'])
 def register():
     """Endpoint untuk menangani permintaan pendaftaran wajah."""
+    # Tentukan tenant lebih dulu
+    tenant_id, err = _require_tenant_id()
+    if err:
+        return err
+
     name = request.form.get("name")
 
     if not name:
@@ -112,22 +85,30 @@ def register():
         return jsonify({"message": "Tidak ada gambar diterima.", "status": "error"}), 400
 
     try:
+        # Tentukan path dataset & embeddings khusus tenant
+        dataset_base = config.tenant_users_root(tenant_id)
+        emb_dir = config.tenant_emb_dir(tenant_id)
+        os.makedirs(dataset_base, exist_ok=True)
+        os.makedirs(emb_dir, exist_ok=True)
+
+        # Muat embeddings milik tenant ini untuk cek duplikasi
+        LOADED_EMBEDDINGS, LOADED_NAMES = _load_embeddings_from_dir(emb_dir)
         # Panggil fungsi dari layanan registrasi (Blocking Retrain di dalamnya)
         result = face_register_service.handle_register_frame(
             app_insight,
             LOADED_EMBEDDINGS,
             LOADED_NAMES,
             request.form,
-            image_file
+            image_file,
+            dataset_base_dir=dataset_base,
+            emb_dir=emb_dir
         )
 
         # MUAT ULANG EMBEDDINGS JIKA REGISTRASI SELESAI DAN SUKSES
-        # 'finished' menandakan retrain dipanggil dan berhasil
         if result.get('status') == 'finished':
-            # Tambahkan jeda 1 detik setelah retrain selesai sebelum memuat ulang
-            print("⏳ Retrain selesai. Menunggu 1 detik sebelum memuat ulang model...")
-            time.sleep(1)
-            load_embeddings() # Muat data baru ke memori server
+            print("⏳ Retrain selesai untuk tenant {tenant_id}. Memuat ulang model tenant...")
+            time.sleep(0.5)
+            _load_embeddings_from_dir(emb_dir)
 
         return jsonify(result)
 
@@ -141,12 +122,18 @@ def register():
 @app.route('/cancel_register', methods=['POST'])
 def cancel_register():
     """Endpoint untuk membatalkan pendaftaran dan menghapus data sementara."""
+    # Tenant diperlukan untuk menemukan lokasi data yang benar
+    tenant_id, err = _require_tenant_id()
+    if err:
+        return err
+
     name = request.form.get("name")
     if not name:
         return jsonify({"message": "Nama tidak boleh kosong.", "status": "error"}), 400
 
     # Pastikan secure_filename digunakan untuk keamanan
-    person_dir = os.path.join(DATASET_PATH, secure_filename(name))
+    dataset_base = config.tenant_users_root(tenant_id)
+    person_dir = os.path.join(dataset_base, secure_filename(name), config.FACIAL_SUBDIR_NAME)
     if os.path.exists(person_dir):
         try:
             shutil.rmtree(person_dir)
@@ -163,19 +150,21 @@ def cancel_register():
 @app.route('/recognize', methods=['POST'])
 def recognize():
     """Endpoint untuk menangani permintaan absensi (pengenalan wajah)."""
-    global LOADED_EMBEDDINGS, LOADED_NAMES
-
-    # Coba muat ulang jika kosong (diperlukan jika server dijalankan tanpa data)
-    if LOADED_EMBEDDINGS.size == 0:
-        load_embeddings()
-        # Jika masih kosong setelah mencoba muat ulang, kirim error
-        if LOADED_EMBEDDINGS.size == 0:
-             return jsonify({"message": "❌ Model wajah belum siap (data kosong). Daftarkan wajah terlebih dahulu.", "status": "error"}), 503
+    # Tenant wajib
+    tenant_id, err = _require_tenant_id()
+    if err:
+        return err
 
 
     image_file = request.files.get("image")
     if not image_file:
         return jsonify({"message": "Tidak ada gambar diterima.", "status": "error"}), 400
+
+    # Muat embeddings khusus tenant ini
+    emb_dir = config.tenant_emb_dir(tenant_id)
+    LOADED_EMBEDDINGS, LOADED_NAMES = _load_embeddings_from_dir(emb_dir)
+    if LOADED_EMBEDDINGS.size == 0:
+        return jsonify({"message": "❌ Model wajah tenant belum siap (data kosong). Daftarkan wajah terlebih dahulu.", "status": "error"}), 503
 
     # Ambil data geolokasi dan username
     latitude = request.form.get("latitude")
@@ -221,4 +210,7 @@ if __name__ == '__main__':
     # host='0.0.0.0' agar bisa diakses dari jaringan lokal (termasuk HP)
     # debug=True untuk development, ganti ke False saat production
     print("🚀 Menjalankan server Flask...")
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    host = getattr(config, "API_HOST", "0.0.0.0")
+    port = int(os.getenv("FACE_API_PORT", getattr(config, "API_PORT", 5001)))
+    print(f"🌐 Listening on {host}:{port}")
+    app.run(host=host, port=port, debug=True)
