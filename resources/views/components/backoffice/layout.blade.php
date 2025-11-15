@@ -1,3 +1,4 @@
+@props(['hideSidebar' => false])
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -22,6 +23,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+    <!-- Splide slider CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@splidejs/splide/dist/css/splide.min.css">
     {{-- map for geolocation --}}
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
     <link rel="icon" href="{{ asset('storage/logos/Qash_single_logogram.png') }}" type="image/png">
@@ -30,6 +33,7 @@
       'resources/css/backoffice.css',
       'resources/js/backoffice.js',
       'resources/css/app.css',
+      'resources/js/app.js',
       'resources/css/filament.css',
       // Keep Bootstrap collapse semantics authoritative
       'resources/css/overrides.css',
@@ -43,7 +47,9 @@
 
   <div class="d-flex">
     <!-- Sidebar -->
-    <x-backoffice.sidebar></x-backoffice.sidebar>
+    @unless($hideSidebar)
+      <x-backoffice.sidebar></x-backoffice.sidebar>
+    @endunless
     <!-- Main content -->
     <div class="flex-grow-1 layout-main">
       <!-- Navbar -->
@@ -59,8 +65,9 @@
     </div>
   </div>
   @stack('scripts')
+  <!-- Splide slider JS -->
+  <script src="https://cdn.jsdelivr.net/npm/@splidejs/splide/dist/js/splide.min.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-
   @filamentScripts
   @livewireScripts
 </body>

@@ -1,4 +1,6 @@
-import 'bootstrap';
+import * as bootstrap from 'bootstrap';
+// Make Bootstrap JS available globally so inline Blade scripts can use it
+window.bootstrap = bootstrap;
   
   
   // var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
@@ -671,8 +673,14 @@ document.addEventListener('DOMContentLoaded', function () {
     // message.processed fires after DOM updates
     LW.hook('message.processed', (message, component) => {
       if (isPollingComponent(component)) return;
-      hideOverlayDeferred();
+      // Force hide to prevent spinner from sticking after Livewire actions
+      hideOverlay();
     });
+
+    // Allow Livewire components to explicitly hide overlay
+    try {
+      LW.on('overlay-hide', () => hideOverlay());
+    } catch (e) { /* no-op */ }
   };
 
   // Navigation triggers: links, form submits, and beforeunload

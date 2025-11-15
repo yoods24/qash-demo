@@ -14,7 +14,7 @@ return new class extends Migration
             $table->foreign('tenant_id')->references('id')->on('tenants')->cascadeOnDelete();
             $table->string('name');
             $table->string('email')->index();
-            $table->enum('gender', ['man','women'])->nullable();
+            $table->enum('gender', ['male','female'])->nullable();
             $table->timestamps();
         });
     }

@@ -19,6 +19,7 @@ class OrderItem extends Model
         'quantity',
         'estimate_seconds',
         'options',
+        'special_instructions',
     ];
 
     protected $casts = [

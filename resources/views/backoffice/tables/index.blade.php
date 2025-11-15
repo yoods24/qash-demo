@@ -5,106 +5,104 @@
             <div class="text-muted small">Arrange and manage tables for tenant {{ tenant('id') }}</div>
         </div>
     </div>
-
-    <div class="mb-3">
-        @php $selected = $currentFloorId ?? null; @endphp
-        <div class="d-flex flex-wrap gap-2 align-items-center">
-            @foreach($floors as $f)
-                <a href="{{ route('backoffice.tables.index', ['tenant' => tenant('id'), 'floor' => $f->id]) }}"
-                   class="btn btn-sm {{ $selected === $f->id ? 'btn-primary' : 'btn-outline-primary' }}">
-                    {{ $f->name }}
-                    @if($f->area_type)
-                        <span class="badge bg-light text-dark ms-1">{{ $f->area_type }}</span>
-                    @endif
-                </a>
-            @endforeach
-            <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#addFloorModal">
-                <i class="bi bi-plus-lg me-1"></i> Add Floor
-            </button>
-
-            @if(($floors->count() ?? 0) > 0)
-            <div class="dropdown">
-                <button class="btn btn-sm btn-outline-danger dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    Manage Selected
-                </button>
-                <ul class="dropdown-menu">
-                    <li>
-                        <form action="{{ route('backoffice.floors.update', ['tenant' => tenant('id'), 'floor' => $selected]) }}" method="POST" class="px-3 py-2 d-grid gap-2">
-                            @csrf
-                            @method('PUT')
-                            <input type="text" name="name" class="form-control form-control-sm" placeholder="Rename floor" required>
-                            <input type="text" name="area_type" class="form-control form-control-sm" placeholder="Area type">
-                            <button type="submit" class="btn btn-sm btn-outline-primary">Save</button>
-                        </form>
-                    </li>
-                    <li><hr class="dropdown-divider"></li>
-                    @if(($floors->count() ?? 0) > 1)
-                        <li>
-                            <form action="{{ route('backoffice.floors.destroy', ['tenant' => tenant('id'), 'floor' => $selected]) }}" method="POST" class="px-3 py-2">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-outline-danger w-100">Delete Floor</button>
-                            </form>
-                        </li>
-                    @endif
-                </ul>
-            </div>
-            @endif
-
-            <div class="ms-auto d-flex gap-2">
-                <button id="addTableBtn" type="button" class="btn btn-sm btn-outline-primary">
-                    <i class="bi bi-plus-lg me-1"></i> Add Table
-                </button>
-                <button id="saveLayoutBtn" type="button" class="btn btn-sm btn-success">
-                    <i class="bi bi-save me-1"></i> Save Layout
-                </button>
-            </div>
-        </div>
-    </div>
-
     <div class="row g-3">
-        <div class="col-12 col-lg-3">
+        <div class="col-12">
             <div class="card card-white p-3">
                 <div class="fw-semibold mb-2">Selected Table</div>
-                <form id="editTableForm" class="d-grid gap-2" autocomplete="off">
+                <form id="editTableForm" class="row g-2 align-items-end" autocomplete="off">
                     <input type="hidden" name="id" id="tableId" />
-                    <div>
+                    <div class="col">
                         <label class="form-label">Label</label>
-                        <input type="text" class="form-control" id="tableLabel" name="label" placeholder="Table A" />
+                        <input type="text" class="form-control w-100" id="tableLabel" name="label" placeholder="Table A" />
                     </div>
-                    <div>
+                    <div class="col">
                         <label class="form-label">Status</label>
-                        <select class="form-select" id="tableStatus" name="status">
+                        <select class="form-select w-100" id="tableStatus" name="status">
                             <option value="available">Available</option>
                             <option value="occupied">Occupied</option>
                             <option value="oncleaning">On Cleaning</option>
                             <option value="archived">Archived</option>
                         </select>
                     </div>
-                    <div>
+                    <div class="col">
                         <label class="form-label">Shape</label>
-                        <select class="form-select" id="tableShape" name="shape">
+                        <select class="form-select w-100" id="tableShape" name="shape">
                             <option value="rectangle">Rectangle</option>
                             <option value="circle">Circle</option>
                         </select>
                     </div>
-                    <div>
+                    <div class="col">
                         <label class="form-label">Capacity</label>
-                        <input type="number" class="form-control" id="tableCapacity" name="capacity" min="1" max="50" />
+                        <input type="number" class="form-control w-100" id="tableCapacity" name="capacity" min="1" max="50" />
                     </div>
-                    <div>
+                    <div class="col">
                         <label class="form-label">Color</label>
-                        <input type="color" class="form-control form-control-color" id="tableColor" name="color" value="#f1f5f9" />
+                        <input type="color" class="form-control form-control-color w-50" id="tableColor" name="color" value="#f1f5f9" />
                     </div>
-                    <div class="d-flex gap-2 mt-1">
-                        <button type="submit" class="btn btn-primary btn-sm flex-grow-1" disabled>Save</button>
+                <div class="small text-muted mt-4 justify-content-between d-flex text-center align-items-center">
+                    Tip: Click a table tile or the pencil icon to edit.
+                    <div>
                         <button type="button" id="deleteTableBtn" class="btn btn-outline-danger btn-sm" disabled>Delete</button>
+                        <button type="submit" class="btn btn-primer btn-sm" disabled>Save</button>
                     </div>
+                </div>
                 </form>
-                <div class="small text-muted mt-2">Tip: Click a table tile or the pencil icon to edit.</div>
             </div>
         </div>
-        <div class="col-12 col-lg-9">
+        <div class="col-12">
+            <div class="ms-auto d-flex gap-2 p-3 justify-content-between">
+                <div class="mb-3">
+                    @php $selected = $currentFloorId ?? null; @endphp
+                    <div class="d-flex flex-wrap gap-2 align-items-center">
+                        @foreach($floors as $f)
+                            <a href="{{ route('backoffice.tables.index', ['tenant' => tenant('id'), 'floor' => $f->id]) }}"
+                            class="btn btn-sm {{ $selected === $f->id ? 'btn-primary' : 'btn-outline-primary' }}">
+                                {{ $f->name }}
+                                @if($f->area_type)
+                                    <span class="badge bg-light text-dark ms-1">{{ $f->area_type }}</span>
+                                @endif
+                            </a>
+                        @endforeach
+                        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#addFloorModal">
+                            <i class="bi bi-plus-lg me-1"></i> Add Floor
+                        </button>
+
+                        @if(($floors->count() ?? 0) > 0)
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-danger dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Manage Selected
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <form action="{{ route('backoffice.floors.update', ['tenant' => tenant('id'), 'floor' => $selected]) }}" method="POST" class="px-3 py-2 d-grid gap-2">
+                                        @csrf
+                                        @method('PUT')
+                                        <input type="text" name="name" class="form-control form-control-sm" placeholder="Rename floor" required>
+                                        <input type="text" name="area_type" class="form-control form-control-sm" placeholder="Area type">
+                                        <button type="submit" class="btn btn-sm btn-outline-primary">Save</button>
+                                    </form>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                @if(($floors->count() ?? 0) > 1)
+                                    <li>
+                                        <form action="{{ route('backoffice.floors.destroy', ['tenant' => tenant('id'), 'floor' => $selected]) }}" method="POST" class="px-3 py-2">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-outline-danger w-100">Delete Floor</button>
+                                        </form>
+                                    </li>
+                                @endif
+                            </ul>
+                        </div>
+                        @endif
+                    </div>
+                </div>
+                <div>
+                    <button id="addTableBtn" type="button" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-plus-lg me-1"></i> Add Table
+                    </button>
+                </div>
+            </div>
             <div class="card card-white p-2">
                 <div class="grid-stack" id="tablesGrid"
                      data-store-url="{{ route('backoffice.tables.store') }}"
@@ -116,7 +114,7 @@
                 >
                     @foreach($tables as $t)
                         <div class="grid-stack-item" data-id="{{ $t->id }}" data-label="{{ $t->label }}" data-status="{{ $t->status }}" data-shape="{{ $t->shape }}" data-capacity="{{ $t->capacity }}" data-color="{{ $t->color }}"
-                             gs-x="{{ $t->x }}" gs-y="{{ $t->y }}" gs-w="{{ $t->w }}" gs-h="{{ $t->h }}">
+                             gs-x="{{ max(0, (int)($t->x ?? 0)) }}" gs-y="{{ max(0, (int)($t->y ?? 0)) }}" gs-w="{{ max(1, (int)($t->w ?: 2)) }}" gs-h="{{ max(1, (int)($t->h ?: 2)) }}">
                             @php
                                 $status = strtolower($t->status);
                                 $borderColor = match($status) {
@@ -130,7 +128,7 @@
                             <div class="grid-stack-item-content d-flex flex-column justify-content-center align-items-center"
                                  style="background: {{ $t->color ?: '#f1f5f9' }}; border: 2px solid {{ $borderColor }}; border-radius: {{ $t->shape === 'circle' ? '50%' : '0.5rem' }}; {{ $t->shape === 'circle' ? 'aspect-ratio:1/1;' : '' }}">
                                 <div class="fw-semibold">{{ $t->label }}</div>
-                                <div class="small text-muted">{{ ucfirst($t->status) }} Ã¢â‚¬Â¢ {{ $t->capacity }} seats</div>
+                                <div class="small text-muted">{{ ucfirst($t->status) }} {{ $t->capacity }} seats</div>
                                 <button class="btn btn-sm btn-outline-secondary mt-2 edit-table-btn" data-id="{{ $t->id }}">
                                     <i class="bi bi-pencil-square"></i>
                                 </button>
@@ -139,7 +137,13 @@
                     @endforeach
                 </div>
             </div>
-            <div class="form-text text-muted mt-2">Drag and resize tables; click Save Layout to persist positions.</div>
+            <div class="form-text text-muted mt-2 d-flex justify-content-between align-items-center mt-3">
+                Drag and resize tables; click Save Layout to persist positions.
+                <div>
+                    <button id="saveLayoutBtn" type="button" class="btn btn-sm btn-success">
+                        <i class="bi bi-save me-1"></i> Save Layout
+                    </button>
+            </div>
         </div>
     </div>
 

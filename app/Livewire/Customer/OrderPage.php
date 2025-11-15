@@ -22,6 +22,7 @@ class OrderPage extends Component
     public $showOptionModal = false;
     public $showCustomerModal = false;
     public $showTableModal = false;
+    public $note = '';
     public $customerName = '';
     public $customerEmail = '';
     public $customerGender = null; // 'man' | 'women' | null
@@ -142,6 +143,7 @@ class OrderPage extends Component
         }
 
         $this->quantity = 1;
+        $this->note = '';
         $this->showOptionModal = true;
 
         $this->dispatch('lock-scroll');
@@ -226,10 +228,11 @@ class OrderPage extends Component
                 'description' => $this->selectedProduct->description ?? null,
                 'category'    => $this->selectedProduct->category->name ?? null,
                 'estimated_seconds' => (int) ($this->selectedProduct->estimated_seconds ?? 0),
+                'note'        => $this->note,
             ],
         ]);
 
-        $this->reset(['selectedProduct', 'selectedOptions', 'quantity', 'showOptionModal']);
+        $this->reset(['selectedProduct', 'selectedOptions', 'quantity', 'showOptionModal', 'note']);
         $this->dispatch('unlock-scroll');
         $this->dispatch('cart-updated');
     }

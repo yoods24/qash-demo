@@ -439,6 +439,12 @@
 
         <hr>
 
+        <!-- Special Instructions -->
+        <div class="mt-3">
+            <label class="form-label">Special Instructions</label>
+            <textarea class="form-control" rows="3" placeholder="Add note (extra mayo, cheese, etc.)" wire:model.defer="note"></textarea>
+        </div>
+
         <!-- Quantity and Add to Cart -->
         <div class="d-flex flex-column mt-3 gap-3">
             <div class="input-group flex-grow-1">

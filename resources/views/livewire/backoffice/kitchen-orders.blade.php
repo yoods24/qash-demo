@@ -103,6 +103,9 @@
                                                 <div class="text-muted small">{{ $optionsText }}</div>
                                             @endif
                                         </div>
+                                        @if(!empty($it->special_instructions))
+                                            <div class="text-danger small mt-1">Note: {{ $it->special_instructions }}</div>
+                                        @endif
                                         <div class="qty">x{{ $it->quantity }}</div>
                                     </div>
                                 @endforeach
@@ -171,6 +174,9 @@
                                                 <div class="text-muted small">{{ $optionsText }}</div>
                                             @endif
                                         </div>
+                                        @if(!empty($it->special_instructions))
+                                            <div class="text-danger small mt-1">Note: {{ $it->special_instructions }}</div>
+                                        @endif
                                         <div class="qty">x{{ $it->quantity }}</div>
                                     </div>
                                 @endforeach
@@ -236,6 +242,9 @@
                                                 <div class="text-muted small">{{ $optionsText }}</div>
                                             @endif
                                         </div>
+                                        @if(!empty($it->special_instructions))
+                                            <div class="text-danger small mt-1">Note: {{ $it->special_instructions }}</div>
+                                        @endif
                                         <div class="qty">x{{ $it->quantity }}</div>
                                     </div>
                                 @endforeach

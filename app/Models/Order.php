@@ -18,6 +18,8 @@ class Order extends Model
         'status',
         'payment_status',
         'reference_no',
+        'source',
+        'order_type',
         'confirmed_at', 'preparing_at', 'ready_at',
         'expected_seconds_total',
         'queue_seconds', 'prep_seconds', 'total_seconds',

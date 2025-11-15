@@ -250,6 +250,12 @@
         </div>
         <hr>
 
+        <!-- Special Instructions -->
+        <div class="mt-3">
+            <label class="form-label">Special Instructions</label>
+            <textarea class="form-control" rows="3" placeholder="Add note (extra mayo, cheese, etc.)" wire:model.defer="note"></textarea>
+        </div>
+
         <!-- Quantity -->
         <div class="mt-3">
             <p class="option-section-title mb-2">Quantity</p>

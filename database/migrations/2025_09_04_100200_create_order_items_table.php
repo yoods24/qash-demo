@@ -20,6 +20,8 @@ return new class extends Migration
             // Estimated preparation seconds per unit (copied from product at order time)
             $table->integer('estimate_seconds')->nullable();
             $table->json('options')->nullable();
+            // Free-form notes to display on K.D.S (e.g., less sugar)
+            $table->text('special_instructions')->nullable();
             $table->timestamps();
         });
     }

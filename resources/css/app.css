@@ -76,7 +76,22 @@ body.qash-loading { overflow: hidden; }
     background-color: #f05a28 !important;
     color: white !important;
 }
+.btn-main {
+    color: #ffffff;
+    background-color: #ff8c00;
+    border: none;
+}
 
+.btn-main:hover{
+    background-color: #f05a28;
+    opacity: 0.7;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    color: white;
+}
+.btn-main:active {
+    background-color: #f05a28 !important;
+    color: white !important;
+}
 /* modal */
 .modal-content {
     border: none;
@@ -347,3 +362,10 @@ html[data-theme='dark'] .table td {
   color: #cbd5e1;
   border-bottom-color: #1f2937;
 }
+
+/* Quantity bar */
+.qty-bar { background: #f3f4f6; border: 1px solid #eee; border-radius: 14px; padding: 8px; display: flex; align-items: center; justify-content: space-between; }
+.qty-btn { width: 40px; height: 40px; border-radius: 10px; border: 1px solid #eee; background: #fff; display:flex; align-items:center; justify-content:center; }
+.qty-value { flex: 1; text-align: center; font-weight: 600; }
+
+.qty-btn.pos {width: 20px !important; height: 20px !important;}

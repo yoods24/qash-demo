@@ -36,6 +36,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const grid = GridStack.init({
     cellHeight: 80,
     minRow: 6,
+    column: 12,
+    oneColumnModeMaxWidth: 0,
     float: true,
     animate: true,
     resizable: { handles: 'e, se, s, sw, w' },
@@ -189,14 +191,6 @@ document.addEventListener('DOMContentLoaded', () => {
             meta.textContent = `${statusText.charAt(0).toUpperCase() + statusText.slice(1)} - ${t.capacity} seats`;
           }
           normalizeTileText(widget);
-          // Override text and styles to normalize any encoding and apply shape/status
-          const meta2 = el.querySelector('.grid-stack-item-content .small.text-muted');
-          if (meta2) {
-            const s2 = t.status.charAt(0).toUpperCase() + t.status.slice(1);
-            meta2.textContent = `${s2} - ${t.capacity} seats`;
-          }
-          normalizeTileText(el);
-          applyTileStyles(el);
           bindTileClicks();
           selectTile(widget);
         }

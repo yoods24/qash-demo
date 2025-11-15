@@ -27,6 +27,7 @@ class CartPage extends Component
     public $showOptionModal = false;
     public $quantity = 1;
     public $editingItemId = null; // if set, modal updates existing cart item
+    public $note = '';
     
     public $softwareService = 1000;
     public $currentTable = null; // label for current dining table
@@ -74,6 +75,7 @@ class CartPage extends Component
         }
 
         $this->quantity = 1;
+        $this->note = '';
         $this->editingItemId = null; // creating a new item, not editing
         $this->showOptionModal = true;
 
@@ -94,6 +96,7 @@ class CartPage extends Component
         $this->selectedOptions = [];
         $attributes = $item->attributes ? $item->attributes->toArray() : [];
         $savedOptions = $attributes['options'] ?? [];
+        $this->note = $attributes['note'] ?? '';
 
         // If associative by optionId => [id,value,price_adjustment]
         foreach ($this->selectedProduct->options as $option) {
@@ -204,6 +207,7 @@ class CartPage extends Component
             'description' => $this->selectedProduct->description ?? null,
             'category'    => $this->selectedProduct->category->name ?? null,
             'estimated_seconds' => (int) ($this->selectedProduct->estimated_seconds ?? 0),
+            'note'        => $this->note,
         ];
 
         if ($this->editingItemId) {
@@ -227,7 +231,7 @@ class CartPage extends Component
             ]);
         }
 
-        $this->reset(['selectedProduct', 'selectedOptions', 'quantity', 'showOptionModal', 'editingItemId']);
+        $this->reset(['selectedProduct', 'selectedOptions', 'quantity', 'showOptionModal', 'editingItemId', 'note']);
         $this->dispatch('unlock-scroll');
         $this->refreshCart();
         $this->dispatch('cart-updated');
@@ -331,6 +335,9 @@ class CartPage extends Component
                 'tenant_id' => $tenantId,
                 'confirmed_at' => now(),
                 'expected_seconds_total' => $expectedSeconds,
+                // Mark orders from customer-facing flow as QR/dine-in
+                'source' => 'qr',
+                'order_type' => Session::has('dining_table_id') ? 'dine-in' : 'takeaway',
             ]);
 
         foreach (Cart::getContent() as $item) {
@@ -349,6 +356,7 @@ class CartPage extends Component
                 'quantity'     => $item->quantity,
                 'options'      => $options,
                 'estimate_seconds' => (int) ($options['estimated_seconds'] ?? 0),
+                'special_instructions' => $options['note'] ?? null,
                 'tenant_id'    => $tenantId ?? $this->tenantId,
             ]);
 

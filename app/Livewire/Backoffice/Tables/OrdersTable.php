@@ -48,6 +48,30 @@ class OrdersTable extends Component implements HasTable, HasSchemas, HasActions
                     ->searchable()
                     ->sortable(),
 
+                TextColumn::make('source')
+                    ->label('Source')
+                    ->badge()
+                    ->colors([
+                        'primary' => fn ($s) => $s === 'pos',
+                        'success' => fn ($s) => $s === 'qr',
+                    ])
+                    ->formatStateUsing(fn ($s) => match ((string) $s) {
+                        'pos' => 'POS',
+                        'qr'  => 'Table QR',
+                        default => ucfirst((string) $s),
+                    })
+                    ->sortable(),
+
+                TextColumn::make('order_type')
+                    ->label('Type')
+                    ->badge()
+                    ->colors([
+                        'primary' => fn ($s) => $s === 'dine-in',
+                        'warning' => fn ($s) => $s === 'takeaway',
+                    ])
+                    ->formatStateUsing(fn ($s) => $s === 'dine-in' ? 'Dine-In' : ucfirst((string)$s))
+                    ->sortable(),
+
                 TextColumn::make('customerDetail.name')
                     ->label('Customer')
                     ->searchable()
@@ -103,6 +127,18 @@ class OrdersTable extends Component implements HasTable, HasSchemas, HasActions
                     ->toggleable(),
             ])
             ->filters([
+                SelectFilter::make('source')
+                    ->label('Source')
+                    ->options([
+                        'pos' => 'POS',
+                        'qr'  => 'Table QR',
+                    ]),
+                SelectFilter::make('order_type')
+                    ->label('Type')
+                    ->options([
+                        'dine-in' => 'Dine-In',
+                        'takeaway' => 'Takeaway',
+                    ]),
                 SelectFilter::make('status')
                     ->label('Status')
                     ->options([

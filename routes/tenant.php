@@ -103,6 +103,12 @@ Route::middleware([
           })->name('backoffice.kitchen.index')
             ->middleware('permission:kitchen_view');
 
+          // POS page (sidebar hidden)
+          Route::get('/pos', function () {
+              return view('backoffice.pos.index');
+          })->name('backoffice.pos.index')
+            ->middleware('permission:sales_view');
+
           // Reports
           Route::get('/reports', [\App\Http\Controllers\ReportsController::class, 'index'])->name('backoffice.reports.index');
           Route::get('/reports/sales', [\App\Http\Controllers\ReportsController::class, 'sales'])->name('backoffice.reports.sales');
@@ -112,6 +118,10 @@ Route::middleware([
           // Dining Tables
           Route::get('/diningTable', [DiningTableController::class, 'index'])->name('backoffice.tables.index')
               ->middleware('permission:pos_table_orders_view');
+          // Waiter/Waitress plan view (Livewire component)
+          Route::get('/tables/plan', function () {
+              return view('backoffice.tables.plan');
+          })->name('backoffice.tables.plan')->middleware('permission:pos_table_orders_view');
           // Table Information (Filament table list with filters)
           Route::get('/tables/info',[DiningTableController::class, 'information'])->name('backoffice.tables.info')
               ->middleware('permission:pos_table_orders_view');

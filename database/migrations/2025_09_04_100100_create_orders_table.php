@@ -15,9 +15,15 @@ return new class extends Migration
             $table->foreignId('customer_detail_id')->constrained('customer_details');
             $table->decimal('total', 10, 2);
             $table->enum('status', ['confirmed', 'preparing', 'ready'])->default('confirmed');
+            // Order origin (POS cashier vs table QR)
+            $table->enum('source', ['pos', 'qr'])->default('pos');
+            // Order type (service intention)
+            $table->enum('order_type', ['dine-in', 'takeaway'])->default('dine-in');
             $table->enum('payment_status', ['paid', 'unpaid', 'cancelled'])->default('unpaid');
             $table->string('reference_no')->nullable();
             $table->index(['tenant_id', 'reference_no']);
+            $table->index(['tenant_id', 'source']);
+            $table->index(['tenant_id', 'order_type']);
             // Timing + performance fields
             $table->timestamp('confirmed_at')->nullable();
             $table->timestamp('preparing_at')->nullable();
