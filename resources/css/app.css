@@ -1,10 +1,9 @@
 @import 'bootstrap';
+@import 'lenis/dist/lenis.css';
 :root{
   --loader-size: 96px;
   --spin-duration: 1.2s;
 }
-
-
 /* =========================
    Global Loading Overlay
    ========================= */
@@ -36,11 +35,76 @@ html[data-theme='dark'] .logo-loader-overlay { background-color: rgba(11,18,32, 
 
 /* Prevent page scroll while overlay is visible */
 body.qash-loading { overflow: hidden; }
+/* =========================
+    background colors
+   ========================= */
+.bg-secondary-white { 
+    background-color: #ffffff; 
+}
+.red-asterisk {
+    color: red !important;
+}
+.bg-main {
+    background-color: #F7F7F7 !important;
+}
+.bg-orange {
+    background-color: rgb(242 62 20 / var(--bg-opacity-backoffice, 1));;
+}
+
+.bg-green {
+    background-color: rgb(1 190 95 / var(--bg-opacity-backoffice, 1));;
+}
+
+.bg-blue {
+    background-color:rgb(66 110 255 / var(--bg-opacity-backoffice, 1)); ;
+}
+
+.bg-purple-light {
+    background-color: rgb(169 83 255 / var(--bg-opacity-backoffice, 1));;
+}
+
+.bg-purple {
+    background-color: rgb(130 98 254 / var(--bg-opacity-backoffice, 1));;
+}
+/*   */
+/* =========================
+    backoffice colors
+   ========================= */
+.text-secondary-white { 
+    color: #ffffff; 
+}
+.text-primer {
+    color: var(--mainColorOrange) !important;
+}
+.text-orange {
+    color: rgb(242 62 20 / var(--bg-opacity-backoffice, 1));;
+}
+
+.text-green {
+    color: rgb(1 190 95 / var(--bg-opacity-backoffice, 1));;
+}
+
+.text-blue {
+    color:rgb(66 110 255 / var(--bg-opacity-backoffice, 1)); ;
+}
+
+.text-purple-light {
+    color: rgb(169 83 255 / var(--bg-opacity-backoffice, 1));;
+}
+
+.text-purple {
+    color: rgb(130 98 254 / var(--bg-opacity-backoffice, 1));;
+}
 
 .primer{
     color: #ff8c00;
 }
-
+.cursor-pointer {
+    cursor: pointer !important;
+}
+.list-style-none{
+    list-style: none;
+}
 .sekunder{
     color: #13283F;
 }
@@ -48,6 +112,23 @@ body.qash-loading { overflow: hidden; }
 /* background: linear-gradient(to bottom right, #fff8f0, #ffffff); */
     background-color: #ffffff;
 
+}
+.text-container {
+    text-align: justify;        /* Justify the text */
+    text-justify: inter-word;   /* Better spacing between words */
+
+    overflow-wrap: break-word;  /* Break long words if needed */
+    word-wrap: break-word;      /* Legacy support */
+    hyphens: auto;              /* Cleaner line breaks */
+
+    line-height: 1.6;           /* Improve readability */
+    letter-spacing: 0.2px;      /* Slight spacing for cleaner look */
+
+    font-size: 0.95rem;         /* Good readable size */
+    color: var(--text-color);   /* Use theme variable */
+    max-width: 100%;            /* Avoid horizontal overflow */
+
+    padding: 0rem 1rem;      /* Comfortable inner spacing */
 }
 .btn-back {
     background-color:#092C4C !important ;
@@ -76,6 +157,7 @@ body.qash-loading { overflow: hidden; }
     background-color: #f05a28 !important;
     color: white !important;
 }
+/* btn main */
 .btn-main {
     color: #ffffff;
     background-color: #ff8c00;
@@ -92,6 +174,28 @@ body.qash-loading { overflow: hidden; }
     background-color: #f05a28 !important;
     color: white !important;
 }
+/* OUTLINE VARIANT */
+.btn-outline-main {
+    color: #ff8c00;
+    background-color: transparent;
+    border: 2px solid #ff8c00;
+    transition: 0.2s ease-in-out;
+}
+
+.btn-outline-main:hover {
+    background-color: #ff8c00;
+    color: #ffffff;
+    border-color: #ff8c00;
+    opacity: 0.9;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+}
+
+.btn-outline-main:active {
+    background-color: #f05a28 !important;
+    border-color: #f05a28 !important;
+    color: white !important;
+}
+
 /* modal */
 .modal-content {
     border: none;
@@ -369,3 +473,20 @@ html[data-theme='dark'] .table td {
 .qty-value { flex: 1; text-align: center; font-weight: 600; }
 
 .qty-btn.pos {width: 20px !important; height: 20px !important;}
+
+/* Global pagination colors (Bootstrap 5) */
+.pagination-qash .page-link {
+  color: var(--mainColorOrange);
+}
+
+.pagination-qash .page-link:hover {
+  color: #ffffff;
+  background-color: var(--mainColorOrange);
+  border-color: var(--mainColorOrange);
+}
+
+.pagination-qash .page-item.active .page-link {
+  background-color: var(--mainColorOrange);
+  border-color: var(--mainColorOrange);
+  color: #ffffff;
+}

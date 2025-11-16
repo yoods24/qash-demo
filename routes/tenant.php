@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 use Livewire\Livewire;
 use App\Models\Product;
+use App\Models\Category;
 
 // Controllers
 use App\Livewire\Customer\CartPage;
 use App\Livewire\Customer\OrderPage;
+use App\Livewire\BookMenu;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\FloorController;
@@ -44,20 +46,27 @@ Route::middleware([
 ])->prefix('t/{tenant}')
   ->group(function () {
       // Customer-facing
-      Route::get('/', function () {
-          return view('customer.home');
-      })->name('home');
+      Route::get('/home', function () {
+          $menuCategories = Category::with(['products' => function ($query) {
+              $query->orderBy('name');
+          }])->inRandomOrder()->take(5)->get();
+
+          return view('customer.home', compact('menuCategories'));
+      })->name('customer.home');
 
       Route::get('/menu', function () {
-          $products = Product::all();
-          return view('customer.menu.index', ['products' => $products]);
-      })->name('menu');
+          return view('customer.menu.index');
+      })->name('customer.menu');
+
+      Route::get('/menu/book', BookMenu::class)->name('customer.menu.book');
+
 
       Route::get('/order', OrderPage::class)->name('customer.order');
       Route::get('/cart', CartPage::class)->name('cart.page');
 
-      // Careers (tenant-specific listing)
-      Route::get('/career', [CareerController::class, 'indexCustomer'])->name('career.index');
+      // Careers (tenant-specific listing & detail)
+      Route::get('/career', [CareerController::class, 'indexCustomer'])->name('customer.career.index');
+      Route::get('/career/{career}', [CareerController::class, 'showCustomer'])->name('customer.career.show');
 
       // Backoffice (tenant-specific)
       Route::prefix('backoffice')->middleware(['auth', 'ensure.user.can.access.tenant'])->group(function() {

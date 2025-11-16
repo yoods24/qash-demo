@@ -16,9 +16,12 @@ return new class extends Migration
             $table->string('tenant_id');
             $table->foreign('tenant_id')->references('id')->on('tenants')->cascadeOnDelete();
             $table->string('title');
-            $table->unsignedInteger('salary');
             $table->string('about');
             $table->boolean('status')->default(0);
+            $table->unsignedInteger('salary_min')->nullable();
+            $table->unsignedInteger('salary_max')->nullable();
+            $table->longText('responsibilities')->nullable();
+            $table->longText('requirements')->nullable();
             $table->timestamps();
         });
     }

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Category extends Model
 {
@@ -16,4 +17,9 @@ class Category extends Model
         'image_url',
         'name',
     ];
+
+    public function products(): HasMany
+    {
+        return $this->hasMany(Product::class);
+    }
 }

@@ -1,4 +1,4 @@
-<nav class="sidebar shrunk d-flex flex-column flex-shrink-0 p-3">
+<nav class="sidebar shrunk d-flex flex-column flex-shrink-0 p-3" data-lenis-prevent>
       <div class="brand-wrap d-flex justify-content-between align-items-center text-white text-decoration-none">
         <a href="{{ route('backoffice.dashboard') }}" class="d-inline-flex align-items-center text-decoration-none">
           <!-- Expanded: full logo | Shrunk: compact mark -->

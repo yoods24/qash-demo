@@ -1,43 +1,218 @@
 <x-customer.layout>
+<button class="about-btn" data-bs-toggle="modal" data-bs-target="#sideModal">
+    <i class="bi bi-question"></i>
+</button>
+  <!-- Side Modal -->
+  <div class="modal fade" id="sideModal" tabindex="-1" aria-hidden="true" data-lenis-prevent>
+    <div class="modal-dialog modal-side">
+      <div class="modal-content" >
+        <button type="button" class="side-close-btn" data-bs-dismiss="modal">X</button>
+        <div class="modal-body">
+          <h3>About Us</h3>
+          <div class="text-container">
+            In the 1950s, all that stood in this iconic location was a car park with a small kiosk. 
+            Even then it was the best spot for uninterrupted panoramic views of Adelaide, with the 
+            address a tourist destination in itself. In October 1985, 
+            RavoRes as we know it today opened.
+          </div>
+          <!-- Opening Hours -->
+          <div class="">
+            <h5 class="section-title text-center">OPENING HOURS</h5>
+            <div class="card-style text-center mt-3">
+              <div class="d-flex justify-content-between">
+                <div class="text-start">
+                  <p><strong>SENIN</strong></p>
+                  <p><strong>SELASA</strong></p>
+                  <p><strong>RABU</strong></p>
+                  <p><strong>KAMIS</strong></p>
+                  <p><strong>JUMAT</strong></p>
+                  <p><strong>SABTU</strong></p>
+                  <p><strong>MINGGU</strong></p>
+                </div>
+                <div class="text-end">
+                  <p>16:00 - 22:30</p>
+                  <p>16:00 - 22:30</p>
+                  <p>16:00 - 22:30</p>
+                  <p>16:00 - 22:30</p>
+                  <p>16:00 - 22:30</p>
+                  <p>16:00 - 22:30</p>
+                  <p>16:00 - 22:30</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex flex-column gap-3">
+            <h4 class="text-orange">Contact Us</h4>
+            <div class="d-flex flex-column gap-1">
+              <p class="m-0">No. 120 E 4th Ave, USA</p>
+              <p class="m-0">reservation@ravores.com</p>
+            </div>
+
+            <div class="d-flex justify-content-between">
+              <div>
+                <i class="bi bi-telephone">
+                  <span class="text-orange"> +62 81281381395</span>
+                </i>
+              </div>
+              <div class="d-flex gap-3 mt-1 social-icons">
+                <a href="https://wa.me/1234567890" target="_blank" class="text-dark">
+                  <i class="fab fa-whatsapp fa-xl"></i>
+                </a>
+                <a href="https://instagram.com/yourhandle" target="_blank" class="text-dark">
+                  <i class="fab fa-instagram fa-xl"></i>
+                </a>
+                <a href="https://facebook.com/yourpage" target="_blank" class="text-dark">
+                  <i class="fab fa-facebook fa-xl"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
     <div class="justify-content-center" style="background: linear-gradient(to bottom right, #000000, #201200);">
         <section class="section-wrapper">
-            <div class="d-flex justify-content-between hero-title w-100 ">
-                <div class="d-flex flex-column gap-4 w-50">
+            <div class="d-flex flex-wrap justify-content-between gap-5 align-items-center w-100">
+                <div class="col-12 col-md-6 d-flex flex-column gap-4 hero-title">
                     <h1>Discover the taste of real coffee</h1>
-                    <h6 class="text-secondary">We always ready to help by providing the best service for you. <br> We believe a good place to live can make life better.</h6>
-                    <a href="{{route('customer.order')}}">
-                    <button class="reservation-btn w-50">
-                        Order Now
-                    </button>
+                    <h6 class="text-secondary">
+                        We always ready to help by providing the best service for you. <br>
+                        We believe a good place to live can make life better.
+                    </h6>
+                    <a class="col-lg-6" href="{{ route('customer.order') }}">
+                        <button class="reservation-btn w-100">
+                            Order Now
+                        </button>
                     </a>
-                    <button class="reservation-btn w-50">
-                        Takeaway
-                    </button>
+                    <a class="col-lg-6" href="{{ route('customer.order') }}">
+                        <button class="reservation-btn w-100">
+                            Takeaway
+                        </button>
+                    </a>
                 </div>
-                <div class="ms-5">
-                <img class="hero-img" src="http://picsum.photos/seed/4594/1600/1600" alt="img">
+                <div class="col-lg-5 col-md-5 col-sm-12 col-xs-12 mt-3 mt-md-0">
+                    <img class="hero-img" src="http://picsum.photos/seed/4594/1600/1600" alt="img">
                 </div>
             </div>
         </section>
     </div>
-    <div class="secondary-white">
-        <section class="section-wrapper ">
-            <div class="mb-5 mt-5 d-flex justify-content-between">  
-                <h1 class="text-black">
-                    <strong>Careers</strong> 
-                </h1>
-                <a href="/career" class="reservation-btn text-decoration-none text-center" style="width: 15%;">
-                    Learn More 
-                </a>
+
+@php
+    /** @var \Illuminate\Support\Collection|\App\Models\Category[] $menuCategories */
+    $menuCategories = $menuCategories ?? collect();
+@endphp
+
+<div class="secondary-white">
+  <section class="section-wrapper menu-section text-black">
+    <div class="d-flex flex-column gap-4">
+      <div class="d-flex justify-content-between align-items-end flex-wrap gap-3">
+        <div class="flex-grow-1">
+          <p class="primer bold mb-1">O U R &nbsp; M E N U</p>
+          <h2 class="fw-bold mb-0">Discover the Taste of Real Coffee</h2>
+        </div>
+        <div class="d-none d-md-flex gap-3">
+          <a type="button" href="{{ route('customer.order') }}" class="btn btn-outline-main">Takeaway</a>
+          <a href="{{ route('customer.order') }}" class="btn btn-main">Order Now</a>
+        </div>
+      </div>
+
+      <div class="d-flex d-md-none flex-column gap-2 mt-2">
+        <a href="{{ route('customer.order') }}" class="btn btn-main w-100">Order Now</a>
+        <button class="btn reservation-btn w-100">Takeaway</button>
+      </div>
+
+      @if($menuCategories->isNotEmpty())
+        @php
+            $firstCategoryId = optional($menuCategories->first())->id;
+        @endphp
+        <div class="menu-category-row d-flex flex-wrap gap-3 mb-4">
+          @foreach($menuCategories as $category)
+            <button
+              type="button"
+              class="menu-category-card {{ $category->id === $firstCategoryId ? 'active' : '' }}"
+              data-menu-category="{{ $category->id }}"
+            >
+              <span>{{ strtoupper($category->name) }}</span>
+            </button>
+          @endforeach
+        </div>
+
+        <div id="menuCategoryPanels" class="menu-panels">
+          @foreach($menuCategories as $category)
+            @php
+                $products = $category->products ?? collect();
+                $featured = $products->isNotEmpty()
+                    ? $products->shuffle()->first()
+                    : null;
+                $columns = $products->values()->chunk(
+                    $products->count() > 0 ? (int) ceil($products->count() / 2) : 1
+                );
+            @endphp
+            <div
+              class="menu-category-panel {{ $category->id === $firstCategoryId ? 'active' : '' }}"
+              data-menu-panel="{{ $category->id }}"
+            >
+              <div class="row g-4 align-items-stretch">
+                <div class="col-md-5">
+                  <div class="menu-featured-wrapper">
+                    @if($featured && $featured->product_image)
+                      <img
+                        src="{{ asset('storage/' . $featured->product_image) }}"
+                        alt="{{ $featured->name }}"
+                        class="menu-featured-img"
+                      >
+                    @else
+                      <img
+                        src="http://picsum.photos/seed/{{ $category->id }}/800/800"
+                        alt="{{ $category->name }}"
+                        class="menu-featured-img"
+                      >
+                    @endif
+                  </div>
+                </div>
+                <div class="col-md-7">
+                  <div class="menu-items-card">
+                    <div class="row">
+                      @foreach($columns as $chunk)
+                        <div class="col-md-6">
+                          @foreach($chunk as $product)
+                            <div class="menu-item-row">
+                              <div class="menu-item-header d-flex justify-content-between">
+                                <span class="menu-item-name">{{ $product->name }}</span>
+                                <span class="menu-item-leader"></span>
+                                @if(!is_null($product->price))
+                                  <span class="menu-item-price">
+                                    {{ number_format($product->price, 0, ',', '.') }}
+                                  </span>
+                                @endif
+                              </div>
+                              @if($product->description)
+                                <p class="menu-item-desc mb-1">{{ $product->description }}</p>
+                              @endif
+                            </div>
+                          @endforeach
+                        </div>
+                      @endforeach
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div class="d-flex justify-content-around text-black gap-5">
-                <x-customer.career-card></x-customer.career-card>
-                <x-customer.career-card></x-customer.career-card>
-                <x-customer.career-card></x-customer.career-card>
-                <x-customer.career-card></x-customer.career-card>
-            </div>
-        </section>
+          @endforeach
+        </div>
+      @else
+        <div class="alert alert-light mt-4" role="alert">
+          Menu is coming soon. Please check back later.
+        </div>
+      @endif
     </div>
+  </section>
+</div>
 
 
     <section class="bg-black">
@@ -92,33 +267,6 @@
             width="100%" height="300" style="border:0;" allowfullscreen=""
             loading="lazy" referrerpolicy="no-referrer-when-downgrade">
           </iframe>
-        </div>
-      </div>
-
-      <!-- Opening Hours -->
-      <div class="col-md-4">
-        <h5 class="section-title text-center">OPENING HOURS</h5>
-        <div class="card-style text-center mt-3">
-          <div class="d-flex justify-content-between">
-            <div class="text-start">
-              <p><strong>SENIN</strong></p>
-              <p><strong>SELASA</strong></p>
-              <p><strong>RABU</strong></p>
-              <p><strong>KAMIS</strong></p>
-              <p><strong>JUMAT</strong></p>
-              <p><strong>SABTU</strong></p>
-              <p><strong>MINGGU</strong></p>
-            </div>
-            <div class="text-end">
-              <p>16:00 - 22:30</p>
-              <p>16:00 - 22:30</p>
-              <p>16:00 - 22:30</p>
-              <p>16:00 - 22:30</p>
-              <p>16:00 - 22:30</p>
-              <p>16:00 - 22:30</p>
-              <p>16:00 - 22:30</p>
-            </div>
-          </div>
         </div>
       </div>
 

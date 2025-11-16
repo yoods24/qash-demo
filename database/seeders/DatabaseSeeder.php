@@ -67,27 +67,77 @@ class DatabaseSeeder extends Seeder
         }
 
         // 6) Seed tenant-scoped data (categories, products, careers)
+        // Create exactly 5 menu categories for the customer view
         $categories = Category::factory()
-            ->count(3)
+            ->count(5)
             ->state(new Sequence(
-                ['name' => 'Non Beverage'],
-                ['name' => 'Coffee'],
-                ['name' => 'Non Coffee']
+                ['name' => 'Breakfast'],
+                ['name' => 'Dinner'],
+                ['name' => 'Drinks'],
+                ['name' => 'Healthy'],
+                ['name' => 'Vegetarian'],
             ))
             ->create(['tenant_id' => $tenant->id]);
 
-        // Create sample products under this tenant
-        Product::factory()
-            ->count(3)
-            ->state(new Sequence(
-                ['name' => 'Kopi Gayo'],
-                ['name' => 'Americano'],
-                ['name' => 'Sushi']
-            ))
-            ->create([
-                'tenant_id' => $tenant->id,
-                // Let factory choose a random category; all categories above belong to this tenant
-            ]);
+        // Create ~30 natural-looking products distributed across the 5 categories
+        $namedProductsByCategory = [
+            'Breakfast' => [
+                'Shakshouka',
+                'Avocado Toast',
+                'Buttermilk Pancakes',
+                'Granola Yogurt Parfait',
+                'Brioche French Toast',
+                'Breakfast Burrito',
+            ],
+            'Dinner' => [
+                'Grilled Salmon with Lemon Butter',
+                'Herb Roasted Chicken',
+                'Beef Bolognese Pasta',
+                'Mushroom Risotto',
+                'BBQ Short Ribs',
+                'Garlic Butter Prawn Linguine',
+            ],
+            'Drinks' => [
+                'Iced Caramel Latte',
+                'Cold Brew Coffee',
+                'Fresh Orange Juice',
+                'Sparkling Citrus Lemonade',
+                'House Iced Tea',
+                'Mixed Berry Smoothie',
+            ],
+            'Healthy' => [
+                'Quinoa Buddha Bowl',
+                'Grilled Chicken Salad',
+                'Roasted Veggie Bowl',
+                'Salmon Poke Bowl',
+                'Green Detox Salad',
+                'Chickpea Power Bowl',
+            ],
+            'Vegetarian' => [
+                'Margherita Flatbread',
+                'Mushroom Stroganoff',
+                'Roasted Veggie Lasagne',
+                'Halloumi Grain Salad',
+                'Pumpkin & Coconut Soup',
+                'Falafel Wrap with Tahini',
+            ],
+        ];
+
+        foreach ($categories as $category) {
+            $names = $namedProductsByCategory[$category->name] ?? [];
+
+            if (empty($names)) {
+                continue;
+            }
+
+            Product::factory()
+                ->count(count($names))
+                ->state(new Sequence(...array_map(fn ($name) => ['name' => $name], $names)))
+                ->create([
+                    'tenant_id'   => $tenant->id,
+                    'category_id' => $category->id,
+                ]);
+        }
 
         // Careers for the tenant
         Career::factory(10)->create([

@@ -16,13 +16,19 @@ class CareerFactory extends Factory
      */
     public function definition(): array
     {
+        $min = $this->faker->numberBetween(2_500_000, 4_000_000);
+        $max = $min + $this->faker->numberBetween(250_000, 2_000_000);
+
         return [
-            'title' => fake()->jobTitle(),
-            'salary' => fake()->randomElement([2300000,  4000000, 5200000]),
-            'about' => fake()->text(), 
-            'created_at' => fake()->dateTimeBetween('-30 days', 'now'),
-            'updated_at' => now(), // or fake()->dateTimeBetween($created_at, 'now') for realism
-            'status' => fake()->boolean()
+            'title' => $this->faker->jobTitle(),
+            'salary_min' => $min,
+            'salary_max' => $max,
+            'about' => $this->faker->sentence(18),
+            'responsibilities' => implode("\n", $this->faker->sentences(4)),
+            'requirements' => implode("\n", $this->faker->sentences(4)),
+            'created_at' => $this->faker->dateTimeBetween('-30 days', 'now'),
+            'updated_at' => now(),
+            'status' => $this->faker->boolean(80),
         ];
     }
 }

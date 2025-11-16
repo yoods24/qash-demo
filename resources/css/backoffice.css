@@ -119,69 +119,6 @@ body {
     box-shadow: 0 2px 8px rgba(0,0,0,.15);
 }
 */
-
-/* =========================
-    background colors
-   ========================= */
-.bg-secondary-white { 
-    background-color: #ffffff; 
-}
-.red-asterisk {
-    color: red !important;
-}
-.bg-main {
-    background-color: #F7F7F7 !important;
-}
-.bg-orange {
-    background-color: rgb(242 62 20 / var(--bg-opacity-backoffice, 1));;
-}
-
-.bg-green {
-    background-color: rgb(1 190 95 / var(--bg-opacity-backoffice, 1));;
-}
-
-.bg-blue {
-    background-color:rgb(66 110 255 / var(--bg-opacity-backoffice, 1)); ;
-}
-
-.bg-purple-light {
-    background-color: rgb(169 83 255 / var(--bg-opacity-backoffice, 1));;
-}
-
-.bg-purple {
-    background-color: rgb(130 98 254 / var(--bg-opacity-backoffice, 1));;
-}
-/*   */
-/* =========================
-    backoffice colors
-   ========================= */
-.text-secondary-white { 
-    color: #ffffff; 
-}
-.text-primer {
-    color: var(--mainColorOrange) !important;
-}
-.text-orange {
-    color: rgb(242 62 20 / var(--bg-opacity-backoffice, 1));;
-}
-
-.text-green {
-    color: rgb(1 190 95 / var(--bg-opacity-backoffice, 1));;
-}
-
-.text-blue {
-    color:rgb(66 110 255 / var(--bg-opacity-backoffice, 1)); ;
-}
-
-.text-purple-light {
-    color: rgb(169 83 255 / var(--bg-opacity-backoffice, 1));;
-}
-
-.text-purple {
-    color: rgb(130 98 254 / var(--bg-opacity-backoffice, 1));;
-}
-
-
 /* Utilities */
 .min-w-0 { min-width: 0 !important; }
 .layout-main { 
@@ -359,12 +296,6 @@ html[data-theme='dark'] .report-card .report-icon {
     position: sticky;
 }
 /* Bootstrap Tabs */
-.bootstrap-tabs-custom {
-
-}
-.bootstrap-tabs-item-custom {
-    
-}
 .bootstrap-tabs-link-custom {
     color: var(--secondaryBlack) !important;
 }
@@ -748,9 +679,6 @@ html[data-theme='dark'] .sidebar::-webkit-scrollbar-thumb { background-color: #3
         z-index: 1002;
     }
     /* hide desktop toggle if you prefer — keep visible if you use it to open */
-    #sidebarToggleDesktop {
-       /* display: none; */
-    }
     /* reduce padding to fit content nicer on phones */
     .secondary-white.container-fluid,
     .secondary-white.container,
@@ -864,7 +792,6 @@ html[data-theme='dark'] .sidebar::-webkit-scrollbar-thumb { background-color: #3
 /* =========================
    Kitchen Board Styles
    ========================= */
-.kitchen-board { }
 .kcol { background: #fff; border-radius: 12px; padding: 1rem; box-shadow: 0 2px 12px rgba(0,0,0,.08); }
 .kcol-header { display:flex; align-items:center; justify-content:space-between; margin-bottom: .5rem; }
 .kcol-title { font-weight: 700; color: #13283F; }

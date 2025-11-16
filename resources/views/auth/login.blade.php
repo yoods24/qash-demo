@@ -1,6 +1,5 @@
-<x-customer.layout>
+<x-layouts.app>
     <style>
-
     /* Container style */
     .custom-tabs {
         border-radius: 8px;
@@ -122,4 +121,4 @@
         </div>
     </section>
 </div>
-</x-customer.layout>
+</x-qash.layout>

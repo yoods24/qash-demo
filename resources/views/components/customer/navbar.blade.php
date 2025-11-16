@@ -1,14 +1,26 @@
-<nav class="d-flex justify-content-between align-items-center">
+<nav class="customer-navbar d-flex justify-content-between align-items-center text-center">
     <div class="navbar-brand">
-        <a class="h3 primer text-decoration-none bold" href="/">
-            Qash
+        <a class="h3 primer text-decoration-none bold" href="{{ route('customer.home') }}">
+            {{ tenant('id') }}
         </a>
     </div>
     <div>
-        <x-customer.nav-link href="/" :active="request()->is('/')">Home</x-customer.nav-link>
-        <x-customer.nav-link href="/menu" :active="request()->is('menu')">Menu</x-customer.nav-link>
-        <x-customer.nav-link href="/brand"  :active="request()->is('brand')">Brand</x-customer.nav-link>
-        <x-customer.nav-link href="/career"  :active="request()->is('career')">Careers</x-customer.nav-link>
-        <x-customer.nav-link href="/events"  :active="request()->is('events')">Events</x-customer.-nav-link>
+    <button
+        id="hamburgToggle"
+        type="button"
+        class="btn btn-link text-white d-md-none p-0 ms-3"
+        aria-label="Toggle navigation"
+        aria-expanded="false"
+        aria-controls="customerNavMenu"
+    >
+        <i class="bi bi-list fs-2"></i>
+    </button>
+    </div>
+    <div id="customerNavMenu" class="customer-nav-links d-flex align-items-start gap-4">
+        <x-customer.nav-link href="{{ route('customer.home') }}">Home</x-customer.nav-link>
+        <x-customer.nav-link href="{{ route('customer.menu') }}">Menu</x-customer.nav-link>
+        <x-customer.nav-link href="#">Brand</x-customer.nav-link>
+        <x-customer.nav-link href="{{ route('customer.career.index') }}">Careers</x-customer.nav-link>
+        <x-customer.nav-link href="/events">Events</x-customer.nav-link>
     </div>
 </nav>
