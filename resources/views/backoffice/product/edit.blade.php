@@ -100,11 +100,14 @@
                             <div class="card mb-3">
                                 <div class="card-header d-flex justify-content-between align-items-center">
                                     <strong>{{ $option->name }}</strong>
-                                    <form action="{{ route('backoffice.product.options.destroy', [$product->id, $option->id]) }}" method="POST" onsubmit="return confirm('Delete this option?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button class="btn btn-sm btn-outline-danger">Delete Option</button>
-                                    </form>
+                                    <button
+                                        type="submit"
+                                        class="btn btn-sm btn-outline-danger"
+                                        form="delete-option-{{ $option->id }}"
+                                        onclick="return confirm('Delete this option?');"
+                                    >
+                                        Delete Option
+                                    </button>
                                 </div>
                                 <div class="card-body p-3">
                                     <table class="table table-sm mb-0">
@@ -123,11 +126,14 @@
                                                         @endif
                                                     </td>
                                                     <td>
-                                                        <form action="{{ route('backoffice.product.option.value.destroy', [$product->id, $value->id]) }}" method="POST" onsubmit="return confirm('Delete this value?');">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <button class="btn btn-sm btn-outline-danger">Delete</button>
-                                                        </form>
+                                                        <button
+                                                            type="submit"
+                                                            class="btn btn-sm btn-outline-danger"
+                                                            form="delete-option-value-{{ $value->id }}"
+                                                            onclick="return confirm('Delete this value?');"
+                                                        >
+                                                            Delete
+                                                        </button>
                                                     </td>
                                                 </tr>
                                             @endforeach
@@ -143,14 +149,14 @@
                     <h6 class="fw-bold mb-2">Add New Option</h6>
                         <div class="mb-3">
                             <label class="form-label fw-bold">Option Name</label>
-                            <input type="text" name="option_name" class="form-control" placeholder="e.g. Size" required>
+                            <input type="text" name="option_name" class="form-control" placeholder="e.g. Size">
                             @error('option_name')<small class="text-danger">{{ $message }}</small>@enderror
                         </div>
                         <table class="table table-bordered" id="optionValuesTable">
                             <thead><tr><th>Value</th><th>Price Change</th><th></th></tr></thead>
                             <tbody>
                                 <tr>
-                                    <td><input type="text" name="values[0][value]" class="form-control" placeholder="Small" required></td>
+                                    <td><input type="text" name="values[0][value]" class="form-control" placeholder="Small"></td>
                                     <td><input type="number" step="0.01" name="values[0][price_change]" class="form-control" placeholder="0.00"></td>
                                     <td><button type="button" class="btn btn-outline-danger btn-sm removeRow">&times;</button></td>
                                 </tr>
@@ -198,8 +204,20 @@
 
         <div class="d-flex justify-content-end gap-2">
             <a href="{{ route('backoffice.product.index') }}" class="btn btn-secondary">Cancel</a>
-            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <button type="submit" class="btn btn-main">Save Changes</button>
         </div>
     </form>
+    @foreach ($product->options as $option)
+        <form id="delete-option-{{ $option->id }}" action="{{ route('backoffice.product.options.destroy', [$product->id, $option->id]) }}" method="POST" class="d-none">
+            @csrf
+            @method('DELETE')
+        </form>
+        @foreach ($option->values as $value)
+            <form id="delete-option-value-{{ $value->id }}" action="{{ route('backoffice.product.option.value.destroy', [$product->id, $value->id]) }}" method="POST" class="d-none">
+                @csrf
+                @method('DELETE')
+            </form>
+        @endforeach
+    @endforeach
 </div>
 </x-backoffice.layout>

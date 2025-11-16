@@ -13,17 +13,19 @@ export default defineConfig({
                 'resources/js/backoffice.js',
                 'resources/js/tables.js',
                 'resources/css/app.css',
+                'resources/css/overrides.css',
+                'resources/js/app.js',
                 'resources/css/filament.css',
             ],
             refresh: true,
         }),
     tailwindcss(),
     ],
-    // server: {
-    //     host: '0.0.0.0',
-    //     port: 5173,
-    //     hmr: {
-    //         host: '172.24.64.1',
-    //     },
-    // },
+    server: {
+        host: '0.0.0.0',
+        port: 5173,
+        hmr: {
+            host: '172.24.64.1',
+        },
+    },
 });

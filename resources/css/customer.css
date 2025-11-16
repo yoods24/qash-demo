@@ -1500,7 +1500,65 @@ body.no-scroll {
             display: none;
         }
 
-        .menu-item-price-mobile {
-            display: flex;
-        }
-    }
+.menu-item-price-mobile {
+    display: flex;
+}
+}
+
+/* Event type badges shared with backoffice */
+.event-type-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border-radius: 999px;
+    padding: 0.2rem 0.85rem;
+    font-weight: 600;
+    font-size: 0.85rem;
+    border: 1px solid transparent;
+}
+
+.event-type-badge i {
+    font-size: 0.9rem;
+}
+
+.event-type-badge--entertainment {
+    background-color: #ede9fe;
+    color: #5b21b6;
+    border-color: #d8b4fe;
+}
+
+.event-type-badge--announcement {
+    background-color: #dbeafe;
+    color: #1d4ed8;
+    border-color: #bfdbfe;
+}
+
+.event-type-badge--promotions {
+    background-color: #d1e7dd;
+    color: #0f5132;
+    border-color: #badbcc;
+}
+
+.event-type-badge--special-event {
+    background-color: #fdf1e1;
+    color: #b45309;
+    border-color: #fcd9a8;
+}
+
+.event-type-badge--workshop {
+    background-color: #cffafe;
+    color: #0e7490;
+    border-color: #a5f3fc;
+}
+
+.event-type-badge--community {
+    background-color: #fee2e2;
+    color: #b91c1c;
+    border-color: #fecaca;
+}
+
+.event-type-badge--operational {
+    background-color: #fef9c3;
+    color: #854d0e;
+    border-color: #fde68a;
+}

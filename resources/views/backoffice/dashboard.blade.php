@@ -10,6 +10,7 @@
             'avgOrderValue' => 0,
             'totalUsers' => 0,
             'totalProducts' => 0,
+            'outOfStockProducts' => 0,
             'totalCategories' => 0,
             'presentToday' => 0,
             'totalEmployees' => 0,
@@ -134,6 +135,23 @@
                     </div>
                 </div>
             </a>
+            </div>
+        </div>
+        <div class="col-12 col-md-6 col-lg-3">
+            <div class="card shadow-sm h-100">
+                <a href="{{ route('backoffice.product.index') }}" class="text-decoration-none text-dark">
+                    <div class="card-body d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="text-muted small">Products Out of Stock</div>
+                            <div class="fs-5 fw-bold">
+                                {{ number_format($m['outOfStockProducts']) }}/{{ number_format($m['totalProducts']) }}
+                            </div>
+                        </div>
+                        <div class="metric-icon rounded d-flex align-items-center justify-content-center text-danger bg-danger-subtle">
+                            <i class="bi bi-exclamation-circle"></i>
+                        </div>
+                    </div>
+                </a>
             </div>
         </div>
     </div>

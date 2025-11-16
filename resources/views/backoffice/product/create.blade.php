@@ -183,7 +183,7 @@
 
         <div class="d-flex justify-content-end gap-2">
             <a href="{{ route('backoffice.product.index') }}" class="btn btn-secondary">Cancel</a>
-            <button type="submit" class="btn btn-primary">Create Product</button>
+            <button type="submit" class="btn btn-main">Create Product</button>
         </div>
     </form>
 </div>

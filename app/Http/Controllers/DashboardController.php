@@ -26,6 +26,9 @@ class DashboardController extends Controller
         // Entities
         $totalUsers = (int) User::where('tenant_id', $tenantId)->count();
         $totalProducts = (int) Product::where('tenant_id', $tenantId)->count();
+        $outOfStockProducts = (int) Product::where('tenant_id', $tenantId)
+            ->where('stock_qty', '<=', 0)
+            ->count();
         $totalCategories = (int) Category::where('tenant_id', $tenantId)->count();
 
         // Attendance today (clocked-in users vs total employees)
@@ -45,6 +48,7 @@ class DashboardController extends Controller
                 'avgOrderValue' => $avgOrderValue,
                 'totalUsers' => $totalUsers,
                 'totalProducts' => $totalProducts,
+                'outOfStockProducts' => $outOfStockProducts,
                 'totalCategories' => $totalCategories,
                 'presentToday' => $presentToday,
                 'totalEmployees' => $totalEmployees,

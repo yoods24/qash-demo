@@ -1,4 +1,4 @@
-<div class="position-relative tenant-notification" wire:poll.8s="refreshNotifications">
+<div class="position-relative tenant-notification" wire:poll.8s="refreshNotifications" data-lenis-prevent>
     <button class="sekunder nav-icon text-decoration-none" wire:click="toggle">
         <i class="bi bi-bell"></i>
         @if($unreadCount > 0)
@@ -61,7 +61,7 @@
                 </div>
 
                 <div class="text-center mt-3 shadow-top">
-                    <a href="{{route('backoffice.notification.index', ['tenant' => $tenantId])}}" class="w-100 btn btn-primer rounded-0 text-decoration-none">
+                    <a href="{{route('backoffice.notification.index', ['tenant' => $tenantId])}}" class="w-100 btn btn-main rounded-0 text-decoration-none">
                         View All Notifications
                     </a>
                 </div>

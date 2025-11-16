@@ -22,6 +22,8 @@ use App\Http\Controllers\FaceRecognitionController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Hrm\ShiftController;
+use App\Http\Controllers\EventController;
+use App\Http\Controllers\CustomerEventController;
 // Models
 use App\Http\Controllers\DiningTableController;
 
@@ -67,6 +69,8 @@ Route::middleware([
       // Careers (tenant-specific listing & detail)
       Route::get('/career', [CareerController::class, 'indexCustomer'])->name('customer.career.index');
       Route::get('/career/{career}', [CareerController::class, 'showCustomer'])->name('customer.career.show');
+      Route::get('/events', [CustomerEventController::class, 'index'])->name('customer.events.index');
+      Route::get('/events/{event}', [CustomerEventController::class, 'show'])->name('customer.events.show');
 
       // Backoffice (tenant-specific)
       Route::prefix('backoffice')->middleware(['auth', 'ensure.user.can.access.tenant'])->group(function() {
@@ -185,6 +189,26 @@ Route::middleware([
           Route::get('/product/{product}/options/edit', [ProductController::class, 'optionEdit'])->name('backoffice.product.options.edit');
           // Product option values
           Route::post('/product/{product}/options/value/delete', [ProductController::class, 'optionDestroy'])->name('backoffice.product.option.value.destroy');
+
+          // Events
+          Route::get('/events', [EventController::class, 'index'])
+              ->name('backoffice.events.index')
+              ->middleware('permission:create_event|delete_event');
+          Route::get('/events/create', [EventController::class, 'create'])
+              ->name('backoffice.events.create')
+              ->middleware('permission:create_event');
+          Route::post('/events', [EventController::class, 'store'])
+              ->name('backoffice.events.store')
+              ->middleware('permission:create_event');
+          Route::get('/events/{event}/edit', [EventController::class, 'edit'])
+              ->name('backoffice.events.edit')
+              ->middleware('permission:create_event');
+          Route::put('/events/{event}', [EventController::class, 'update'])
+              ->name('backoffice.events.update')
+              ->middleware('permission:create_event');
+          Route::delete('/events/{event}', [EventController::class, 'destroy'])
+              ->name('backoffice.events.destroy')
+              ->middleware('permission:delete_event');
 
           // User Manipulate
           Route::get('/user/{user}/edit', [UserController::class, 'edit'])->name('backoffice.user.edit');

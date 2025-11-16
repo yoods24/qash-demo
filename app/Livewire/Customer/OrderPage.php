@@ -247,7 +247,7 @@ class OrderPage extends Component
         $data = $this->validate([
             'customerName'   => 'required|string|max:255',
             'customerEmail'  => 'required|email|max:255',
-            'customerGender' => 'nullable|in:man,women,none',
+            'customerGender' => 'nullable|in:male,female,none',
         ]);
 
         $gender = ($data['customerGender'] ?? null) === 'none' ? null : ($data['customerGender'] ?? null);

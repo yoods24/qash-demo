@@ -339,8 +339,16 @@ html[data-theme='dark'] .navbar-custom .nav-icon {
     background-color: transparent;
     color: #e5e7eb;
 }
+html[data-theme='dark'] .navbar-custom .nav-icon:hover {
+    background-color: #0c2a6ea2;
+    color: #e5e7eb;
+}
+html[data-theme='dark'] .navbar-custom .nav-icon:active {
+    background-color: #0c2a6ea2;
+    opacity: 0.8;
+}
 html[data-theme='dark'] .dropdown-menu {
-    background-color: #111827;
+    background-color: var(--mainColorBlue);
     color: #e5e7eb;
     border-color: #1f2937;
 }
@@ -453,27 +461,66 @@ html[data-theme='dark'] .sidebar .nav-link.active { background-color: var(--main
 /* =========================
    POS Page (POS layout helpers)
    ========================= */
+.pos-page { --pos-top-offset: 6rem; }
+.pos-left-column,
+.pos-right-column {
+  position: relative;
+}
 .pos-products-scroll {
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable; /* avoid layout shift when scrollbar appears */
+}
+@media (min-width: 992px) {
+  .pos-left-column,
+  .pos-right-column {
+    height: calc(100vh - var(--pos-top-offset));
+    overflow: hidden;
+  }
+  .pos-products-scroll {
+    height: 100%;
+    padding-right: .5rem;
+  }
+  .pos-right-column .card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .pos-right-column .card-body {
+    flex: 1 1 auto;
+    min-height: 0;
     overflow-y: auto;
-    overflow-x: hidden;
-    scrollbar-gutter: stable; /* avoid layout shift when scrollbar appears */
+    padding-bottom: .75rem;
+  }
+}
+@media (max-width: 991.98px) {
+  .pos-products-scroll {
+    max-height: none;
+    padding-right: 0;
+  }
 }
 
-/* POS right panel fixed to side (always) */
-.pos-page { --pos-right-w: 380px; }
-.pos-page .container-fluid { padding-right: var(--pos-right-w); }
-.pos-right-fixed {
-  position: fixed;
-  top: 6rem;
-  right: 0;
-  bottom: 0;
-  width: var(--pos-right-w);
-  overflow: auto; /* internal scroll if content exceeds viewport */
-  z-index: 1010; /* above content but below navbar handle */
+.product-card-disabled {
+  opacity: 0.6;
+  position: relative;
+  pointer-events: none;
 }
-.pos-right-fixed { display: flex; flex-direction: column; }
-.pos-right-fixed > .card { height: 100%; display: flex; flex-direction: column; min-height: 0; }
-.pos-right-fixed .card-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding-bottom: .75rem; }
+.product-card-disabled .btn {
+  pointer-events: none;
+}
+.pos-stock-badge {
+  position: absolute;
+  left: 50%;
+  transform: translateY(15%);
+  
+  color: black;
+  font-size: 0.75rem;
+  font-weight: 600;
+  pointer-events: none;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
 
 /* POS search bar */
 .pos-search {
@@ -535,6 +582,9 @@ html[data-theme='dark'] .pos-cat-btn.active { border-color: var(--mainColorOrang
 
 /* Prevent whole-page scroll on POS when enabled */
 body.pos-no-page-scroll { overflow: hidden; }
+@media (max-width: 1199.98px) {
+  body.pos-no-page-scroll { overflow: auto; }
+}
 html[data-theme='dark'] .sidebar::-webkit-scrollbar-track { background: #0b1220; }
 html[data-theme='dark'] .sidebar::-webkit-scrollbar-thumb { background-color: #374151; border-color: #0b1220; }
 
@@ -603,11 +653,25 @@ html[data-theme='dark'] .sidebar::-webkit-scrollbar-thumb { background-color: #3
     transition: all 0.1s ease;
     display: none;
 }
-.sidebar .brand-wrap { margin-left: -1rem; margin-right: -1rem; margin-top: -1rem; padding: 1rem; }
-.sidebar .brand-wrap > a { display: block; width: 100%; }
-.sidebar .brand-img { width: 100%; height: auto; display: block; max-height: 44px; }
-.sidebar .brand-compact { display: none; }
-.sidebar .brand-full { width: 70% !important; height: 5rem !important; }
+.sidebar .brand-wrap > a { display: inline-block !important; width: 100%; }
+.sidebar .brand-img {
+    cursor: pointer;
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    max-height: 54px;
+    display: block;
+    object-fit: contain;
+}
+.sidebar .brand-compact {
+    display: none;
+    max-height: 48px;
+    width: auto;
+}
+.sidebar .brand-full {
+    max-width: 160px;
+    max-height: 50px;
+}
 .sidebar.shrunk .brand-full { display: none; }
 .sidebar.shrunk .brand-compact { display: block; max-height: 36px; }
 
@@ -741,7 +805,7 @@ html[data-theme='dark'] .sidebar::-webkit-scrollbar-thumb { background-color: #3
     min-height: 120px;
 }
 .navbar-custom {
-    background-color: #ff8c00;
+    background-color: var(--mainColorOrange);
     padding: 1rem 1rem !important;
     border-bottom: 1px solid #ddd;
     box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
@@ -775,19 +839,20 @@ html[data-theme='dark'] .sidebar::-webkit-scrollbar-thumb { background-color: #3
 .navbar-custom .nav-icon {
     font-size: larger;
     border: none;
-    background-color: #e07b01;
-    border-radius: 50%;
+    background-color: var(--mainColorOrange);
+    border-radius: 9px;
     margin-right:1rem ;
     transition: all 0.2s ease;
     padding: 6px 12px;
 }
 
 .navbar-custom .nav-icon:hover {
-    background-color: #d47502;
+    background-color: rgb(234, 88, 12);
 }
 
 .navbar-custom .nav-icon:active {
-    background-color: #b46402;
+    background-color: rgb(234, 88, 12);
+    opacity: 0.8;
 }
 /* =========================
    Kitchen Board Styles
@@ -1033,7 +1098,6 @@ html[data-theme='dark'] .kds-overview .kv.blue .num { color: #60a5fa; }
 .action-btn:hover {
     color: #cc6f00;
 }
-
 
 .status-badge {
     display: inline-flex;

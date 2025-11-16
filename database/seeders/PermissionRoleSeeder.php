@@ -19,17 +19,33 @@ class PermissionRoleSeeder extends Seeder
             throw new \RuntimeException('PermissionRoleSeeder must be executed within a tenant context.');
         }
 
-        $permissions = [
-            'career_edit', 'career_delete', 'career_create',
-
-            'product_','product_create', 'product_delete', ''
+        $permissionGroups = [
+            'career' => [
+                'career_edit',
+                'career_delete',
+                'career_create',
+            ],
+            'product' => [
+                'product_create',
+                'product_delete',
+            ],
+            'event' => [
+                'create_event',
+                'delete_event',
+            ],
         ];
 
-        foreach ($permissions as $permission) {
-            Permission::firstOrCreate(['name' => $permission]);
-        }
+        collect($permissionGroups)
+            ->flatten()
+            ->unique()
+            ->each(fn ($permission) => Permission::firstOrCreate(['name' => $permission]));
 
         $role = Role::firstOrCreate(['name' => 'Cashier']);
-        $role->syncPermissions(['career_create', 'career_delete']);
+        $role->syncPermissions([
+            'career_create',
+            'career_delete',
+            'create_event',
+            'delete_event',
+        ]);
     }
 }

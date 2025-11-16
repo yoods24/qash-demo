@@ -1,84 +1,100 @@
-<div class="pos-page ">
+<div class="pos-page">
     <div class="container-fluid bg-main">
         <div class="row g-3">
             <!-- Products grid (scrollable area) -->
-            <div class="col-12 col-xl-12">
-                <div class="pos-products-scroll">
-                <!-- Search + Categories now scroll with products -->
-                <div class="">
-                    <div class="row g-3 align-items-center mb-2">
-                        <div class="col-12 col-lg-12">
-                            <div class="input-group pos-search shadow-sm">
-                                <input type="text" class="form-control pos-search-input" placeholder="Search by Menu Item" wire:model.debounce.300ms="search">
-                                <button class="btn btn-main pos-search-btn" type="button" aria-label="Search">
-                                    <i class="bi bi-search"></i>
-                                </button>
+            <div class="col-md-7 col-lg-8 pos-left-column d-flex flex-column">
+                <div class="pos-products-scroll" data-lenis-prevent>
+                    <!-- Search + Categories now scroll with products -->
+                    <div class="">
+                        <div class="row g-3 align-items-center mb-2">
+                            <div class="col-12">
+                                <div class="input-group pos-search shadow-sm">
+                                    <input type="text" class="form-control pos-search-input" placeholder="Search by Menu Item" wire:model.debounce.300ms="search">
+                                    <button class="btn btn-main pos-search-btn" type="button" aria-label="Search">
+                                        <i class="bi bi-search"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                        <div class="col-12 col-lg-3 text-end">
-                            <!-- Placeholder for cart button in future -->
-                        </div>
-                    </div>
 
-                    <!-- Category Splide slider -->
-                    <div id="pos-cat-slider" class="splide" wire:ignore>
-                        <div class="splide__track">
-                            <ul class="splide__list">
-                                <li class="splide__slide">
-                                    <button type="button" class="pos-cat-btn {{ $categoryId ? '' : 'active' }}" data-cat-id="all" wire:click="selectCategory(null)">
-                                        <span class="pos-cat-label">All Items</span>
-                                    </button>
-                                </li>
-                                @foreach($this->categories as $cat)
-                                    <li class="splide__slide py-2" wire:key="cat-{{ $cat->id }}">
-                                        <button type="button" class="pos-cat-btn {{ $categoryId === $cat->id ? 'active' : '' }}" data-cat-id="{{ $cat->id }}" wire:click="selectCategory({{ $cat->id }})">
-                                            <span class="pos-cat-label">{{ $cat->name }}</span>
+                        <!-- Category Splide slider -->
+                        <div id="pos-cat-slider" class="splide" wire:ignore>
+                            <div class="splide__track">
+                                <ul class="splide__list">
+                                    <li class="splide__slide py-2">
+                                        <button type="button" class="pos-cat-btn {{ $categoryId ? '' : 'active' }}" data-cat-id="all" wire:click="selectCategory(null)">
+                                            <span class="pos-cat-label">All Items</span>
                                         </button>
                                     </li>
-                                @endforeach
-                            </ul>
+                                    @foreach($this->categories as $cat)
+                                        <li class="splide__slide py-2" wire:key="cat-{{ $cat->id }}">
+                                            <button type="button" class="pos-cat-btn {{ $categoryId === $cat->id ? 'active' : '' }}" data-cat-id="{{ $cat->id }}" wire:click="selectCategory({{ $cat->id }})">
+                                                <span class="pos-cat-label">{{ $cat->name }}</span>
+                                            </button>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 row-cols-xxl-5 g-3  mt-3">
-                    @forelse($this->products as $product)
-                        <div class="col" wire:key="prod-{{ $product->id }}">
-                            <div class="card product-card h-100 shadow-sm">
-                                <div class="ratio ratio-4x3">
-                                    @php $img = $product->product_image_url ?? null; @endphp
-                                    @if($img)
-                                        <img src="{{ $img }}" alt="{{ $product->name }}" class="card-img-top object-fit-cover">
-                                    @else
-                                        <div class="d-flex align-items-center justify-content-center bg-light text-muted">No Image</div>
-                                    @endif
-                                </div>
-                                <div class="card-body d-flex flex-column">
-                                    <div class="fw-semibold text-truncate" title="{{ $product->name }}">{{ $product->name }}</div>
-                                    <div class="text-muted small mb-2">Rp.{{ number_format((float)($product->price ?? 0), 2) }}</div>
-                                    <div class="mt-auto text-end">
-                                        <button type="button" class="btn btn-sm btn-outline-primary" wire:click="showProductOptions({{ $product->id }})">
-                                            <i class="bi bi-bag-plus"></i> Add
-                                        </button>
+                    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 row-cols-xxl-5 g-3 mt-3">
+                        @forelse($this->products as $product)
+                            @php
+                                $stockQty = (int) ($product->stock_qty ?? 0);
+                                $isOutOfStock = $stockQty <= 0;
+                            @endphp
+                            <div class="col" wire:key="prod-{{ $product->id }}">
+                                <div class="card product-card h-100 shadow-sm {{ $isOutOfStock ? 'product-card-disabled' : '' }}">
+                                    <div class="ratio ratio-4x3">
+                                        @php $img = $product->product_image_url ?? null; @endphp
+                                        @if($img)
+                                            <img src="{{ $img }}" alt="{{ $product->name }}" class="card-img-top object-fit-cover">
+                                        @else
+                                            <div class="d-flex align-items-center justify-content-center bg-light text-muted">No Image</div>
+                                        @endif
+                                        @if($isOutOfStock)
+                                            <span class="pos-stock-badge">Out of Stock</span>
+                                        @endif
+                                    </div>
+                                    <div class="card-body d-flex flex-column">
+                                        <div class="fw-semibold text-truncate" title="{{ $product->name }}">{{ $product->name }}</div>
+                                        <div class="text-muted small mb-2">
+                                            Rp.{{ number_format((float)($product->price ?? 0), 2) }}
+                                            @if($product->stock_qty !== null)
+                                                <span class="text-muted small d-block">Stock: {{ max(0, $stockQty) }}</span>
+                                            @endif
+                                        </div>
+                                        <div class="mt-auto text-end">
+                                            <button
+                                                type="button"
+                                                class="btn btn-sm {{ $isOutOfStock ? 'btn-outline-secondary disabled' : 'btn-outline-primary' }}"
+                                                @unless($isOutOfStock) wire:click="showProductOptions({{ $product->id }})" @endunless
+                                                @if($isOutOfStock) disabled aria-disabled="true" @endif
+                                            >
+                                                @if($isOutOfStock)
+                                                    <i class="bi bi-exclamation-triangle"></i> Out of Stock
+                                                @else
+                                                    <i class="bi bi-bag-plus"></i> Add
+                                                @endif
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    @empty
-                        <div class="col-12">
-                            <div class="alert alert-secondary">No products found.</div>
-                        </div>
-                    @endforelse
-                </div>
+                        @empty
+                            <div class="col-12">
+                                <div class="alert alert-secondary">No products found.</div>
+                            </div>
+                        @endforelse
+                    </div>
                 </div>
             </div>
 
-        </div>
-
-    <!-- Right pane: customer + order type + table + bill summary (fixed on desktop) -->
-    <div class="pos-right-fixed">
-        <div class="card">
-            <div class="card-body">
+            <!-- Right pane: customer + order type + table + bill summary -->
+            <div class="col-md-5 col-lg-4 pos-right-column">
+                <div class="card h-100">
+                    <div class="card-body" data-lenis-prevent>
                 <div class="d-flex align-items-center justify-content-between mb-2">
                     <label class="form-label mb-0">Customer</label>
                 </div>
@@ -182,9 +198,11 @@
                 <div class="mt-3">
                     <button type="button" class="btn btn-main w-100" wire:click="checkout">Order</button>
                 </div>
-            </div>
-        </div>
-    </div>
+            </div> <!-- /.card-body -->
+        </div> <!-- /.card -->
+        </div> <!-- /.pos-right-column -->
+        </div> <!-- /.row -->
+    </div> <!-- /.container-fluid -->
 
     <!-- Product Options Modal (Custom overlay, no Bootstrap dependency) -->
     @if($showOptionModal && $selectedProduct)
@@ -331,18 +349,28 @@
     <script>
     $js('posMeasure', () => {
         const scroll = document.querySelector('.pos-products-scroll');
-        if (!scroll) return;
-        // Compute from right panel top or navbar height; fallback to 96px (6rem)
-        let topPx = 96;
-        const right = document.querySelector('.pos-right-fixed');
-        if (right) {
-            const t = parseFloat(getComputedStyle(right).top);
-            if (!Number.isNaN(t)) topPx = t;
-        } else {
-            const nav = document.querySelector('.navbar.navbar-custom');
-            if (nav) topPx = Math.max(56, Math.round(nav.getBoundingClientRect().height));
+        const leftCol = document.querySelector('.pos-left-column');
+        const rightCol = document.querySelector('.pos-right-column');
+
+        if (window.innerWidth < 992) {
+            [scroll, leftCol, rightCol].forEach((el) => {
+                if (el) el.style.height = '';
+            });
+            return;
         }
-        scroll.style.height = `calc(100vh - ${topPx}px)`;
+
+        const reference = leftCol || rightCol || scroll;
+        if (!reference) return;
+
+        const rect = reference.getBoundingClientRect();
+        const viewport = window.innerHeight || document.documentElement.clientHeight;
+        const gap = 16; // keep slight spacing from footer edge
+        const topOffset = rect.top || 96;
+        const height = Math.max(300, viewport - topOffset - gap);
+
+        [leftCol, rightCol, scroll].forEach((el) => {
+            if (el) el.style.height = `${height}px`;
+        });
     });
 
     $js('posSetActiveCat', (catId) => {

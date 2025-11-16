@@ -144,6 +144,9 @@ class DatabaseSeeder extends Seeder
             'tenant_id' => $tenant->id,
         ]);
 
+        // Events
+        $this->callWith(EventSeeder::class, ['tenantId' => $tenant->id]);
+
         // 7) Add a couple of demo staff users for testing
         $this->call(DemoCafeUserSeeder::class);
     }

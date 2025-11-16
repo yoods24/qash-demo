@@ -181,7 +181,7 @@
     </div>
 
     <!-- Modal -->
-    <div class="bottom-sheet show">
+    <div class="bottom-sheet show" data-lenis-prevent>
         <!-- header buttons -->
         <div class="option-header d-flex justify-content-between">
             <button class="rounded-circle btn-lg bi bi-x p-2" onclick="@this.closeOptionModal()"></button>
@@ -412,12 +412,12 @@
           <label class="form-label">Gender (optional)</label>
           <div class="d-flex gap-3">
             <div class="form-check">
-              <input class="form-check-input" type="radio" id="genderMan" value="man" wire:model="customerGender">
-              <label class="form-check-label" for="genderMan">Man</label>
+              <input class="form-check-input" type="radio" id="genderMale" value="male" wire:model="customerGender">
+              <label class="form-check-label" for="genderMale">Male</label>
             </div>
             <div class="form-check">
-              <input class="form-check-input" type="radio" id="genderWomen" value="women" wire:model="customerGender">
-              <label class="form-check-label" for="genderWomen">Women</label>
+              <input class="form-check-input" type="radio" id="genderFemale" value="female" wire:model="customerGender">
+              <label class="form-check-label" for="genderFemale">Female</label>
             </div>
             <div class="form-check">
               <input class="form-check-input" type="radio" id="genderNone" value="none" wire:model="customerGender">

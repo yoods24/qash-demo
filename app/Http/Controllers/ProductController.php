@@ -188,6 +188,10 @@ class ProductController extends Controller
             'description'   => 'nullable|string|max:255',
             'active'        => 'nullable|boolean',
             'stock_qty'     => 'nullable|integer|min:0',
+            'option_name'   => 'nullable|string|max:255',
+            'values'        => 'nullable|array',
+            'values.*.value' => 'nullable|string|max:255',
+            'values.*.price_change' => 'nullable|numeric',
         ]);
 
         // Handle image update
@@ -220,7 +224,31 @@ class ProductController extends Controller
             'active'        => $validated['active'],
             'stock_qty'     => $validated['stock_qty'],
         ]);
-        ds('test');
+
+        $optionName = trim((string)($validated['option_name'] ?? ''));
+        $values = $validated['values'] ?? null;
+        if ($optionName && is_array($values)) {
+            DB::transaction(function () use ($product, $optionName, $values) {
+                $productOption = ProductOption::create([
+                    'product_id' => $product->id,
+                    'name' => $optionName,
+                ]);
+
+                foreach ($values as $valueData) {
+                    $val = trim((string)($valueData['value'] ?? ''));
+                    if ($val === '') {
+                        continue;
+                    }
+
+                    \App\Models\ProductOptionValue::create([
+                        'product_option_id' => $productOption->id,
+                        'value' => $val,
+                        'price_adjustment' => isset($valueData['price_change']) ? (float) $valueData['price_change'] : 0,
+                    ]);
+                }
+            });
+        }
+
         return redirect()
             ->route('backoffice.product.index')
             ->with('message', 'Product updated successfully.');

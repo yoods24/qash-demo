@@ -2,7 +2,7 @@
       <div class="brand-wrap d-flex justify-content-between align-items-center text-white text-decoration-none">
         <a href="{{ route('backoffice.dashboard') }}" class="d-inline-flex align-items-center text-decoration-none">
           <!-- Expanded: full logo | Shrunk: compact mark -->
-          <img src="{{ asset('storage/logos/Qash_main_logo_logogram.png') }}" alt="Qash" style="width: 90px" class="image" />
+          <img src="{{ asset('storage/logos/Logotype-White.png') }}" alt="Qash" style="width: 90px" class="image" />
         </a>
       </div>
         <div class="right-group d-flex align-items-center gap-1">

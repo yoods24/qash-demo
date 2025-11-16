@@ -1,10 +1,8 @@
 <nav class="sidebar shrunk d-flex flex-column flex-shrink-0 p-3" data-lenis-prevent>
-      <div class="brand-wrap d-flex justify-content-between align-items-center text-white text-decoration-none">
-        <a href="{{ route('backoffice.dashboard') }}" class="d-inline-flex align-items-center text-decoration-none">
+      <div class="brand-wrap d-flex align-items-center justify-content-center text-white text-decoration-none">
           <!-- Expanded: full logo | Shrunk: compact mark -->
-          <img src="{{ asset('storage/logos/Qash_full_logo_logogram.png') }}" alt="Qash" class="brand-img brand-compact" />
-          <img src="{{ asset('storage/logos/Qash_main_logo_logogram.png') }}" alt="Qash" class="brand-img brand-full" />
-        </a>
+          <img onclick="window.location='{{ route('backoffice.dashboard') }}'" src="{{ asset('storage/logos/Main Logo-Orange.png') }}" alt="Qash" class="brand-img brand-compact" />
+          <img onclick="window.location='{{ route('backoffice.dashboard') }}'" src="{{ asset('storage/logos/Logotype-Orange.png') }}" alt="Qash" class="brand-img brand-full" />
         <button id="sidebarToggleMobile" title="Toggle Sidebar"><i class="bi bi-list"></i></button>
       </div>
 
@@ -64,7 +62,7 @@
         </x-backoffice.sidebar-nav-section>
 
         <x-backoffice.sidebar-nav-section section="POS & Orders">
-          <x-backoffice.sidebar-nav-link class="bi bi-list-task me-2">POS</x-backoffice.sidebar-nav-link>
+          <x-backoffice.sidebar-nav-link href="{{ route('backoffice.pos.index') }}" class="bi bi-list-task me-2">POS</x-backoffice.sidebar-nav-link>
           <x-backoffice.sidebar-nav-link class="bi bi-cash-coin me-2"  >POS Orders</x-backoffice.sidebar-nav-link>
           <x-backoffice.sidebar-nav-link class="bi bi-gear me-2" >Table Orders</x-backoffice.sidebar-nav-link>
           <x-backoffice.sidebar-nav-link href="{{route('backoffice.order.index')}}" class="bi bi-list-task me-2" >All Order</x-backoffice.sidebar-nav-link>
@@ -102,7 +100,9 @@
         @endcan
         
         <x-backoffice.sidebar-nav-section section="Content (CMS)">
+          <x-backoffice.sidebar-nav-link href="{{ route('backoffice.events.index') }}" class="bi bi-calendar-event me-2 heroicon heroicon-o-calendar">Events</x-backoffice.sidebar-nav-link>
           <x-backoffice.sidebar-nav-link href="{{route('backoffice.careers.index')}}" class="bi bi-list-task me-2">Career</x-backoffice.sidebar-nav-link>
+          <x-backoffice.sidebar-nav-link class="bi bi-list-task me-2">About Homepage</x-backoffice.sidebar-nav-link>
           <x-backoffice.sidebar-nav-link class="bi bi-list-task me-2">Select Homepage</x-backoffice.sidebar-nav-link>
           <x-backoffice.sidebar-nav-link class="bi bi-list-task me-2">Homepage Settings</x-backoffice.sidebar-nav-link>
           <x-backoffice.sidebar-nav-link class="bi bi-list-task me-2">Font Family</x-backoffice.sidebar-nav-link>

@@ -1,4 +1,6 @@
-<x-backoffice.layout :hideSidebar="true">
+<x-backoffice.navbar-only-layout>
     <livewire:backoffice.pos-page />
-</x-backoffice.layout>
+
+</x-backoffice.navbar-only-layout>
+
 
