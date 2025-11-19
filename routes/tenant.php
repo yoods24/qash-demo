@@ -13,10 +13,12 @@ use App\Livewire\BookMenu;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\FloorController;
+use App\Http\Controllers\OrderTrackingController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\CareerController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\FaceRecognitionController;
 use App\Http\Controllers\SettingsController;
@@ -26,7 +28,7 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\CustomerEventController;
 // Models
 use App\Http\Controllers\DiningTableController;
-
+use App\Http\Controllers\TaxController;
 // Livewire
 use App\Livewire\Backoffice\TenantNotification;
 use App\Http\Controllers\TenantNotificationController;
@@ -65,6 +67,11 @@ Route::middleware([
 
       Route::get('/order', OrderPage::class)->name('customer.order');
       Route::get('/cart', CartPage::class)->name('cart.page');
+      Route::get('/payment/{order}', [PaymentController::class, 'show'])->name('payment.show');
+      Route::post('/payment/{order}', [PaymentController::class, 'process'])->name('payment.process');
+      Route::get('/payment/success/{order}', [PaymentController::class, 'success'])->name('payment.success');
+      Route::get('/payment/failed/{order}', [PaymentController::class, 'failed'])->name('payment.failed');
+      Route::get('/order/track/{order}', [OrderTrackingController::class, 'show'])->name('order.track');
 
       // Careers (tenant-specific listing & detail)
       Route::get('/career', [CareerController::class, 'indexCustomer'])->name('customer.career.index');
@@ -86,7 +93,10 @@ Route::middleware([
           Route::delete('/career/{career}/delete', [CareerController::class, 'destroy'])->name('backoffice.career.destroy')
               ->middleware('permission:career_delete');
           Route::get('/career', [CareerController::class, 'indexBackoffice'])->name('backoffice.careers.index');
+          Route::view('/customers', 'backoffice.customers.index')->name('backoffice.customers.index');
 
+          Route::get('/taxes', [TaxController::class, 'index'])->name('backoffice.taxes.index');
+          Route::post('taxes/store', [TaxController::class, 'store'])->name('backoffice.taxes.store');
           // Staffs
           Route::get('/staff', [StaffController::class, 'index'])->name('backoffice.staff.index')
               ->middleware('permission:hrm_employees_view');

@@ -79,7 +79,7 @@
         <section class="section-wrapper">
             <div class="d-flex flex-wrap justify-content-between gap-5 align-items-center w-100">
                 <div class="col-12 col-md-6 d-flex flex-column gap-4 hero-title">
-                    <h1>Discover the taste of real coffee</h1>
+                    <h1 class="text-white">Discover the taste of real coffee</h1>
                     <h6 class="text-secondary">
                         We always ready to help by providing the best service for you. <br>
                         We believe a good place to live can make life better.

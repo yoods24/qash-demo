@@ -175,9 +175,9 @@
                             <div style="width:100px;" class="text-center">
                                 <div class="d-inline-flex align-items-center gap-1">
                                     <div class="qty-bar mb-4">
-                                        <button class="qty-btn pos" type="button" wire:click="decreaseItem({{ $citem->id }})"><i class="bi bi-dash"></i></button>
+                                        <button class="qty-btn pos" type="button" wire:click="decreaseItem('{{ $citem->id }}')"><i class="bi bi-dash"></i></button>
                                         <div class="qty-value">{{ $citem->quantity }}</div>
-                                        <button class="qty-btn pos" type="button" wire:click="increaseItem({{ $citem->id }})"><i class="bi bi-plus"></i></button>
+                                        <button class="qty-btn pos" type="button" wire:click="increaseItem('{{ $citem->id }}')"><i class="bi bi-plus"></i></button>
                                     </div>
                                 </div>
                             </div>
@@ -192,6 +192,12 @@
                 <div class="mt-3 d-flex flex-column gap-1">
                     <div class="d-flex justify-content-between"><span>Sub Total</span><span>Rp{{ number_format($sum['subtotal'] ?? 0, 2) }}</span></div>
                     <div class="d-flex justify-content-between"><span>Discount</span><span>Rp{{ number_format($sum['discount'] ?? 0, 2) }}</span></div>
+                    @foreach(($sum['tax_lines'] ?? []) as $line)
+                        <div class="d-flex justify-content-between">
+                            <span>{{ $line['name'] }}</span>
+                            <span>Rp{{ number_format($line['amount'] ?? 0, 2) }}</span>
+                        </div>
+                    @endforeach
                     <div class="d-flex justify-content-between fw-semibold fs-5"><span>Total</span><span>Rp{{ number_format($sum['total'] ?? 0, 2) }}</span></div>
                 </div>
 

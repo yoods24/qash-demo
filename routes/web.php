@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthenticatedSessionController;
+use App\Http\Controllers\PaymentWebhookController;
 use App\Http\Controllers\Qash\TenantController;
 use App\Http\Controllers\Qash\QashAuthenticatedSessionController;
 
@@ -36,3 +37,6 @@ Route::post('/logout/{user}', [AuthenticatedSessionController::class, 'destroy']
 
 // Tenant customer routes moved under routes/tenant.php (path-based)
 // Backoffice routes moved under routes/tenant.php (path-based)
+
+Route::post('/payment/webhook/xendit', [PaymentWebhookController::class, 'handle'])
+    ->name('payment.webhook');

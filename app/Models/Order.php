@@ -15,11 +15,18 @@ class Order extends Model
         'tenant_id',
         'customer_detail_id',
         'total',
+        'subtotal',
+        'total_tax',
+        'grand_total',
         'status',
         'payment_status',
+        'payment_channel',
         'reference_no',
         'source',
         'order_type',
+        'xendit_invoice_id',
+        'xendit_invoice_url',
+        'paid_at',
         'confirmed_at', 'preparing_at', 'ready_at',
         'expected_seconds_total',
         'queue_seconds', 'prep_seconds', 'total_seconds',
@@ -41,11 +48,20 @@ class Order extends Model
         'ready_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'paid_at' => 'datetime',
+        'subtotal' => 'decimal:2',
+        'total_tax' => 'decimal:2',
+        'grand_total' => 'decimal:2',
         'expected_seconds_total' => 'integer',
         'queue_seconds' => 'integer',
         'prep_seconds' => 'integer',
         'total_seconds' => 'integer',
     ];
+
+    public function taxLines()
+    {
+        return $this->hasMany(OrderTax::class);
+    }
 
     // Computed durations derived from timestamps (source of truth for UI)
     public function getComputedQueueSecondsAttribute(): int

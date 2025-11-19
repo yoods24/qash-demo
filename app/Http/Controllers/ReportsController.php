@@ -37,7 +37,8 @@ class ReportsController extends Controller
             ->selectRaw('COUNT(DISTINCT orders.id) as total_orders')
             ->selectRaw('COALESCE(SUM(order_items.quantity), 0) as total_products')
             ->selectRaw('COALESCE(SUM(order_items.unit_price * order_items.quantity), 0) as subtotal')
-            ->selectRaw('COALESCE(SUM(orders.total), 0) as total')
+            ->selectRaw('COALESCE(SUM(orders.total_tax), 0) as total_tax')
+            ->selectRaw('COALESCE(SUM(orders.grand_total), COALESCE(SUM(orders.total), 0)) as total')
             ->whereBetween('orders.created_at', [$start, $end])
             ->groupBy('day')
             ->orderBy('day', 'desc');
@@ -55,7 +56,7 @@ class ReportsController extends Controller
         }
 
         $rows = $base->get()->map(function ($r) {
-            $r->tax = max(0, (float) $r->total - (float) $r->subtotal);
+            $r->tax = (float) $r->total_tax;
             return $r;
         });
 

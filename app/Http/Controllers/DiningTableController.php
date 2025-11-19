@@ -180,7 +180,7 @@ class DiningTableController extends Controller
     public function qr(Request $request, int $dining_table)
     {
         $tenantId = (string) (tenant()?->id ?? $request->route('tenant'));
-        $table = \App\Models\DiningTable::where('tenant_id', $tenantId)->findOrFail($dining_table);
+        $table = DiningTable::where('tenant_id', $tenantId)->findOrFail($dining_table);
         $scanParam = $table->qr_code ? ('code=' . urlencode($table->qr_code)) : ('table=' . $table->id);
         $scanUrl = route('customer.order', ['tenant' => $tenantId]) . '?' . $scanParam;
         return view('backoffice.tables.qr', [

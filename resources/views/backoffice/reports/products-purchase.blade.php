@@ -33,7 +33,7 @@
                     <label class="form-label">Status</label>
                     <select name="status" class="form-select">
                         <option value="">Any</option>
-                        @foreach(['confirmed','preparing','ready'] as $s)
+                        @foreach(['waiting_for_payment','confirmed','preparing','ready','cancelled'] as $s)
                             <option value="{{ $s }}" @selected(($status ?? null) === $s)>{{ ucfirst($s) }}</option>
                         @endforeach
                     </select>
@@ -42,7 +42,7 @@
                     <label class="form-label">Payment</label>
                     <select name="payment_status" class="form-select">
                         <option value="">Any</option>
-                        @foreach(['paid','unpaid','cancelled'] as $p)
+                        @foreach(['pending','paid','failed','cancelled'] as $p)
                             <option value="{{ $p }}" @selected(($payment_status ?? null) === $p)>{{ ucfirst($p) }}</option>
                         @endforeach
                     </select>
@@ -85,4 +85,3 @@
         </div>
     </div>
 </x-backoffice.layout>
-

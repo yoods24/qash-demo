@@ -40,6 +40,8 @@ body {
     --nav-height: 56px;           /* default, updated by JS */
     --handle-overlap: 16px;       /* how much the handle overlaps when hidden */
 }
+
+
 .img-fluid {
     max-width: 100%;
     height: auto;
@@ -1561,4 +1563,70 @@ body.no-scroll {
     background-color: #fef9c3;
     color: #854d0e;
     border-color: #fde68a;
+}
+
+/* Payment + order feedback responsive tweaks */
+.payment-feedback-wrapper {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+}
+
+.payment-feedback-card {
+    border-radius: 32px;
+}
+
+.payment-feedback-stats .col {
+    min-width: 0;
+}
+
+.payment-feedback-actions .btn {
+    min-height: 56px;
+}
+
+@media (max-width: 991.98px) {
+    .payment-feedback-card {
+        padding: 2rem !important;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .payment-feedback-wrapper {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+        padding-bottom: 2rem;
+    }
+
+    .payment-feedback-card {
+        padding: 1.5rem !important;
+        border-radius: 24px;
+    }
+
+    .payment-feedback-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 1rem !important;
+    }
+
+    .payment-feedback-stats .col {
+        width: 100%;
+    }
+
+    .payment-feedback-actions {
+        flex-direction: column !important;
+    }
+
+    .payment-feedback-actions .btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .payment-feedback-wrapper {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+
+    .payment-feedback-card {
+        border-radius: 22px;
+    }
 }

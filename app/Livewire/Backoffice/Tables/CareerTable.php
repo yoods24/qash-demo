@@ -30,7 +30,7 @@ class CareerTable extends Component implements HasActions, HasSchemas, HasTable
     public function boot(): void
     {
         if ($this->tenantParam === null) {
-            $this->tenantParam = auth()->user()->tenant_id ?? (function_exists('tenant') ? tenant('id') : null);
+            $this->tenantParam = request()->route('tenant') ?? (function_exists('tenant') ? tenant('id') : null);
         }
     }
 

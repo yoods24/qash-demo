@@ -86,13 +86,15 @@ class OrdersTable extends Component implements HasTable, HasSchemas, HasActions
                     ->label('Status')
                     ->badge()
                     ->colors([
-                        'primary' => fn ($state) => in_array($state, ['confirmed'], true),
-                        'warning' => fn ($state) => in_array($state, ['preparing'], true),
-                        'success' => fn ($state) => in_array($state, ['ready'], true),
-                        'danger'  => fn ($state) => in_array($state, ['cancelled'], true),
+                        'warning' => fn ($state) => $state === 'waiting_for_payment',
+                        'primary' => fn ($state) => $state === 'confirmed',
+                        'info' => fn ($state) => $state === 'preparing',
+                        'success' => fn ($state) => $state === 'ready',
+                        'danger' => fn ($state) => $state === 'cancelled',
                     ])
                     ->formatStateUsing(function ($state) {
                         $map = [
+                            'waiting_for_payment' => 'Waiting for Payment',
                             'confirmed' => 'Confirmed',
                             'preparing' => 'Preparing',
                             'ready'     => 'Ready',
@@ -106,16 +108,15 @@ class OrdersTable extends Component implements HasTable, HasSchemas, HasActions
                     ->badge()
                     ->colors([
                         'success' => fn ($p) => $p === 'paid',
-                        'danger'  => fn ($p) => $p === 'unpaid',
-                        'warning' => fn ($p) => $p === 'partially_paid',
-                        'gray'    => fn ($p) => $p === 'cancelled',
+                        'warning' => fn ($p) => $p === 'pending',
+                        'danger'  => fn ($p) => in_array($p, ['failed', 'cancelled'], true),
                     ])
                     ->formatStateUsing(function ($state) {
                         $map = [
-                            'paid'           => 'Paid',
-                            'unpaid'         => 'Unpaid',
-                            'partially_paid' => 'Partially Paid',
-                            'cancelled'      => 'Cancelled',
+                            'paid'    => 'Paid',
+                            'pending' => 'Pending',
+                            'failed'  => 'Failed',
+                            'cancelled' => 'Cancelled',
                         ];
                         return $map[(string) $state] ?? ucfirst((string) $state);
                     }),
@@ -142,6 +143,7 @@ class OrdersTable extends Component implements HasTable, HasSchemas, HasActions
                 SelectFilter::make('status')
                     ->label('Status')
                     ->options([
+                        'waiting_for_payment' => 'Waiting for Payment',
                         'confirmed' => 'Confirmed',
                         'preparing' => 'Preparing',
                         'ready'     => 'Ready',
@@ -150,10 +152,10 @@ class OrdersTable extends Component implements HasTable, HasSchemas, HasActions
                 SelectFilter::make('payment_status')
                     ->label('Payment')
                     ->options([
-                        'paid'           => 'Paid',
-                        'unpaid'         => 'Unpaid',
-                        'partially_paid' => 'Partially Paid',
-                        'cancelled'      => 'Cancelled',
+                        'paid'      => 'Paid',
+                        'pending'   => 'Pending',
+                        'failed'    => 'Failed',
+                        'cancelled' => 'Cancelled',
                     ]),
             ])
             ->recordActions([

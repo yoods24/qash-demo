@@ -36,7 +36,7 @@
                         </div>
                         <div class="text-end">
                             <p># {{$order->id}}</p>
-                            @if ($order->status ==='paid')
+                            @if ($order->payment_status ==='paid')
                                 <p>
                                     <span class="order-status paid">Paid</span>
                                 </p>
@@ -44,14 +44,18 @@
                                 <p>
                                     <span class="order-status pending">Pending</span>
                                 </p>
+                            @elseif ($order->status === 'cancelled')
+                                <p>
+                                    <span class="order-status pending">Cancelled</span>
+                                </p>
                             @else
                                 <p>
-                                    <span class="order-status cancelled">Cancelled</span>
+                                    <span class="order-status cancelled">Failed</span>
                                 </p>
                             @endif
                             <p>{{$order->created_at}}</p>
-                            <p>Rp. {{ number_format($order->total, 0, ',', '.') }}</p>
-                            <p>Qris</p>
+                            <p>Rp. {{ number_format($order->grand_total ?? $order->total ?? 0, 0, ',', '.') }}</p>
+                            <p>{{ $order->payment_channel }}</p>
                         </div>
                     </div>
                 </div>
@@ -115,18 +119,12 @@
                     <div class="card-style text-center">
                         <div class="d-flex justify-content-between">
                             <div class="text-start"><p><strong>Sub Total :</strong></p></div>
-                            <div class="text-start"><p>Rp. {{ number_format($order->total, 0, ',', '.') }}</p></div>
+                            <div class="text-start"><p>Rp. {{ number_format($order->grand_total ?? $order->total ?? 0, 0, ',', '.') }}</p></div>
                         </div>
                         <hr class="my-1">
 
                         <div class="d-flex justify-content-between">
                             <div class="text-start"><p><strong>Discount :</strong></p></div>
-                            <div class="text-start"><p>Rp. 0.000</p></div>
-                        </div>
-                        <hr class="my-1">
-
-                        <div class="d-flex justify-content-between">
-                            <div class="text-start"><p><strong>Tax :</strong></p></div>
                             <div class="text-start"><p>Rp. 0.000</p></div>
                         </div>
                         <hr class="my-1">
@@ -138,8 +136,14 @@
                         <hr class="my-1">
 
                         <div class="d-flex justify-content-between">
+                            <div class="text-start"><p><strong>Tax :</strong></p></div>
+                            <div class="text-start"><p>{{ rupiah($order->total_tax)  }}</p></div>
+                        </div>
+                        <hr class="my-1">
+
+                        <div class="d-flex justify-content-between">
                             <div class="text-start"><p><strong>Grand Total :</strong></p></div>
-                            <div class="text-start"><p>Rp. {{ number_format($order->total, 0, ',', '.') }}</p></div>
+                            <div class="text-start"><p>Rp. {{ number_format($order->grand_total ?? $order->total ?? 0, 0, ',', '.') }}</p></div>
                         </div>
                     </div>
                 </div>

@@ -10,6 +10,7 @@ use App\Models\ProductOptionValue;
 use Darryldecode\Cart\Facades\CartFacade as Cart;
 use Illuminate\Support\Facades\Session;
 use App\Models\CustomerDetail;
+use App\Support\CartItemIdentifier;
 
 class OrderPage extends Component
 {
@@ -217,11 +218,12 @@ class OrderPage extends Component
         }
 
         Cart::add([
-            'id' => $this->selectedProduct->id,
+            'id' => CartItemIdentifier::make($this->selectedProduct->id, $options),
             'name' => $this->selectedProduct->name,
             'price' => $price,
             'quantity' => $this->quantity,
             'attributes' => [
+                'product_id' => $this->selectedProduct->id,
                 'options'     => $options,
                 'base_price'  => $this->selectedProduct->price,
                 'image'       => $this->selectedProduct->product_image ?? null,

@@ -15,6 +15,7 @@
           <x-backoffice.sidebar-nav-link href="{{ route('backoffice.staff.view', ['staff' => request()->user()->id]) }}" class="bi bi-cash-coin me-2">Profile</x-backoffice.sidebar-nav-link>
           <x-backoffice.sidebar-nav-link href="{{ route('backoffice.settings.index') }}" class="bi bi-gear me-2" >Settings</x-backoffice.sidebar-nav-link>
           <x-backoffice.sidebar-nav-link href="{{route('backoffice.notification.index')}}" class="bi bi-bell me-2" >Notification</x-backoffice.sidebar-nav-link>
+          <x-backoffice.sidebar-nav-link href="{{route('backoffice.taxes.index')}}" class="bi bi-cash me-2" >Taxes</x-backoffice.sidebar-nav-link>
         </x-backoffice.sidebar-nav-section>
 
         <x-backoffice.sidebar-nav-section section="Table">
@@ -57,8 +58,8 @@
         </x-backoffice.sidebar-nav-section>
 
         <x-backoffice.sidebar-nav-section section="Peoples">
-          <x-backoffice.sidebar-nav-link href="{{ route('customer.order') }}" class="bi bi-list-task me-2">Customer</x-backoffice.sidebar-nav-link>
-          <x-backoffice.sidebar-nav-link class="bi bi-list-task me-2">Customer Order</x-backoffice.sidebar-nav-link>
+          <x-backoffice.sidebar-nav-link href="{{ route('backoffice.customers.index') }}" class="bi bi-people me-2">Customers</x-backoffice.sidebar-nav-link>
+          <x-backoffice.sidebar-nav-link href="{{ route('customer.order') }}" class="bi bi-list-task me-2">Customer Order</x-backoffice.sidebar-nav-link>
         </x-backoffice.sidebar-nav-section>
 
         <x-backoffice.sidebar-nav-section section="POS & Orders">
@@ -84,13 +85,13 @@
           </x-backoffice.sidebar-nav-section>
         @endcan
 
-        @can('sales_view')
+        {{-- @can('sales_view')
           <x-backoffice.sidebar-nav-section section="Sales">
             <x-backoffice.sidebar-nav-link class="bi bi-building me-2" >Sales</x-backoffice.sidebar-nav-link>
             <x-backoffice.sidebar-nav-link class="bi bi-building me-2" >Invoices</x-backoffice.sidebar-nav-link>
             <x-backoffice.sidebar-nav-link class="bi bi-building me-2" >Sales Return</x-backoffice.sidebar-nav-link>
           </x-backoffice.sidebar-nav-section>
-        @endcan
+        @endcan --}}
 
         @can('kitchen_view')
           <x-backoffice.sidebar-nav-section section="Kitchen">
@@ -100,10 +101,12 @@
         @endcan
         
         <x-backoffice.sidebar-nav-section section="Content (CMS)">
+          <x-backoffice.sidebar-nav-link href="{{ route('customer.home') }}" class="bi bi-house me-2">Home Page</x-backoffice.sidebar-nav-link>
+          <x-backoffice.sidebar-nav-link href="{{ route('customer.order') }}" class="bi bi-wallet me-2">Order Page</x-backoffice.sidebar-nav-link>
           <x-backoffice.sidebar-nav-link href="{{ route('backoffice.events.index') }}" class="bi bi-calendar-event me-2 heroicon heroicon-o-calendar">Events</x-backoffice.sidebar-nav-link>
           <x-backoffice.sidebar-nav-link href="{{route('backoffice.careers.index')}}" class="bi bi-list-task me-2">Career</x-backoffice.sidebar-nav-link>
           <x-backoffice.sidebar-nav-link class="bi bi-list-task me-2">About Homepage</x-backoffice.sidebar-nav-link>
-          <x-backoffice.sidebar-nav-link class="bi bi-list-task me-2">Select Homepage</x-backoffice.sidebar-nav-link>
+          {{-- <x-backoffice.sidebar-nav-link class="bi bi-list-task me-2">Select Homepage</x-backoffice.sidebar-nav-link>
           <x-backoffice.sidebar-nav-link class="bi bi-list-task me-2">Homepage Settings</x-backoffice.sidebar-nav-link>
           <x-backoffice.sidebar-nav-link class="bi bi-list-task me-2">Font Family</x-backoffice.sidebar-nav-link>
           <x-backoffice.sidebar-nav-link class="bi bi-list-task me-2">Authentication Layout</x-backoffice.sidebar-nav-link>
@@ -111,7 +114,7 @@
           <x-backoffice.sidebar-nav-link class="bi bi-list-task me-2">Top Bar</x-backoffice.sidebar-nav-link>
           <x-backoffice.sidebar-nav-link class="bi bi-list-task me-2">Footer Settings</x-backoffice.sidebar-nav-link>
           <x-backoffice.sidebar-nav-link class="bi bi-list-task me-2">Pages</x-backoffice.sidebar-nav-link>
-          <x-backoffice.sidebar-nav-link class="bi bi-list-task me-2">Appereance</x-backoffice.sidebar-nav-link>
+          <x-backoffice.sidebar-nav-link class="bi bi-list-task me-2">Appereance</x-backoffice.sidebar-nav-link> --}}
         </x-backoffice.sidebar-nav-section>
 
         {{-- <div class="section-title">Projects</div>

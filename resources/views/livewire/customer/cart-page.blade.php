@@ -144,12 +144,16 @@
 
     {{-- Your Order --}}
     <div class="mb-2">
-        <div class="section-title d-inline-block">Your Order</div>
+        <div class="bg-primer d-inline-block p-2 rounded">Your Order</div>
     </div>
 
     {{-- Cart Items --}}
     @forelse($items as $item)
-        <div class="soft-card card mb-2">
+        <div class="soft-card card mb-4">
+            <div class="card-header d-flex justify-content-end gap-4">
+                <i wire:click="editItem('{{ $item->id }}')" class="cursor-pointer text-primer text-sm bi bi-pencil-square"></i>
+                <button wire:click="removeItem('{{ $item->id }}')" class="btn btn-sm p-0 text-muted"><i class="bi bi-x-lg"></i></button>
+            </div>
             <div class="card-body d-flex align-items-start">
                 {{-- Product Image --}}
                 @if($item->attributes->image)
@@ -160,11 +164,10 @@
 
                 <div class="flex-grow-1">
                     <div class="d-flex justify-content-between">
-                        <div class="d-flex gap-3 align-items-center">
+                        <div class="d-flex flex-column align-items-start mb-2">
                             <h6 class="mb-1 fw-semibold">{{ $item->name }}</h6>
-                            <i wire:click="editItem({{$item->id}})" class="cursor-pointer text-primer text-sm bi bi-pencil-square"></i>
+                            <span class="fw-semibold">Rp{{ number_format($item['attributes']['base_price'], 0) }}</span>
                         </div>
-                        <button wire:click="removeItem({{ $item->id }})" class="btn btn-sm p-0 text-muted"><i class="bi bi-x-lg"></i></button>
                     </div>
 
                     {{-- Options --}}
@@ -183,11 +186,11 @@
 
                     <div class="d-flex justify-content-between align-items-center">
                         <div class="qty-wrap d-inline-flex align-items-center gap-1">
-                            <button wire:click="decreaseQty({{ $item->id }})" class="btn btn-light border btn-qty"><i class="bi bi-dash"></i></button>
+                            <button wire:click="decreaseQty('{{ $item->id }}')" class="btn btn-light border btn-qty"><i class="bi bi-dash"></i></button>
                             <span class="mx-2">{{ $item->quantity }}</span>
-                            <button wire:click="increaseQty({{ $item->id }})" class="btn btn-light border btn-qty"><i class="bi bi-plus"></i></button>
+                            <button wire:click="increaseQty('{{ $item->id }}')" class="btn btn-light border btn-qty"><i class="bi bi-plus"></i></button>
                         </div>
-                        <span class="fw-semibold">Rp{{ number_format($item['attributes']['base_price'], 0) }}</span>
+                        <span class="fw-semibold">Rp{{ number_format($item->price, 0) }}</span>
                     </div>
                 </div>
             </div>
@@ -272,28 +275,31 @@
 
     {{-- Payment Summary --}}
     <div class="mb-2">
-        <div class="section-title d-inline-block">Payment Summary</div>
+        <div class="bg-primer d-inline-block p-2 rounded">Payment Summary</div>
     </div>
     <div class="soft-card card mb-4">
         <div class="card-body">
             <div class="d-flex justify-content-between mb-2">
                 <span class="muted">Subtotal</span>
-                <span>Rp{{ number_format($total, 0) }}</span>
+                <span>{{ rupiahRp($total) }}</span>
             </div>
             <div class="d-flex justify-content-between mb-2">
                 <span class="muted">Discount</span>
                 <span class="text-success">- Rp 0</span>
             </div>
-            @if(count($items) > 0)
-            <div class="d-flex justify-content-between mb-2">
-                <span class="muted">Software Service</span>
-                <span>Rp{{ number_format($softwareService ?? 0, 0) }}</span>
-            </div>
+            @foreach(($taxPreview['lines'] ?? []) as $taxLine)
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="muted">{{ $taxLine['name'] }}</span>
+                    <span>{{ rupiahRp($taxLine['amount']) }}</span>
+                </div>
+            @endforeach
+            @if(($taxPreview['lines'] ?? []) === [] && count($items) === 0)
+                <div class="text-muted small mb-2">Add an item to see any taxes or service fees.</div>
             @endif
             <hr>
             <div class="d-flex justify-content-between align-items-center">
                 <span class="fw-semibold">Total</span>
-                <span class="fw-bold text-primer">Rp{{ number_format($grandTotal, 0) }}</span>
+                <span class="fw-bold text-primer">{{ rupiahRp($grandTotal) }}</span>
             </div>
         </div>
     </div>
@@ -307,7 +313,7 @@
     </div>
 
     <!-- Modal -->
-    <div class="bottom-sheet show">
+    <div class="bottom-sheet show" data-lenis-prevent>
         <!-- header buttons -->
         <div class="option-header d-flex justify-content-between">
             <button class="rounded-circle btn-lg bi bi-x " onclick="@this.closeOptionModal()"></button>

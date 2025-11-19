@@ -12,9 +12,13 @@ use Darryldecode\Cart\Facades\CartFacade as Cart;
 use App\Models\TenantNotification;
 use App\Models\DiningTable;
 use Illuminate\Support\Facades\Session;
+use App\Support\CartItemIdentifier;
+use App\Services\OrderTaxCalculator;
 
 class CartPage extends Component
 {
+    private const ACTIVE_ORDER_SESSION_KEY = 'active_order_id';
+
     public $tenantId = null;
     public $items = [];
     public $total = 0;
@@ -28,9 +32,14 @@ class CartPage extends Component
     public $quantity = 1;
     public $editingItemId = null; // if set, modal updates existing cart item
     public $note = '';
-    
-    public $softwareService = 1000;
+    public array $taxPreview = [];
     public $currentTable = null; // label for current dining table
+    protected OrderTaxCalculator $orderTaxCalculator;
+
+    public function boot(OrderTaxCalculator $orderTaxCalculator): void
+    {
+        $this->orderTaxCalculator = $orderTaxCalculator;
+    }
 
     public function mount()
     {
@@ -42,10 +51,16 @@ class CartPage extends Component
     public function refreshCart()
     {
         $this->items = Cart::getContent();
-        $this->total = Cart::getTotal();
-        // Always include software/service fee when there is at least one item
-        $hasItems = $this->items && count($this->items) > 0;
-        $this->grandTotal = $this->total + ($hasItems ? ($this->softwareService ?? 0) : 0);
+        $this->total = (float) Cart::getTotal();
+
+        $calculation = $this->orderTaxCalculator->calculate($this->tenantId, $this->total);
+
+        $this->taxPreview = [
+            'total_tax' => $calculation->totalTax,
+            'lines' => $calculation->lines->toArray(),
+        ];
+
+        $this->grandTotal = $calculation->grandTotal;
     }
 
     private function syncCurrentTable(): void
@@ -90,7 +105,8 @@ class CartPage extends Component
             return;
         }
 
-        $this->selectedProduct = Product::with(['options.values'])->findOrFail($item->id);
+        $productId = CartItemIdentifier::extractProductId($item) ?? $item->id;
+        $this->selectedProduct = Product::with(['options.values'])->findOrFail($productId);
 
         // Prefill selected options using saved attributes
         $this->selectedOptions = [];
@@ -201,6 +217,7 @@ class CartPage extends Component
         }
 
         $attributes = [
+            'product_id' => $this->selectedProduct->id,
             'options'     => $options,
             'base_price'  => $this->selectedProduct->price,
             'image'       => $this->selectedProduct->product_image ?? null,
@@ -210,26 +227,20 @@ class CartPage extends Component
             'note'        => $this->note,
         ];
 
+        $payload = [
+            'id' => CartItemIdentifier::make($this->selectedProduct->id, $options),
+            'name' => $this->selectedProduct->name,
+            'price' => $price,
+            'quantity' => $this->quantity,
+            'attributes' => $attributes,
+        ];
+
         if ($this->editingItemId) {
-            // Update existing cart item
-            Cart::update($this->editingItemId, [
-                'price' => $price,
-                'quantity' => [
-                    'relative' => false,
-                    'value' => $this->quantity,
-                ],
-                'attributes' => $attributes,
-            ]);
-        } else {
-            // Add as new cart item
-            Cart::add([
-                'id' => $this->selectedProduct->id,
-                'name' => $this->selectedProduct->name,
-                'price' => $price,
-                'quantity' => $this->quantity,
-                'attributes' => $attributes,
-            ]);
+            Cart::remove($this->editingItemId);
+            $this->editingItemId = null;
         }
+
+        Cart::add($payload);
 
         $this->reset(['selectedProduct', 'selectedOptions', 'quantity', 'showOptionModal', 'editingItemId', 'note']);
         $this->dispatch('unlock-scroll');
@@ -288,114 +299,102 @@ class CartPage extends Component
             session()->flash('error', 'Please enter your name and email before checkout.');
             return;
         }
-        // Validate cart items availability
-        $insufficient = [];
-        foreach (Cart::getContent() as $item) {
-            $p = Product::find($item->id);
-            if (!$p || ($p->active ?? 1) != 1) {
-                session()->flash('error', 'Some items are unavailable and were removed.');
-                Cart::remove($item->id);
-                continue;
-            }
-            if ((int)($p->stock_qty ?? 0) < (int) $item->quantity) {
-                $insufficient[] = $p->name ?? ('ID '.$p->id);
-            }
+        $tenantId = $this->resolveTenantId();
+
+        if ($pendingOrder = $this->getPendingOrder($tenantId)) {
+            return redirect()->route('payment.show', ['tenant' => $tenantId, 'order' => $pendingOrder]);
         }
-        if (!empty($insufficient)) {
-            session()->flash('error', 'Insufficient stock for: '.implode(', ', $insufficient));
+
+        $insufficient = $this->validateCartStock($tenantId);
+        if (! empty($insufficient)) {
+            session()->flash('error', 'Insufficient stock for: ' . implode(', ', $insufficient));
             return;
         }
+
         if (Cart::isEmpty()) {
             return;
         }
-        
-        DB::transaction(function () {
-            // Resolve tenant id robustly for Livewire requests, fallback to bound property
-            $tenantId = tenant()?->id ?? request()->route('tenant') ?? $this->tenantId;
-            // Generate tenant-scoped reference number (e.g., DEM-XXXXXXXXXX)
-            $tenantCode = strtoupper(substr((string)($tenantId ?? ''), 0, 3));
-            $rand = strtoupper(substr(bin2hex(random_bytes(8)), 0, 10));
-            $reference = ($tenantCode ?: 'REF') . '-' . $rand;
 
-            // Compute expected total seconds from cart
-            $expectedSeconds = 0;
-            foreach (Cart::getContent() as $ci) {
-                $est = (int) (($ci->attributes['estimated_seconds'] ?? 0));
-                $expectedSeconds += $est * (int)$ci->quantity;
-            }
+        $itemCount = Cart::getTotalQuantity();
+
+        $order = DB::transaction(function () use ($tenantId, $customerDetailId) {
+            $reference = $this->generateReference($tenantId);
+            $expectedSeconds = $this->calculateExpectedSeconds();
+            $calculation = $this->orderTaxCalculator->calculate($tenantId, (float) Cart::getTotal());
 
             $order = Order::create([
-                'reference_no'    => $reference,
-                'customer_detail_id' => session('customer_detail_id'),
-                'total' => $this->grandTotal,
-                // Order pipeline status (KDS uses 'confirmed')
-                'status' => 'confirmed',
-                // Payment: mark as paid in development until gateway is integrated
-                'payment_status' => 'paid',
+                'reference_no' => $reference,
+                'customer_detail_id' => $customerDetailId,
+                'total' => $calculation->grandTotal,
+                'subtotal' => $calculation->subtotal,
+                'total_tax' => $calculation->totalTax,
+                'grand_total' => $calculation->grandTotal,
+                'status' => 'waiting_for_payment',
+                'payment_status' => 'pending',
+                'payment_channel' => null,
                 'tenant_id' => $tenantId,
-                'confirmed_at' => now(),
                 'expected_seconds_total' => $expectedSeconds,
-                // Mark orders from customer-facing flow as QR/dine-in
                 'source' => 'qr',
                 'order_type' => Session::has('dining_table_id') ? 'dine-in' : 'takeaway',
             ]);
 
-        foreach (Cart::getContent() as $item) {
-            $options = $item->attributes ? $item->attributes->toArray() : null;
+            foreach (Cart::getContent() as $item) {
+                $options = $item->attributes ? $item->attributes->toArray() : null;
 
-            // Remove 'image' if it exists
-            if (is_array($options) && array_key_exists('image', $options)) {
-                unset($options['image']);
-            }
-            // Create order item
-            $orderItem = OrderItem::create([
-                'order_id'     => $order->id,
-                'product_id'   => $item->id,
-                'product_name' => $item->name,
-                'unit_price'   => $item->price,
-                'quantity'     => $item->quantity,
-                'options'      => $options,
-                'estimate_seconds' => (int) ($options['estimated_seconds'] ?? 0),
-                'special_instructions' => $options['note'] ?? null,
-                'tenant_id'    => $tenantId ?? $this->tenantId,
-            ]);
-
-            // Reduce product stock safely
-            $prod = Product::where('tenant_id', $tenantId)->lockForUpdate()->find($item->id);
-            if ($prod) {
-                // Double-check in-transaction quantity
-                if ((int)$prod->stock_qty < (int)$item->quantity) {
-                    throw new \RuntimeException('Insufficient stock for '.$prod->name.' during checkout.');
+                if (is_array($options)) {
+                    unset($options['image'], $options['product_id']);
                 }
-                $prod->decrement('stock_qty', (int)$item->quantity);
-            }
-        }
 
-            // Optionally store order id for receipt page later
+                $productId = CartItemIdentifier::extractProductId($item) ?? $item->id;
+
+                OrderItem::create([
+                    'order_id'     => $order->id,
+                    'product_id'   => $productId,
+                    'product_name' => $item->name,
+                    'unit_price'   => $item->price,
+                    'quantity'     => $item->quantity,
+                    'options'      => $options,
+                    'estimate_seconds' => (int) ($options['estimated_seconds'] ?? 0),
+                    'special_instructions' => $options['note'] ?? null,
+                    'tenant_id'    => $tenantId ?? $this->tenantId,
+                ]);
+            }
+
+            foreach ($calculation->lines as $line) {
+                $order->taxLines()->create([
+                    'tax_id' => $line['tax_id'],
+                    'name' => $line['name'],
+                    'type' => $line['type'],
+                    'rate' => $line['rate'],
+                    'amount' => $line['amount'],
+                ]);
+            }
+
             session(['last_order_id' => $order->id]);
 
-            // Create a tenant-scoped notification (non-blocking)
-            try {
-                $itemCount = Cart::getTotalQuantity();
-                TenantNotification::create([
-                    'tenant_id'   => $tenantId,
-                    'type'        => 'order',
-                    'title'       => 'New Order Created',
-                    'item_id'     => $order->id,
-                    'description' => 'Order #' . $order->id . ' placed with ' . $itemCount . ' item' . ($itemCount == 1 ? '' : 's') . '.',
-                    'route_name'  => 'backoffice.order.view',
-                    'route_params' => json_encode(['order' => $order->id, 'tenant' => $tenantId])
-                ]);
-            } catch (\Throwable $e) {
-                // notifications should not block checkout
-            }
+            return $order;
         });
 
+        try {
+            TenantNotification::create([
+                'tenant_id'   => $tenantId,
+                'type'        => 'order',
+                'title'       => 'New Order Created',
+                'item_id'     => $order->id,
+                'description' => 'Order #' . $order->id . ' placed with ' . $itemCount . ' item' . ($itemCount == 1 ? '' : 's') . '.',
+                'route_name'  => 'backoffice.order.view',
+                'route_params' => json_encode(['order' => $order->id, 'tenant' => $tenantId])
+            ]);
+        } catch (\Throwable $e) {
+            // notifications should not block checkout
+        }
+
         $this->clearCart();
-        session()->flash('success', 'Order placed successfully.');
-        // Avoid flushing the entire session as it breaks Livewire
-        // and clears authentication/csrf tokens. Forget only what we set.
+        session([self::ACTIVE_ORDER_SESSION_KEY => $order->id]);
+        session()->flash('success', 'Order created. Please choose a payment method.');
         session()->forget(['customer_detail_id']);
+
+        return redirect()->route('payment.show', ['tenant' => $tenantId, 'order' => $order]);
     }
 
     public function render()
@@ -406,5 +405,68 @@ class CartPage extends Component
                 ->where('stock_qty', '>', 0)
                 ->get(),
         ]);
+    }
+
+    private function resolveTenantId(): ?string
+    {
+        return tenant()?->id ?? request()->route('tenant') ?? $this->tenantId;
+    }
+
+    private function getPendingOrder(?string $tenantId): ?Order
+    {
+        $pendingId = session(self::ACTIVE_ORDER_SESSION_KEY);
+        if (! $pendingId || ! $tenantId) {
+            return null;
+        }
+
+        $order = Order::where('tenant_id', $tenantId)->find($pendingId);
+
+        if ($order && $order->payment_status === 'pending') {
+            return $order;
+        }
+
+        session()->forget(self::ACTIVE_ORDER_SESSION_KEY);
+
+        return null;
+    }
+
+    private function generateReference(?string $tenantId): string
+    {
+        $tenantCode = strtoupper(substr((string) ($tenantId ?? ''), 0, 3));
+        $rand = strtoupper(substr(bin2hex(random_bytes(8)), 0, 10));
+        return ($tenantCode ?: 'REF') . '-' . $rand;
+    }
+
+    private function calculateExpectedSeconds(): int
+    {
+        $expectedSeconds = 0;
+        foreach (Cart::getContent() as $ci) {
+            $est = (int) (($ci->attributes['estimated_seconds'] ?? 0));
+            $expectedSeconds += $est * (int) $ci->quantity;
+        }
+
+        return $expectedSeconds;
+    }
+
+    private function validateCartStock(?string $tenantId): array
+    {
+        $insufficient = [];
+
+        foreach (Cart::getContent() as $item) {
+            $productId = CartItemIdentifier::extractProductId($item);
+            $product = Product::where('tenant_id', $tenantId)->find($productId);
+
+            if (! $product || ($product->active ?? 1) != 1) {
+                session()->flash('error', 'Some items are unavailable and were removed.');
+                Cart::remove($item->id);
+                continue;
+            }
+
+            if ((int) ($product->stock_qty ?? 0) < (int) $item->quantity) {
+                $insufficient[] = $product->name ?? ('ID ' . $product->id);
+            }
+        }
+
+        return $insufficient;
     }
 }

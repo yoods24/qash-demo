@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\DB;
 use Darryldecode\Cart\Facades\CartFacade as Cart;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
+use App\Support\CartItemIdentifier;
+use App\Services\OrderTaxCalculator;
 
 class PosPage extends Component
 {
@@ -23,6 +25,7 @@ class PosPage extends Component
     // Catalog state
     public string $search = '';
     public ?int $categoryId = null;
+    protected OrderTaxCalculator $orderTaxCalculator;
 
     // POS inputs
     public ?int $customerId = null;
@@ -37,15 +40,17 @@ class PosPage extends Component
     #[Validate('nullable|in:male,female,other')]
     public ?string $newCustomerGender = null;
 
-    public function boot(): void
+    public function boot(OrderTaxCalculator $orderTaxCalculator): void
     {
         if ($this->tenantId === null) {
             $this->tenantId = request()->route('tenant') ?? (function_exists('tenant') ? tenant('id') : null);
         }
+        $this->orderTaxCalculator = $orderTaxCalculator;
+
     }
 
     // Product modal state
-    public ?\App\Models\Product $selectedProduct = null;
+    public ? Product $selectedProduct = null;
     public array $selectedOptions = [];
     public int $quantity = 1;
     public bool $showOptionModal = false;
@@ -119,11 +124,12 @@ class PosPage extends Component
 
         // Add main line item
         Cart::add([
-            'id' => $this->selectedProduct->id,
+            'id' => CartItemIdentifier::make($this->selectedProduct->id, $options),
             'name' => $this->selectedProduct->name,
             'price' => $price,
             'quantity' => $this->quantity,
             'attributes' => [
+                'product_id' => $this->selectedProduct->id,
                 'options' => $options,
                 'note' => $this->note,
                 'base_price' => (float) ($this->selectedProduct->price ?? 0),
@@ -138,11 +144,12 @@ class PosPage extends Component
             $p = Product::find($pid);
             if (!$p) continue;
             Cart::add([
-                'id' => $p->id,
+                'id' => CartItemIdentifier::make($p->id, ['parent' => $this->selectedProduct->id, 'is_addon' => true]),
                 'name' => $p->name,
                 'price' => (float) ($p->price ?? 0),
                 'quantity' => $qty,
                 'attributes' => [
+                    'product_id' => $p->id,
                     'is_addon' => true,
                     'parent_product_id' => $this->selectedProduct->id,
                     'estimated_seconds' => (int) ($p->estimated_seconds ?? 0),
@@ -256,6 +263,7 @@ class PosPage extends Component
     }
 
     // Cart helpers
+
     public function getCartItemsProperty()
     {
         return Cart::getContent();
@@ -268,10 +276,13 @@ class PosPage extends Component
             $subtotal += (float)$ci->price * (int)$ci->quantity;
         }
         $discount = 0.0; // future: coupons/percentage
-        $total = $subtotal - $discount;
+        $calculation = $this->orderTaxCalculator->calculate($this->tenantId, max(0, $subtotal - $discount));
+        $total = $calculation->grandTotal;
         return [
             'subtotal' => $subtotal,
             'discount' => $discount,
+            'tax_lines' => $calculation->lines->toArray(),
+            'total_tax' => $calculation->totalTax,
             'total' => $total,
         ];
     }
@@ -330,18 +341,24 @@ class PosPage extends Component
             $reference = ($tenantCode ?: 'REF') . '-' . $rand;
 
             // expected total seconds from cart
-            $expectedSeconds = 0; $cartTotal = 0;
+            $expectedSeconds = 0; $cartSubtotal = 0;
             foreach (Cart::getContent() as $ci) {
-                $cartTotal += (float)$ci->price * (int)$ci->quantity;
+                $cartSubtotal += (float)$ci->price * (int)$ci->quantity;
                 $expectedSeconds += (int) (($ci->attributes['estimated_seconds'] ?? 0)) * (int)$ci->quantity;
             }
+            $calculation = $this->orderTaxCalculator->calculate($tenantId, $cartSubtotal);
 
             $order = Order::create([
                 'reference_no' => $reference,
                 'customer_detail_id' => $this->customerId,
-                'total' => $cartTotal,
+                'total' => $calculation->grandTotal,
+                'subtotal' => $calculation->subtotal,
+                'total_tax' => $calculation->totalTax,
+                'grand_total' => $calculation->grandTotal,
                 'status' => 'confirmed',
-                'payment_status' => 'unpaid',
+                'payment_status' => 'paid',
+                'payment_channel' => 'cash',
+                'paid_at' => now(),
                 'tenant_id' => $tenantId,
                 'confirmed_at' => now(),
                 'expected_seconds_total' => $expectedSeconds,
@@ -352,11 +369,12 @@ class PosPage extends Component
             foreach (Cart::getContent() as $item) {
                 $attributes = $item->attributes ? $item->attributes->toArray() : [];
                 $options = $attributes; // include options structure
-                if (array_key_exists('image', $options)) unset($options['image']);
+                unset($options['image'], $options['product_id']);
+                $productId = CartItemIdentifier::extractProductId($item) ?? $item->id;
                 OrderItem::create([
                     'tenant_id' => $tenantId,
                     'order_id' => $order->id,
-                    'product_id' => $item->id,
+                    'product_id' => $productId,
                     'product_name' => $item->name,
                     'unit_price' => (float) $item->price,
                     'quantity' => (int) $item->quantity,
@@ -365,9 +383,19 @@ class PosPage extends Component
                     'special_instructions' => $attributes['note'] ?? null,
                 ]);
                 // Decrement stock
-                if ($p = Product::where('tenant_id', $tenantId)->lockForUpdate()->find($item->id)) {
+                if ($p = Product::where('tenant_id', $tenantId)->lockForUpdate()->find($productId)) {
                     $p->decrement('stock_qty', (int) $item->quantity);
                 }
+            }
+
+            foreach ($calculation->lines as $line) {
+                $order->taxLines()->create([
+                    'tax_id' => $line['tax_id'],
+                    'name' => $line['name'],
+                    'type' => $line['type'],
+                    'rate' => $line['rate'],
+                    'amount' => $line['amount'],
+                ]);
             }
 
             // Update customer + table association and table status if dine-in
@@ -395,11 +423,12 @@ class PosPage extends Component
         }
 
         Cart::add([
-            'id' => $p->id,
+            'id' => CartItemIdentifier::make($p->id),
             'name' => (string) $p->name,
             'price' => (float) ($p->price ?? 0),
             'quantity' => 1,
             'attributes' => [
+                'product_id' => $p->id,
                 'base_price' => (float) ($p->price ?? 0),
                 'estimated_seconds' => (int) ($p->estimated_seconds ?? 0),
             ],

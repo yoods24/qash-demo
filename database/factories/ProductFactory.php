@@ -44,6 +44,7 @@ class ProductFactory extends Factory
             'description'  => $this->faker->sentence(),
             'category_id'  => Category::inRandomOrder()->value('id') ?? Category::factory(),
             'featured'     => $this->faker->boolean(30),
+            'stock_qty'    => $this->faker->boolean(50) ? $this->faker->numberBetween(5, 25) : 0,
             'product_image'=> $imagePath,
             'alternate_name' => $this->faker->optional()->words(2, true),
         ];

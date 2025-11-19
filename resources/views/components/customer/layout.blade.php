@@ -23,12 +23,13 @@
     <link rel="stylesheet" href="https://unpkg.com/lenis@1.3.15/dist/lenis.css">
 
     <title>Qash</title>
+    @stack('meta')
 
     @vite(['resources/css/customer.css', 'resources/js/customer.js', 'resources/css/app.css', ])
     @livewireStyles
 </head>
 
-<body class="scroll-container text-white">
+<body class="scroll-container">
 
     <x-customer.navbar></x-customer.navbar>
 

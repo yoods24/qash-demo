@@ -18,7 +18,6 @@ use pxlrbt\FilamentExcel\Exports\ExcelExport;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Schemas\Concerns\InteractsWithSchemas;
-use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
 
 class StaffTable extends Component implements HasTable, HasActions, HasSchemas
 {
