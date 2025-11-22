@@ -10,10 +10,7 @@
         <div class="modal-body">
           <h3>About Us</h3>
           <div class="text-container">
-            In the 1950s, all that stood in this iconic location was a car park with a small kiosk. 
-            Even then it was the best spot for uninterrupted panoramic views of Adelaide, with the 
-            address a tourist destination in itself. In October 1985, 
-            RavoRes as we know it today opened.
+          {{ $tenantInfo->about ?? 'Tenant About' }}
           </div>
           <!-- Opening Hours -->
           <div class="">
@@ -79,11 +76,15 @@
         <section class="section-wrapper">
             <div class="d-flex flex-wrap justify-content-between gap-5 align-items-center w-100">
                 <div class="col-12 col-md-6 d-flex flex-column gap-4 hero-title">
-                    <h1 class="text-white">Discover the taste of real coffee</h1>
-                    <h6 class="text-secondary">
-                        We always ready to help by providing the best service for you. <br>
-                        We believe a good place to live can make life better.
-                    </h6>
+                    <h1 class="text-white">{{ $tenantInfo->brand_heading ?? 'Experience unforgettable flavors' }}</h1>
+                    @if(!empty($tenantInfo->brand_slogan))
+                        <h3 class="text-secondary">{{ $tenantInfo->brand_slogan }}</h3>
+                    @else
+                        <h6 class="text-secondary text-container">
+                            We always ready to help by providing the best service for you. <br>
+                            We believe a good place to live can make life better.
+                        </h6>
+                    @endif
                     <a class="col-lg-6" href="{{ route('customer.order') }}">
                         <button class="reservation-btn w-100">
                             Order Now

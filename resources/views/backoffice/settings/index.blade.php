@@ -1,9 +1,3 @@
 <x-backoffice.settings-layout>
-        <div class="col-md-9">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h5 class="mb-3">Testings</h5>
-                </div>
-            </div>
-        </div> 
+    <p>test</p>
 </x-backoffice.settings-layout>

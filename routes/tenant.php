@@ -22,6 +22,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\FaceRecognitionController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\Backoffice\TenantProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Hrm\ShiftController;
 use App\Http\Controllers\EventController;
@@ -33,6 +34,7 @@ use App\Http\Controllers\DiscountController;
 // Livewire
 use App\Livewire\Backoffice\TenantNotification;
 use App\Http\Controllers\TenantNotificationController;
+use App\Models\TenantProfile;
 use Stancl\Tenancy\Middleware\InitializeTenancyByPath;
 
 /*
@@ -55,8 +57,8 @@ Route::middleware([
           $menuCategories = Category::with(['products' => function ($query) {
               $query->orderBy('name');
           }])->inRandomOrder()->take(5)->get();
-
-          return view('customer.home', compact('menuCategories'));
+          $tenantInfo = TenantProfile::where('tenant_id', tenant('id'))->first();
+          return view('customer.home', compact('menuCategories', 'tenantInfo'));
       })->name('customer.home');
 
       Route::get('/menu', function () {
@@ -82,10 +84,15 @@ Route::middleware([
 
       // Backoffice (tenant-specific)
       Route::prefix('backoffice')->middleware(['auth', 'ensure.user.can.access.tenant'])->group(function() {
-          
         Route::get('/dashboard', [DashboardController::class, 'mainDashboard'])
         ->name('backoffice.dashboard');
 
+
+          // CMS pages
+          Route::get('/about', [TenantProfileController::class, 'aboutIndex'])
+              ->name('backoffice.about.index');
+          Route::get('/brand-information', [TenantProfileController::class, 'brandInformationIndex'])
+              ->name('backoffice.brand-information.index');
           // Career management
           Route::get('/career/create', [CareerController::class, 'create'])->name('backoffice.career.create');
           Route::get('/career/{career}/edit', [CareerController::class, 'edit'])->name('backoffice.career.edit');
@@ -255,15 +262,28 @@ Route::middleware([
           })->name('backoffice.attendance.index');
 
 
-          Route::controller(SettingsController::class)
-            ->prefix('/settings')
-                ->group(function () {
-            Route::get('/', 'index')
-                ->name('backoffice.settings.index');
-            Route::get('/attendance', 'attendanceShow')
-                ->name('backoffice.settings.attendance-settings');
-            Route::get('/geolocation', 'geolocationShow')
-                    ->name('backoffice.settings.geolocation-settings');
+          Route::prefix('/settings')->group(function () {
+              Route::controller(SettingsController::class)->group(function () {
+                  Route::get('/', 'index')
+                      ->name('backoffice.settings.index');
+                  Route::get('/general-information', 'generalInformationShow')
+                      ->name('backoffice.settings.general-information');
+                  Route::get('/attendance', 'attendanceShow')
+                      ->name('backoffice.settings.attendance-settings');
+                  Route::get('/geolocation', 'geolocationShow')
+                      ->name('backoffice.settings.geolocation-settings');
+              });
+
+              Route::prefix('tenant-profile')
+                  ->controller(TenantProfileController::class)
+                  ->group(function () {
+                      Route::post('/update-about', 'updateAbout')
+                          ->name('backoffice.tenant-profile.update-about');
+                      Route::post('/update-brand-info', 'updateBrandInfo')
+                          ->name('backoffice.tenant-profile.update-brand-info');
+                      Route::post('/update-general-info', 'updateGeneralInfo')
+                          ->name('backoffice.tenant-profile.update-general-info');
+                  });
           });
 
           // Facial Recognition routes 

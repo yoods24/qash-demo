@@ -105,7 +105,8 @@
           <x-backoffice.sidebar-nav-link href="{{ route('customer.order') }}" class="bi bi-wallet me-2">Order Page</x-backoffice.sidebar-nav-link>
           <x-backoffice.sidebar-nav-link href="{{ route('backoffice.events.index') }}" class="bi bi-calendar-event me-2 heroicon heroicon-o-calendar">Events</x-backoffice.sidebar-nav-link>
           <x-backoffice.sidebar-nav-link href="{{route('backoffice.careers.index')}}" class="bi bi-list-task me-2">Career</x-backoffice.sidebar-nav-link>
-          <x-backoffice.sidebar-nav-link class="bi bi-list-task me-2">About Homepage</x-backoffice.sidebar-nav-link>
+          <x-backoffice.sidebar-nav-link href="{{ route('backoffice.about.index') }}"  class="bi bi-list-task me-2">About Homepage</x-backoffice.sidebar-nav-link>
+          <x-backoffice.sidebar-nav-link href="{{ route('backoffice.brand-information.index') }}"  class="bi bi-type-h1 me-2">Brand Information</x-backoffice.sidebar-nav-link>
           {{-- <x-backoffice.sidebar-nav-link class="bi bi-list-task me-2">Select Homepage</x-backoffice.sidebar-nav-link>
           <x-backoffice.sidebar-nav-link class="bi bi-list-task me-2">Homepage Settings</x-backoffice.sidebar-nav-link>
           <x-backoffice.sidebar-nav-link class="bi bi-list-task me-2">Font Family</x-backoffice.sidebar-nav-link>
