@@ -1,3 +1,4 @@
+<?php
 namespace App\Services\User;
 
 use Illuminate\Contracts\Auth\Authenticatable;

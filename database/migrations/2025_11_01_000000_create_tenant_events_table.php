@@ -29,6 +29,10 @@ return new class extends Migration
             ]);
             $table->date('date');
             $table->time('time');
+            $table->dateTime('event_date')->nullable();
+            $table->dateTime('date_from')->nullable();
+            $table->dateTime('date_till')->nullable();
+            $table->boolean('uses_date_range')->default(false);
             $table->string('location')->nullable();
             $table->longText('about')->nullable();
             $table->longText('event_highlights')->nullable();
@@ -37,6 +41,7 @@ return new class extends Migration
             $table->boolean('is_featured')->default(false);
             $table->timestamps();
             $table->index(['tenant_id', 'date']);
+            $table->index(['tenant_id', 'date_from']);
             $table->index('event_type');
         });
     }

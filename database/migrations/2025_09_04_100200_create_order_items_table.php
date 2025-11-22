@@ -16,6 +16,9 @@ return new class extends Migration
             $table->unsignedBigInteger('product_id')->nullable()->index();
             $table->string('product_name');
             $table->decimal('unit_price', 10, 2);
+            $table->decimal('final_price', 10, 2)->default(0);
+            $table->decimal('discount_amount', 10, 2)->default(0);
+            $table->unsignedBigInteger('discount_id')->nullable()->index();
             $table->integer('quantity');
             // Estimated preparation seconds per unit (copied from product at order time)
             $table->integer('estimate_seconds')->nullable();

@@ -50,7 +50,7 @@
         <x-backoffice.sidebar-nav-section section="Promo">
           <x-backoffice.sidebar-nav-link class="bi bi-list-task me-2">Summary</x-backoffice.sidebar-nav-link>
           <x-backoffice.sidebar-nav-link class="bi bi-cash-coin me-2"  >Promo Code</x-backoffice.sidebar-nav-link>
-          <x-backoffice.sidebar-nav-link class="bi bi-gear me-2" >Discounts</x-backoffice.sidebar-nav-link>
+          <x-backoffice.sidebar-nav-link href="{{ route('backoffice.discounts.index') }}" class="bi bi-gear me-2" >Discounts</x-backoffice.sidebar-nav-link>
         </x-backoffice.sidebar-nav-section>
 
         <x-backoffice.sidebar-nav-section section="Reports">

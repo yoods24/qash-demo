@@ -1,3 +1,3 @@
-<div id="fi-app">
+<div class="fi-app">
     {{ $this->table }}
 </div>

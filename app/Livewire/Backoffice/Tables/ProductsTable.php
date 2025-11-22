@@ -80,15 +80,25 @@ class ProductsTable extends Component implements HasActions, HasSchemas, HasTabl
                     ->money('IDR')
                     ->sortable(),
 
-                TextColumn::make('estimated_seconds')
-                    ->label('Est. Time')
+                TextColumn::make('duration')
+                    ->label('Duration')
                     ->formatStateUsing(function ($state) {
-                        $s = (int)($state ?? 0);
-                        if ($s <= 0) return '-';
-                        $m = intdiv($s, 60); $r = $s % 60;
-                        return $r ? sprintf('%dm %02ds', $m, $r) : sprintf('%dm', $m);
+                        $s = (int) ($state ?? 0);
+                        if ($s <= 0) {
+                            return '-';
+                        }
+
+                        $m = intdiv($s, 60);
+                        $r = $s % 60;
+
+                        return $r
+                            ? sprintf('%dm %02ds', $m, $r)
+                            : sprintf('%dm', $m);
                     })
-                    ->sortable(),
+                    ->default('-')        // ← required in Filament 4
+                    ->placeholder('-')
+                    ->sortable(),   // ← ensures empty state renders as '-'
+
 
                 TextColumn::make('stock_qty')
                     ->label('Qty')
@@ -131,6 +141,7 @@ class ProductsTable extends Component implements HasActions, HasSchemas, HasTabl
                     ->extraAttributes([
                         'class' => 'action-btn edit-btn-table',
                     ]),
+
                 Action::make('delete')
                     ->label(null)
                     ->iconButton()

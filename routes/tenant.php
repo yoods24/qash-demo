@@ -29,6 +29,7 @@ use App\Http\Controllers\CustomerEventController;
 // Models
 use App\Http\Controllers\DiningTableController;
 use App\Http\Controllers\TaxController;
+use App\Http\Controllers\DiscountController;
 // Livewire
 use App\Livewire\Backoffice\TenantNotification;
 use App\Http\Controllers\TenantNotificationController;
@@ -97,6 +98,23 @@ Route::middleware([
 
           Route::get('/taxes', [TaxController::class, 'index'])->name('backoffice.taxes.index');
           Route::post('taxes/store', [TaxController::class, 'store'])->name('backoffice.taxes.store');
+
+          // Discounts
+          Route::get('/discounts', [DiscountController::class, 'index'])
+              ->name('backoffice.discounts.index')
+              ->middleware('permission:promo_discounts_view');
+          Route::post('/discounts', [DiscountController::class, 'store'])
+              ->name('backoffice.discounts.store')
+              ->middleware('permission:promo_discounts_view');
+          Route::get('/discounts/{discount}', [DiscountController::class, 'show'])
+              ->name('backoffice.discounts.show')
+              ->middleware('permission:promo_discounts_view');
+          Route::put('/discounts/{discount}', [DiscountController::class, 'update'])
+              ->name('backoffice.discounts.update')
+              ->middleware('permission:promo_discounts_view');
+          Route::delete('/discounts/{discount}', [DiscountController::class, 'destroy'])
+              ->name('backoffice.discounts.destroy')
+              ->middleware('permission:promo_discounts_view');
           // Staffs
           Route::get('/staff', [StaffController::class, 'index'])->name('backoffice.staff.index')
               ->middleware('permission:hrm_employees_view');

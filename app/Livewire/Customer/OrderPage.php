@@ -11,11 +11,13 @@ use Darryldecode\Cart\Facades\CartFacade as Cart;
 use Illuminate\Support\Facades\Session;
 use App\Models\CustomerDetail;
 use App\Support\CartItemIdentifier;
+use App\Services\Customer\DiscountFetcher;
+use App\Support\PriceAfterDiscount;
+use Illuminate\Support\Collection;
 
 class OrderPage extends Component
 {
     public $categories;
-    public $products;
     public $selectedCategory = 'all';
     public $selectedProduct = null;
     public $selectedOptions = [];
@@ -24,6 +26,7 @@ class OrderPage extends Component
     public $showCustomerModal = false;
     public $showTableModal = false;
     public $note = '';
+    public $selectedProductSoldOut = false;
     public $customerName = '';
     public $customerEmail = '';
     public $customerGender = null; // 'man' | 'women' | null
@@ -32,6 +35,7 @@ class OrderPage extends Component
     public $tenantId = null;   // current tenant id
     public $tenantName = null; // display-only name
     public $currentTable = null; // label for current dining table
+    public $availableDiscounts;
 
     public function mount()
     {
@@ -39,9 +43,9 @@ class OrderPage extends Component
         $tenant = tenant();
         $this->tenantId = $tenant?->id ?? request()->route('tenant');
         $this->tenantName = ($tenant?->data['name'] ?? null) ?: ($tenant?->id ?? '');
+        $this->availableDiscounts = app(DiscountFetcher::class)->forTenant($this->tenantId);
 
         $this->categories = Category::all();
-        $this->loadProducts();
 
         // If a QR code or table id is specified (from QR), assign the table into the session
         $code = request()->query('code');
@@ -89,12 +93,15 @@ class OrderPage extends Component
         }
     }
 
-    private function loadProducts()
+    private function loadProducts(): Collection
     {
-        $this->products = Product::with('category')
+        $products = Product::with('category')
             ->where('active', 1)
-            ->where('stock_qty', '>', 0)
-            ->get()
+            ->get();
+
+        $products = $this->attachDiscountDetails($products);
+
+        return $products
             ->groupBy('category_id')
             ->map(function ($items, $categoryId) {
                 return [
@@ -105,37 +112,45 @@ class OrderPage extends Component
             });
     }
 
+    private function loadProductsForCategory($categoryId): Collection
+    {
+        $category = Category::find($categoryId);
+
+        if (! $category) {
+            return $this->loadProducts();
+        }
+
+        $items = Product::where('category_id', $categoryId)
+            ->where('active', 1)
+            ->get();
+
+        $items = $this->attachDiscountDetails($items);
+
+        return collect([
+            $categoryId => [
+                'id' => $categoryId,
+                'name' => $category->name,
+                'items' => $items,
+            ]
+        ]);
+    }
+
     public function filterCategory($categoryId)
     {
         $this->selectedCategory = $categoryId;
 
-        if ($categoryId === 'all') {
-            $this->loadProducts();
-        } else {
-            $category = Category::find($categoryId);
-            $this->products = collect([
-                $categoryId => [
-                    'id' => $categoryId,
-                    'name' => $category->name,
-                    'items' => Product::where('category_id', $categoryId)
-                        ->where('active', 1)
-                        ->where('stock_qty', '>', 0)
-                        ->get(),
-                ]
-            ]);
+        if ($this->selectedCategory !== 'all' && ! Category::find($categoryId)) {
+            $this->selectedCategory = 'all';
         }
+
         $this->dispatch('categoryUpdated');
     }
 
     public function showProductOptions($productId)
     {
-        $this->selectedProduct = Product::with(['options.values'])->findOrFail($productId);
+        $this->selectedProduct = Product::with(['options.values', 'category'])->findOrFail($productId);
 
-        // guard: hide/deny if inactive or out of stock
-        if (($this->selectedProduct->active ?? 1) != 1 || (int)($this->selectedProduct->stock_qty ?? 0) <= 0) {
-            session()->flash('error', 'This item is unavailable.');
-            return;
-        }
+        $this->selectedProductSoldOut = (int)($this->selectedProduct->stock_qty ?? 0) <= 0;
 
         // reset options
         $this->selectedOptions = [];
@@ -143,7 +158,12 @@ class OrderPage extends Component
             $this->selectedOptions[$option->id] = null;
         }
 
-        $this->quantity = 1;
+        $this->selectedProduct->setAttribute(
+            'discount_details',
+            PriceAfterDiscount::calculate($this->selectedProduct, $this->resolveTenantId())
+        );
+
+        $this->quantity = $this->selectedProductSoldOut ? 0 : 1;
         $this->note = '';
         $this->showOptionModal = true;
 
@@ -151,11 +171,17 @@ class OrderPage extends Component
     }
     public function incrementQuantity()
     {
+        if ($this->selectedProductSoldOut) {
+            return;
+        }
         $this->quantity++;
     }
 
     public function decrementQuantity()
     {
+        if ($this->selectedProductSoldOut) {
+            return;
+        }
         if ($this->quantity > 1) {
             $this->quantity--;
         }
@@ -166,11 +192,14 @@ class OrderPage extends Component
         if (!$this->selectedProduct) {
             return;
         }
+        if ($this->selectedProductSoldOut) {
+            return;
+        }
         // Re-check availability
         $fresh = Product::find($this->selectedProduct->id);
         if (!$fresh || ($fresh->active ?? 1) != 1 || (int)($fresh->stock_qty ?? 0) <= 0) {
             session()->flash('error', 'This item is unavailable.');
-            $this->reset(['selectedProduct', 'selectedOptions', 'quantity', 'showOptionModal']);
+            $this->reset(['selectedProduct', 'selectedOptions', 'quantity', 'showOptionModal', 'selectedProductSoldOut']);
             $this->dispatch('unlock-scroll');
             return;
         }
@@ -217,24 +246,19 @@ class OrderPage extends Component
             }
         }
 
-        Cart::add([
-            'id' => CartItemIdentifier::make($this->selectedProduct->id, $options),
-            'name' => $this->selectedProduct->name,
-            'price' => $price,
-            'quantity' => $this->quantity,
-            'attributes' => [
-                'product_id' => $this->selectedProduct->id,
-                'options'     => $options,
-                'base_price'  => $this->selectedProduct->price,
-                'image'       => $this->selectedProduct->product_image ?? null,
-                'description' => $this->selectedProduct->description ?? null,
-                'category'    => $this->selectedProduct->category->name ?? null,
-                'estimated_seconds' => (int) ($this->selectedProduct->estimated_seconds ?? 0),
-                'note'        => $this->note,
-            ],
-        ]);
+        $this->selectedProduct->loadMissing('category');
 
-        $this->reset(['selectedProduct', 'selectedOptions', 'quantity', 'showOptionModal', 'note']);
+        $payload = $this->buildCartPayload(
+            $this->selectedProduct,
+            $options,
+            $price,
+            $this->quantity,
+            $this->note
+        );
+
+        Cart::add($payload);
+
+        $this->reset(['selectedProduct', 'selectedOptions', 'quantity', 'showOptionModal', 'note', 'selectedProductSoldOut']);
         $this->dispatch('unlock-scroll');
         $this->dispatch('cart-updated');
     }
@@ -315,42 +339,135 @@ class OrderPage extends Component
     public function closeOptionModal()
     {
         $this->showOptionModal = false;
+        $this->selectedProductSoldOut = false;
+        $this->quantity = 1;
         $this->dispatch('unlock-scroll');
     }
 
     // 👇 Computed property that always reacts
     public function getTotalPriceProperty()
     {
-        if (!$this->selectedProduct) {
-            return 0;
+        $pricing = $this->selectedProductPriceInfo;
+        return $pricing['unit_final'] * $this->quantity;
+    }
+
+    public function getSelectedProductPriceInfoProperty(): array
+    {
+        if (! $this->selectedProduct) {
+            return [
+                'unit_raw' => 0.0,
+                'unit_final' => 0.0,
+                'has_discount' => false,
+                'badge' => null,
+                'discount_name' => null,
+            ];
         }
 
-        $total = $this->selectedProduct->price;
+        $unitPrice = $this->resolveSelectedProductUnitPrice();
+        $pricing = PriceAfterDiscount::calculate(
+            $this->selectedProduct,
+            $this->resolveTenantId(),
+            $unitPrice
+        );
 
-        // Use already-loaded relations to avoid extra DB queries on every render
+        return [
+            'unit_raw' => $unitPrice,
+            'unit_final' => $pricing['final_price'],
+            'has_discount' => $pricing['has_discount'],
+            'badge' => $pricing['badge'],
+            'discount_name' => $pricing['discount_name'],
+        ];
+    }
+
+    public function render()
+    {
+        $productsForView = $this->selectedCategory === 'all'
+            ? $this->loadProducts()
+            : $this->loadProductsForCategory($this->selectedCategory);
+
+        $featured = Product::where('featured', 1)
+            ->where('active', 1)
+            ->get();
+
+        $featured = $this->attachDiscountDetails($featured);
+
+        return view('livewire.customer.order-page', [
+            'products'           => $productsForView,
+            'featuredProducts'   => $featured,
+            'cartTotal'          => Cart::getTotal(),
+            'cartQuantity'       => Cart::getTotalQuantity(),
+            'availableDiscounts' => $this->availableDiscounts,
+        ]);
+    }
+
+    private function resolveSelectedProductUnitPrice(): float
+    {
+        if (! $this->selectedProduct) {
+            return 0.0;
+        }
+
+        $total = (float) $this->selectedProduct->price;
+
         foreach ($this->selectedProduct->options as $option) {
             $valueId = $this->selectedOptions[$option->id] ?? null;
             if ($valueId) {
                 $value = $option->values->firstWhere('id', $valueId);
                 if ($value) {
-                    $total += $value->price_adjustment;
+                    $total += (float) $value->price_adjustment;
                 }
             }
         }
 
-        return $total * $this->quantity;
+        return $total;
     }
 
-    public function render()
+    private function attachDiscountDetails(Collection $products): Collection
     {
-        return view('livewire.customer.order-page', [
-            'products'         => $this->products,
-            'featuredProducts' => Product::where('featured', 1)
-                ->where('active', 1)
-                ->where('stock_qty', '>', 0)
-                ->get(),
-            'cartTotal'        => Cart::getTotal(),
-            'cartQuantity'     => Cart::getTotalQuantity()
-        ]);
+        $tenantId = $this->resolveTenantId();
+
+        return $products->map(function (Product $product) use ($tenantId) {
+            $product->setAttribute(
+                'discount_details',
+                PriceAfterDiscount::calculate($product, $tenantId)
+            );
+
+            return $product;
+        });
+    }
+
+    private function buildCartPayload(Product $product, array $options, float $price, int $quantity, ?string $note = ''): array
+    {
+        $tenantId = $this->resolveTenantId();
+        $pricing = PriceAfterDiscount::calculate($product, $tenantId, $price);
+
+        $attributes = [
+            'product_id' => $product->id,
+            'options' => $options,
+            'base_price' => $product->price,
+            'raw_price' => $price,
+            'image' => $product->product_image ?? null,
+            'description' => $product->description ?? null,
+            'category' => $product->category->name ?? null,
+            'estimated_seconds' => (int) ($product->estimated_seconds ?? 0),
+            'note' => $note,
+            'discount_id' => $pricing['discount_id'],
+            'discount_amount' => $pricing['discount_amount'],
+            'discount_name' => $pricing['discount_name'],
+            'discount_badge' => $pricing['badge'],
+            'final_price' => $pricing['final_price'],
+        ];
+
+        return [
+            'id' => CartItemIdentifier::make($product->id, $options),
+            'name' => $product->name,
+            'price' => $pricing['final_price'],
+            'quantity' => $quantity,
+            'attributes' => $attributes,
+        ];
+    }
+
+    private function resolveTenantId(): ?string
+    {
+        return tenant()?->id ?? $this->tenantId ?? request()->route('tenant');
     }
 }

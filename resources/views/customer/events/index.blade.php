@@ -224,12 +224,17 @@
                         @forelse ($section['events'] as $event)
                             @php
                                 $typeConfig = $eventTypeStyles[$event->event_type] ?? $eventTypeStyles['default'];
-                                $timeValue = $event->time;
-                                $timeDisplay = $timeValue
-                                    ? ($timeValue instanceof \Carbon\CarbonInterface
-                                        ? $timeValue->format('g:i A')
-                                        : \Illuminate\Support\Carbon::parse($timeValue)->format('g:i A'))
-                                    : 'All Day';
+                                $start = $event->starts_at;
+                                $end = $event->uses_date_range ? $event->ends_at : null;
+                                $timeDisplay = $start ? $start->format('g:i A') : 'All Day';
+                                $dateLabel = $end
+                                    ? sprintf('%s – %s', optional($start)->format('M d, Y'), optional($end)->format('M d, Y'))
+                                    : optional($start)->format('M d, Y');
+                                $timeLabel = $end
+                                    ? sprintf('%s – %s', optional($start)->format('g:i A'), optional($end)->format('g:i A'))
+                                    : $timeDisplay;
+                                $badgeMonth = $start ? $start->format('M') : 'TBA';
+                                $badgeDay = $start ? $start->format('d') : '--';
                                 $description = \Illuminate\Support\Str::limit(strip_tags($event->description ?? ''), 150);
                             @endphp
                             <div class="col">
@@ -241,8 +246,8 @@
                                             alt="{{ $event->title }} cover image"
                                         >
                                         <div class="date-badge">
-                                            <span class="date-month">{{ optional($event->date)->format('M') }}</span>
-                                            <span class="date-day">{{ optional($event->date)->format('d') }}</span>
+                                            <span class="date-month">{{ $badgeMonth }}</span>
+                                            <span class="date-day">{{ $badgeDay }}</span>
                                         </div>
                                         @if ($section['isExpired'])
                                             <span class="status-pill expired-pill">EXPIRED</span>
@@ -261,11 +266,11 @@
                                         <div class="event-meta d-flex flex-wrap gap-3 text-muted small">
                                             <span>
                                                 <i class="fa-regular fa-calendar-days me-1 text-orange"></i>
-                                                {{ optional($event->date)->format('M d, Y') }}
+                                                {{ $dateLabel ?? 'Schedule TBA' }}
                                             </span>
                                             <span>
                                                 <i class="fa-regular fa-clock me-1 text-orange"></i>
-                                                {{ $timeDisplay }}
+                                                {{ $timeLabel ?? 'All Day' }}
                                             </span>
                                         </div>
 

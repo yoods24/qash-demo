@@ -326,6 +326,109 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    const discountUpdateModal = document.getElementById('discountUpdateModal');
+    if (discountUpdateModal) {
+        const updateForm = discountUpdateModal.querySelector('form');
+        const updateModalInstance = bootstrap.Modal.getOrCreateInstance(discountUpdateModal);
+        const updateName = discountUpdateModal.querySelector('#discount-update-name');
+        const updatePlan = discountUpdateModal.querySelector('#discount-update-plan');
+        const updateApplicable = discountUpdateModal.querySelector('#discount-update-applicable-for');
+        const updateValidFrom = discountUpdateModal.querySelector('#discount-update-valid-from');
+        const updateValidTill = discountUpdateModal.querySelector('#discount-update-valid-till');
+        const updateType = discountUpdateModal.querySelector('#discount-update-type');
+        const updateValue = discountUpdateModal.querySelector('#discount-update-value');
+        const valueSuffix = discountUpdateModal.querySelector('#discount-update-value-suffix');
+        const updateStatus = discountUpdateModal.querySelector('#discount-update-status');
+        const productsWrapper = discountUpdateModal.querySelector('#discount-update-products-wrapper');
+        const productsSelect = discountUpdateModal.querySelector('#discount-update-products');
+        const quantityWrapper = discountUpdateModal.querySelector('#discount-update-quantity-wrapper');
+        const quantityInput = discountUpdateModal.querySelector('#discount-update-quantity');
+        const dayInputs = Array.from(discountUpdateModal.querySelectorAll('#discount-update-days input[name="days[]"]'));
+
+        const normalizeArray = (value) => Array.isArray(value) ? value : [];
+
+        const toggleProducts = () => {
+            if (!productsWrapper || !updateApplicable) return;
+            const show = updateApplicable.value === 'specific';
+            productsWrapper.classList.toggle('d-none', !show);
+        };
+
+        const toggleQuantity = () => {
+            if (!quantityWrapper || !updatePlan) return;
+            const show = updatePlan.value === 'decrement';
+            quantityWrapper.classList.toggle('d-none', !show);
+            if (!show && quantityInput) {
+                quantityInput.value = '';
+            }
+        };
+
+        const refreshSuffix = () => {
+            if (!valueSuffix || !updateType) return;
+            valueSuffix.textContent = updateType.value === 'percent' ? '%' : 'IDR';
+        };
+
+        const setProducts = (products) => {
+            if (!productsSelect) return;
+            const normalized = normalizeArray(products).map((value) => String(value));
+            Array.from(productsSelect.options).forEach((option) => {
+                option.selected = normalized.includes(option.value);
+            });
+        };
+
+        const setDays = (days) => {
+            const normalized = normalizeArray(days).map((value) => String(value).toLowerCase());
+            dayInputs.forEach((input) => {
+                input.checked = normalized.includes(input.value.toLowerCase());
+            });
+        };
+
+        if (updateApplicable) {
+            updateApplicable.addEventListener('change', toggleProducts);
+        }
+        if (updatePlan) {
+            updatePlan.addEventListener('change', toggleQuantity);
+        }
+        if (updateType) {
+            updateType.addEventListener('change', refreshSuffix);
+        }
+
+        document.addEventListener('click', (event) => {
+            const trigger = event.target.closest('.edit-btn-table');
+            if (!trigger || !updateForm) return;
+            const payloadRaw = trigger.getAttribute('data-discount');
+            if (!payloadRaw) return;
+
+            let payload;
+            try { payload = JSON.parse(payloadRaw); } catch (err) { return; }
+
+            updateForm.reset();
+
+            let action = trigger.getAttribute('data-update-action');
+            if (!action && updateForm.dataset.actionTemplate && payload?.id) {
+                action = updateForm.dataset.actionTemplate.replace('__discount__', payload.id);
+            }
+            if (action) updateForm.action = action;
+
+            if (updateName) updateName.value = payload.name ?? '';
+            if (updatePlan) updatePlan.value = payload.quantity_type ?? 'unlimited';
+            if (updateApplicable) updateApplicable.value = payload.applicable_for ?? 'all';
+            if (updateValidFrom) updateValidFrom.value = payload.valid_from ?? '';
+            if (updateValidTill) updateValidTill.value = payload.valid_till ?? '';
+            if (updateType) updateType.value = payload.discount_type ?? 'flat';
+            if (updateValue) updateValue.value = payload.value ?? '';
+            if (updateStatus) updateStatus.value = payload.status ?? 'active';
+            if (quantityInput) quantityInput.value = payload.quantity ?? '';
+
+            setProducts(payload.products ?? []);
+            setDays(payload.days ?? []);
+            toggleProducts();
+            toggleQuantity();
+            refreshSuffix();
+
+            updateModalInstance.show();
+        });
+    }
+
     // option section (guard elements may not exist on all pages)
     const toggleOptions = document.getElementById('toggleOptions');
     const optionsSection = document.getElementById('optionsSection');
@@ -670,11 +773,25 @@ document.addEventListener('DOMContentLoaded', function () {
       showOverlay();
     });
 
+    const finishLivewireMessage = (component) => {
+      if (isPollingComponent(component)) return;
+      hideOverlay();
+    };
+
     // message.processed fires after DOM updates
     LW.hook('message.processed', (message, component) => {
-      if (isPollingComponent(component)) return;
-      // Force hide to prevent spinner from sticking after Livewire actions
-      hideOverlay();
+      finishLivewireMessage(component);
+    });
+
+    // message.failed triggers when the request errors before processing
+    LW.hook('message.failed', (message, component) => {
+      finishLivewireMessage(component);
+    });
+
+    // message.received still fires before DOM diffing; use as a fallback to prevent locking
+    LW.hook('message.received', (message, component) => {
+      // If Livewire short-circuits (redirect, download, etc.) ensure we hide the loader.
+      setTimeout(() => finishLivewireMessage(component), 0);
     });
 
     // Allow Livewire components to explicitly hide overlay

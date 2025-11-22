@@ -114,13 +114,27 @@
     if (! $taxLines instanceof \Illuminate\Support\Collection) {
         $taxLines = collect($taxLines);
     }
+    $items = $order->items ?? collect();
+    if (! $items instanceof \Illuminate\Support\Collection) {
+        $items = collect($items);
+    }
+    $itemsSubtotal = (float) $items->sum(fn ($item) => ((float) ($item->unit_price ?? $item->price ?? 0)) * (int) ($item->quantity ?? 1));
+    $itemsDiscount = (float) $items->sum(fn ($item) => ((float) ($item->discount_amount ?? 0)) * (int) ($item->quantity ?? 1));
+    $itemsFinal = (float) $items->sum(fn ($item) => ((float) ($item->final_price ?? $item->unit_price ?? $item->price ?? 0)) * (int) ($item->quantity ?? 1));
     $subtotal = (float) ($incomingTotals['subtotal'] ?? ($order->subtotal ?? $order->total ?? 0));
+    $preDiscountSubtotal = $itemsSubtotal > 0 ? $itemsSubtotal : $subtotal;
+    $discountTotal = $itemsDiscount > 0 ? $itemsDiscount : max($preDiscountSubtotal - $subtotal, 0);
+    $subtotalAfterDiscount = max($preDiscountSubtotal - $discountTotal, 0);
+    $subtotal = $subtotalAfterDiscount;
     $totalTax = (float) ($incomingTotals['total_tax'] ?? ($order->total_tax ?? $taxLines->sum('amount')));
     $grandTotal = (float) ($incomingTotals['grand_total'] ?? ($order->grand_total ?? $order->total ?? ($subtotal + $totalTax)));
     $xenditFee = (float) ($incomingTotals['xendit_fee'] ?? ($order->xendit_fee ?? 0));
     $qashFee = (float) ($incomingTotals['qash_fee'] ?? ($order->qash_fee ?? 0));
     $feesTotal = (float) ($incomingTotals['fees_total'] ?? ($xenditFee + $qashFee));
     $netReceived = (float) ($incomingTotals['net'] ?? ($grandTotal - $feesTotal));
+    $discountNameFor = function ($item) {
+        return optional($item->discount)->name;
+    };
 @endphp
 
 <div class="mt-4">
@@ -137,19 +151,30 @@
                     @php
                         $unitPrice = (float) ($item->unit_price ?? $item->price ?? 0);
                         $quantity = (int) ($item->quantity ?? 1);
-                        $lineTotal = $unitPrice * $quantity;
+                        $lineOriginal = $unitPrice * $quantity;
+                        $lineFinal = (float) ($item->final_price ?? $item->unit_price ?? $item->price ?? 0) * $quantity;
+                        $lineDiscount = (float) ($item->discount_amount ?? 0) * $quantity;
                         $optionLines = $resolveOptions($item);
                         $itemName = $item->product_name ?? $item->name ?? __('Item');
+                        $discountLabel = $discountNameFor($item);
                     @endphp
                     <tr>
                         <td class="ps-4 py-4" colspan="2">
                             <div class="d-flex justify-content-between align-items-start gap-3">
                                 <div>
                                     <div class="fw-semibold">{{ $itemName }}</div>
-                                    <div class="text-muted small">{{ $quantity }} × {{ rupiah($unitPrice) }}</div>
+                                    <div class="text-muted small">Qty: {{ $quantity }}</div>
                                 </div>
                                 <div class="text-end">
-                                    <div class="fw-semibold">{{ rupiah($lineTotal) }}</div>
+                                    <div class="text-muted small {{ $lineDiscount > 0 ? 'text-decoration-line-through' : '' }}">
+                                        Item price: {{ rupiah($lineOriginal) }}
+                                    </div>
+                                    @if ($lineDiscount > 0)
+                                        <div class="text-success small">
+                                            Discount ({{ $discountLabel ?? 'Promo' }}): -{{ rupiah($lineDiscount) }}
+                                        </div>
+                                    @endif
+                                    <div class="fw-semibold">{{ rupiah($lineFinal) }}</div>
                                 </div>
                             </div>
                             @if (! empty($optionLines))
@@ -179,7 +204,15 @@
     <div class="mt-4 border-top pt-3">
         <div class="d-flex justify-content-between py-1">
             <span class="text-muted">Subtotal</span>
-            <span class="fw-semibold">{{ rupiah($subtotal) }}</span>
+            <span class="fw-semibold">{{ rupiah($preDiscountSubtotal) }}</span>
+        </div>
+        <div class="d-flex justify-content-between py-1">
+            <span class="text-muted">Discount</span>
+            <span class="text-success">- {{ rupiah($discountTotal) }}</span>
+        </div>
+        <div class="d-flex justify-content-between py-1">
+            <span class="text-muted">Subtotal after discount</span>
+            <span class="fw-semibold">{{ rupiah($subtotalAfterDiscount) }}</span>
         </div>
 
         @foreach ($taxLines as $taxLine)

@@ -11,8 +11,21 @@
             'xendit_fee' => (float) ($order->xendit_fee ?? 0),
             'qash_fee' => (float) ($order->qash_fee ?? 0),
         ];
+        $items = $order->items ?? collect();
+        if (! $items instanceof \Illuminate\Support\Collection) {
+            $items = collect($items);
+        }
+        $itemsSubtotal = (float) $items->sum(fn ($item) => ((float) ($item->unit_price ?? $item->price ?? 0)) * (int) ($item->quantity ?? 1));
+        $itemsDiscount = (float) $items->sum(fn ($item) => ((float) ($item->discount_amount ?? 0)) * (int) ($item->quantity ?? 1));
+        $totals['pre_discount_subtotal'] = $itemsSubtotal > 0 ? $itemsSubtotal : $totals['subtotal'];
+        $totals['discount_total'] = $itemsDiscount > 0 ? $itemsDiscount : max($totals['pre_discount_subtotal'] - $totals['subtotal'], 0);
+        $totals['subtotal_after_discount'] = max($totals['pre_discount_subtotal'] - $totals['discount_total'], 0);
+        $totals['subtotal'] = $totals['subtotal_after_discount'];
         $totals['fees_total'] = $totals['xendit_fee'] + $totals['qash_fee'];
         $totals['net'] = $totals['grand_total'] - $totals['fees_total'];
+        $discountNameFor = function ($item) {
+            return optional($item->discount)->name;
+        };
         $resolveOptions = function ($item): array {
             $raw = data_get(
                 $item,
@@ -200,15 +213,18 @@
                     @php
                         $unitPrice = (float) ($item->unit_price ?? $item->price ?? 0);
                         $quantity = (int) ($item->quantity ?? 1);
-                        $lineTotal = $unitPrice * $quantity;
+                        $lineOriginal = $unitPrice * $quantity;
+                        $lineFinal = (float) ($item->final_price ?? $item->unit_price ?? $item->price ?? 0) * $quantity;
+                        $lineDiscount = (float) ($item->discount_amount ?? 0) * $quantity;
                         $optionLines = $resolveOptions($item);
                         $itemName = $item->product_name ?? $item->name ?? __('Item');
+                        $discountLabel = $discountNameFor($item);
                     @endphp
                     <div class="py-4 {{ ! $loop->last ? 'border-bottom' : '' }}">
                         <div class="d-flex justify-content-between align-items-start gap-3 order-tracking-item">
                             <div>
                                 <p class="fw-semibold mb-1">{{ $itemName }}</p>
-                                <p class="text-muted small mb-2">{{ $quantity }} × {{ rupiah($unitPrice) }}</p>
+                                <p class="text-muted small mb-2">Qty: {{ $quantity }}</p>
                                 @foreach ($optionLines as $line)
                                     @php $adjustment = $line['adjustment'] ?? 0; @endphp
                                     <div class="text-warning small fw-semibold">
@@ -221,8 +237,16 @@
                                     </div>
                                 @endforeach
                             </div>
-                                        <div class="text-end">
-                                            <p class="fw-bold mb-0">{{ rupiah($lineTotal) }}</p>
+                            <div class="text-end">
+                                <div class="text-muted small {{ $lineDiscount > 0 ? 'text-decoration-line-through' : '' }}">
+                                    Item price: {{ rupiah($lineOriginal) }}
+                                </div>
+                                @if ($lineDiscount > 0)
+                                    <div class="text-success small">
+                                        Discount ({{ $discountLabel ?? 'Promo' }}): -{{ rupiah($lineDiscount) }}
+                                    </div>
+                                @endif
+                                <p class="fw-bold mb-0">{{ rupiah($lineFinal) }}</p>
                             </div>
                         </div>
                     </div>
@@ -232,6 +256,14 @@
                         <div class="pt-3 order-tracking-totals">
                             <div class="d-flex justify-content-between py-2 order-tracking-total-line">
                                 <span class="text-muted">Subtotal</span>
+                                <span class="fw-semibold">{{ rupiah($totals['pre_discount_subtotal']) }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between py-2 order-tracking-total-line">
+                                <span class="text-muted">Discount</span>
+                                <span class="text-success">- {{ rupiah($totals['discount_total']) }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between py-2 order-tracking-total-line">
+                                <span class="text-muted">Subtotal after discount</span>
                                 <span class="fw-semibold">{{ rupiah($totals['subtotal']) }}</span>
                             </div>
                             @foreach ($taxLines as $taxLine)

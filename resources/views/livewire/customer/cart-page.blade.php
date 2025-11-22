@@ -155,6 +155,12 @@
                 <button wire:click="removeItem('{{ $item->id }}')" class="btn btn-sm p-0 text-muted"><i class="bi bi-x-lg"></i></button>
             </div>
             <div class="card-body d-flex align-items-start">
+                @php
+                    $rawPrice = $item->attributes->raw_price ?? $item->attributes->base_price ?? $item->price;
+                    $finalPrice = $item->attributes->final_price ?? $item->price;
+                    $lineTotal = $finalPrice * (int) $item->quantity;
+                    $hasDiscount = ($item->attributes->discount_id ?? null) && (($item->attributes->discount_amount ?? 0) > 0);
+                @endphp
                 {{-- Product Image --}}
                 @if($item->attributes->image)
                     <img src="{{ asset('storage/' . $item->attributes->image) }}" alt="{{ $item->name }}" class="item-img me-3">
@@ -166,7 +172,6 @@
                     <div class="d-flex justify-content-between">
                         <div class="d-flex flex-column align-items-start mb-2">
                             <h6 class="mb-1 fw-semibold">{{ $item->name }}</h6>
-                            <span class="fw-semibold">Rp{{ number_format($item['attributes']['base_price'], 0) }}</span>
                         </div>
                     </div>
 
@@ -184,13 +189,23 @@
                         </ul>
                     @endif
 
+                    <div class="mb-3">
+                        @if($hasDiscount)
+                            <div class="text-muted text-decoration-line-through small">Original: {{ rupiahRp($rawPrice) }}</div>
+                            <div class="fw-bold text-success">Now: {{ rupiahRp($finalPrice) }}</div>
+                            <span class="badge bg-success-subtle text-success mt-1">Discount Applied: {{ $item->attributes->discount_name ?? 'Promo' }}</span>
+                        @else
+                            <div class="fw-bold">{{ rupiahRp($finalPrice) }}</div>
+                        @endif
+                    </div>
+
                     <div class="d-flex justify-content-between align-items-center">
                         <div class="qty-wrap d-inline-flex align-items-center gap-1">
                             <button wire:click="decreaseQty('{{ $item->id }}')" class="btn btn-light border btn-qty"><i class="bi bi-dash"></i></button>
                             <span class="mx-2">{{ $item->quantity }}</span>
                             <button wire:click="increaseQty('{{ $item->id }}')" class="btn btn-light border btn-qty"><i class="bi bi-plus"></i></button>
                         </div>
-                        <span class="fw-semibold">Rp{{ number_format($item->price, 0) }}</span>
+                        <span class="fw-semibold">{{ rupiahRp($lineTotal) }}</span>
                     </div>
                 </div>
             </div>
@@ -281,11 +296,15 @@
         <div class="card-body">
             <div class="d-flex justify-content-between mb-2">
                 <span class="muted">Subtotal</span>
-                <span>{{ rupiahRp($total) }}</span>
+                <span>{{ rupiahRp($subtotalBeforeDiscount) }}</span>
             </div>
             <div class="d-flex justify-content-between mb-2">
                 <span class="muted">Discount</span>
-                <span class="text-success">- Rp 0</span>
+                <span class="text-success">- {{ rupiahRp($discountTotal) }}</span>
+            </div>
+            <div class="d-flex justify-content-between mb-2">
+                <span class="muted">Items Total</span>
+                <span>{{ rupiahRp($total) }}</span>
             </div>
             @foreach(($taxPreview['lines'] ?? []) as $taxLine)
                 <div class="d-flex justify-content-between mb-2">

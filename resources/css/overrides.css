@@ -8,3 +8,7 @@
 .collapse.show { display: block !important; }
 .collapsing { height: 0; overflow: hidden; transition: height .35s ease; }
 
+.fi-ta-text-has-line-breaks ul {
+    padding: 0 !important;
+    margin: 0 !important;
+}

@@ -60,8 +60,20 @@ class EventTable extends Component implements HasActions, HasSchemas, HasTable
                     ->searchable(),
 
                 TextColumn::make('date')
-                    ->label('Date')
-                    ->date('d M Y')
+                    ->label('Schedule')
+                    ->formatStateUsing(function ($state, Event $record) {
+                        if ($record->uses_date_range && $record->date_from && $record->date_till) {
+                            return sprintf(
+                                '%s – %s',
+                                optional($record->date_from)->format('d M Y H:i'),
+                                optional($record->date_till)->format('d M Y H:i')
+                            );
+                        }
+
+                        $start = $record->starts_at;
+
+                        return $start ? $start->format('d M Y H:i') : '-';
+                    })
                     ->sortable(),
 
                 ToggleColumn::make('is_featured')

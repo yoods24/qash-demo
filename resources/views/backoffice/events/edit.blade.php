@@ -24,7 +24,14 @@
         </div>
     @endif
 
-    @php($unlimitedCapacity = (bool) old('capacity_unlimited', $event->capacity === null))
+    @php
+        $unlimitedCapacity = (bool) old('capacity_unlimited', $event->capacity === null);
+        $formDefaults = $formDefaults ?? [];
+        $useDateRange = (bool) old('use_date_range', $formDefaults['use_date_range'] ?? false);
+        $singleDateValue = old('event_date', $formDefaults['event_date'] ?? '');
+        $rangeStartValue = old('date_from', $formDefaults['date_from'] ?? '');
+        $rangeEndValue = old('date_till', $formDefaults['date_till'] ?? '');
+    @endphp
 
     <form action="{{ route('backoffice.events.update', $event) }}" method="POST" class="d-grid gap-3">
         @csrf
@@ -52,15 +59,55 @@
                             </select>
                             @error('event_type')<small class="text-danger">{{ $message }}</small>@enderror
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">Date</label>
-                            <input type="date" class="form-control" name="date" value="{{ old('date', optional($event->date)->format('Y-m-d')) }}" required>
-                            @error('date')<small class="text-danger">{{ $message }}</small>@enderror
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">Time</label>
-                            <input type="time" class="form-control" name="time" value="{{ old('time', optional($event->time)->format('H:i')) }}" required>
-                            @error('time')<small class="text-danger">{{ $message }}</small>@enderror
+                        <div class="col-12">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <label class="form-label fw-bold mb-0">Schedule</label>
+                                <div class="form-check form-switch">
+                                    <input type="hidden" name="use_date_range" value="0">
+                                    <input class="form-check-input" type="checkbox" value="1" name="use_date_range" id="use-date-range" {{ $useDateRange ? 'checked' : '' }}>
+                                    <label class="form-check-label small" for="use-date-range">Use Date Range</label>
+                                </div>
+                            </div>
+                            <div class="row g-3 mt-1 {{ $useDateRange ? 'd-none' : '' }}" id="single-date-wrapper">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Event Date & Time</label>
+                                    <input 
+                                        type="datetime-local" 
+                                        class="form-control" 
+                                        id="event-date-input"
+                                        name="event_date" 
+                                        value="{{ $singleDateValue }}" 
+                                        {{ $useDateRange ? 'disabled' : 'required' }}
+                                    >
+                                    @error('event_date')<small class="text-danger">{{ $message }}</small>@enderror
+                                </div>
+                            </div>
+                            <div class="row g-3 mt-1 {{ $useDateRange ? '' : 'd-none' }}" id="range-date-wrapper">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Starts</label>
+                                    <input 
+                                        type="datetime-local" 
+                                        class="form-control range-date-input" 
+                                        id="date-from-input"
+                                        name="date_from" 
+                                        value="{{ $rangeStartValue }}" 
+                                        {{ $useDateRange ? 'required' : 'disabled' }}
+                                    >
+                                    @error('date_from')<small class="text-danger">{{ $message }}</small>@enderror
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Ends</label>
+                                    <input 
+                                        type="datetime-local" 
+                                        class="form-control range-date-input" 
+                                        id="date-till-input"
+                                        name="date_till" 
+                                        value="{{ $rangeEndValue }}" 
+                                        {{ $useDateRange ? 'required' : 'disabled' }}
+                                    >
+                                    @error('date_till')<small class="text-danger">{{ $message }}</small>@enderror
+                                </div>
+                            </div>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Location</label>
@@ -135,4 +182,39 @@
         </div>
     </form>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const toggle = document.getElementById('use-date-range');
+    const singleWrapper = document.getElementById('single-date-wrapper');
+    const rangeWrapper = document.getElementById('range-date-wrapper');
+    const singleInput = document.getElementById('event-date-input');
+    const rangeInputs = document.querySelectorAll('.range-date-input');
+
+    const syncScheduleInputs = () => {
+        if (toggle.checked) {
+            singleWrapper.classList.add('d-none');
+            rangeWrapper.classList.remove('d-none');
+            singleInput?.setAttribute('disabled', 'disabled');
+            singleInput?.removeAttribute('required');
+            rangeInputs.forEach((input) => {
+                input.removeAttribute('disabled');
+                input.setAttribute('required', 'required');
+            });
+        } else {
+            singleWrapper.classList.remove('d-none');
+            rangeWrapper.classList.add('d-none');
+            singleInput?.removeAttribute('disabled');
+            singleInput?.setAttribute('required', 'required');
+            rangeInputs.forEach((input) => {
+                input.setAttribute('disabled', 'disabled');
+                input.removeAttribute('required');
+            });
+        }
+    };
+
+    toggle?.addEventListener('change', syncScheduleInputs);
+    syncScheduleInputs();
+});
+</script>
 </x-backoffice.layout>

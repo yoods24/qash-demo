@@ -80,6 +80,62 @@
     </div>
 
 
+    @if($availableDiscounts->isNotEmpty())
+        <div class="mb-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="fw-bold mb-0">Available Discounts</h4>
+                <small class="text-muted">Updated daily</small>
+            </div>
+            <div id="voucher-slider" class="splide mt-3" wire:ignore>
+                <div class="splide__track p-3">
+                    <ul class="splide__list">
+                        @foreach ($availableDiscounts as $discount)
+                            <li class="splide__slide">
+                                <div class="bg-white rounded-5 shadow p-3 h-100 discount-card">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <span class="badge bg-light text-dark text-capitalize mb-1">
+                                                {{ $discount->discount_type }} 
+                                            </span>
+                                            <h5 class="mb-0 fw-bold text-dark">{{ $discount->name }}</h5>
+                                        </div>
+                                        <div class="text-end text-primer fw-bold fs-5">
+                                            @if($discount->discount_type === 'percent')
+                                                {{ rtrim(rtrim(number_format($discount->value, 2, '.', ''), '0'), '.') }}%
+                                            @else
+                                                {{ rupiahRp($discount->value) }}
+                                            @endif
+                                        </div>
+                                    </div>
+                                    <div class="text-muted small mb-3">
+                                        {{ optional($discount->valid_from)->format('d M Y') }} - {{ optional($discount->valid_till)->format('d M Y') }}
+                                    </div>
+                                    @if($discount->applicable_for === 'specific')
+                                        @php
+                                            $products = collect($discount->available_products ?? []);
+                                        @endphp
+                                        <div class="d-flex gap-2 align-items-center">
+                                            @foreach($products->take(3) as $product)
+                                                <img src="{{ $product?->product_image ? asset('storage/' . $product->product_image) : 'https://via.placeholder.com/48' }}"
+                                                     alt="{{ $product?->name }}"
+                                                     class="rounded" style="width: 48px; height: 48px; object-fit: cover;">
+                                            @endforeach
+                                            @if($products->count() > 3)
+                                                <span class="small text-muted">+{{ $products->count() - 3 }} more</span>
+                                            @endif
+                                        </div>
+                                    @else
+                                        <span class="badge bg-success-subtle text-success px-3 py-2">All Items</span>
+                                    @endif
+                                </div>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
+        </div>
+    @endif
+
     @if($selectedCategory === 'all')
     {{-- Voucher Lists --}}
 
@@ -89,8 +145,14 @@
             <h3 class="text-xl font-bold mb-5">Featured Coffee</h3>
             <ul class="splide__list">
                 @foreach ($featuredProducts as $product)
+                    @php $isOut = (int)($product->stock_qty ?? 0) <= 0; @endphp
                     <li class="splide__slide">
-                        <div wire:click="showProductOptions({{ $product->id }})" class="d-flex gap-1 p-3 flex-row justify-content-between bg-white rounded-xl shadow product-card">
+                        <div wire:click="showProductOptions({{ $product->id }})" class="d-flex gap-1 p-3 flex-row justify-content-between bg-white rounded-xl shadow product-card position-relative {{ $isOut ? 'product-card-out' : '' }}">
+                            @if($isOut)
+                                <span class="badge bg-secondary-subtle text-secondary position-absolute top-50 start-50 translate-middle px-3 py-2" style="pointer-events: none;">
+                                    Out of stock
+                                </span>
+                            @endif
                             <div class="d-flex gap-3">
                                 <div>
                                     <img src="{{ asset('storage/'. $product->product_image) }}"  
@@ -100,7 +162,19 @@
                                 <div class="text-start ms-sm-3 mt-3 mt-sm-0">
                                     <h3 class="mb-1 text-lg fw-semibold">{{ $product->name }}</h3>
                                     <p class="text-sm text-truncate text-muted">{{ Str::limit($product->description,20) }}</p>
-                                    <p class="fw-bold mb-0">Rp{{ number_format($product->price, 0, ',', '.') }}</p>
+                                    @php
+                                        $discount = $product->discount_details ?? null;
+                                        $hasDiscount = $discount['has_discount'] ?? false;
+                                    @endphp
+                                    @if($hasDiscount)
+                                        <div class="d-flex flex-column">
+                                            <span class="text-muted text-decoration-line-through small">Rp{{ number_format($product->price, 0, ',', '.') }}</span>
+                                            <span class="fw-bold text-success">Rp{{ number_format($discount['final_price'], 0, ',', '.') }}</span>
+                                            <span class="badge bg-success-subtle text-success mt-1">{{ $discount['badge'] }}</span>
+                                        </div>
+                                    @else
+                                        <p class="fw-bold mb-0">Rp{{ number_format($product->price, 0, ',', '.') }}</p>
+                                    @endif
                                 </div>
                             </div>
                             <div class="add-btn-container d-flex flex-column justify-content-between">
@@ -125,6 +199,9 @@
 
 
 @foreach($products as $categoryData)
+@php
+    $categoryItems = collect($categoryData['items'] ?? []);
+@endphp
 <div class="product-line my-3"></div>
     {{-- Category Heading --}}
     <div class="d-flex justify-content-between align-items-center mb-0">
@@ -137,11 +214,17 @@
 
     {{-- Product List --}}
     <div class="list-group product-list mb-5">
-        @foreach($categoryData['items'] as $product)
+        @foreach($categoryItems as $product)
+            @php $isOut = (int)($product->stock_qty ?? 0) <= 0; @endphp
             <div 
                 wire:click="showProductOptions({{ $product->id }})"
-                class="product-row d-flex align-items-center py-3"
+                class="product-row d-flex align-items-center py-3 position-relative {{ $isOut ? 'product-row-out' : '' }}"
             >
+                @if($isOut)
+                    <span class="badge bg-secondary-subtle text-secondary position-absolute top-50 start-50 translate-middle px-3 py-2" style="pointer-events: none;">
+                        Out of stock
+                    </span>
+                @endif
                 {{-- Product Image --}}
                 <img src="{{ asset('storage/' . $product->product_image) }}" 
                     alt="{{ $product->name }}" 
@@ -151,7 +234,19 @@
                 <div class="flex-grow-1 ms-3">
                     <h6 class="fw-bold mb-1 text-dark">{{ $product->name }}</h6>
                     <p class="text-muted small mb-1">{{ Str::limit($product->description, 70) }}</p>
-                    <span class="fw-semibold">Rp {{ number_format($product->price, 0, ',', '.') }}</span>
+                    @php
+                        $discount = $product->discount_details ?? null;
+                        $hasDiscount = $discount['has_discount'] ?? false;
+                    @endphp
+                    @if($hasDiscount)
+                        <div class="d-flex flex-column">
+                            <span class="text-muted text-decoration-line-through small">Rp {{ number_format($product->price, 0, ',', '.') }}</span>
+                            <span class="fw-bold text-success">Rp {{ number_format($discount['final_price'], 0, ',', '.') }}</span>
+                            <span class="badge bg-success-subtle text-success align-self-start mt-1">{{ $discount['badge'] }}</span>
+                        </div>
+                    @else
+                        <span class="fw-semibold">Rp {{ number_format($product->price, 0, ',', '.') }}</span>
+                    @endif
                 </div>
 
                 {{-- Action Button --}}
@@ -199,20 +294,33 @@
         <!-- Product Info -->
     <div class="product-info p-3">
         <div class="text-center">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div class="text-start w-75">
-                        <h5 class="product-title mb-1">{{ $selectedProduct->name }}</h5>
-                        <div class="d-flex align-items-center gap-2 product-subtle mb-1">
-                            <i class="bi bi-star-fill text-warning"></i>
-                            <span>4.8</span>
-                            <span>(124 reviews)</span>
+                    @php $priceInfo = $this->selectedProductPriceInfo; @endphp
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="text-start w-75">
+                            <h5 class="product-title mb-1">{{ $selectedProduct->name }}</h5>
+                            <div class="d-flex align-items-center gap-2 product-subtle mb-1">
+                                <i class="bi bi-star-fill text-warning"></i>
+                                <span>4.8</span>
+                                <span>(124 reviews)</span>
+                            </div>
+                            <p class="product-subtle mb-1">{{ $selectedProduct->description }}</p>
                         </div>
-                        <p class="product-subtle mb-1">{{ $selectedProduct->description }}</p>
+                        <div class="align-content-center">
+                            @if($priceInfo['has_discount'])
+                                <div class="text-end">
+                                    <div class="text-muted text-decoration-line-through small">
+                                        Rp {{ number_format($priceInfo['unit_raw'], 0, ',', '.') }}
+                                    </div>
+                                    <h6 class="price-accent text-success mb-0">
+                                        Rp {{ number_format($priceInfo['unit_final'], 0, ',', '.') }}
+                                    </h6>
+                                    <span class="badge bg-success-subtle text-success mt-1">{{ $priceInfo['badge'] }}</span>
+                                </div>
+                            @else
+                                <h6 class="price-accent">Rp {{ number_format($priceInfo['unit_final'], 0, ',', '.') }}</h6>
+                            @endif
+                        </div>
                     </div>
-                    <div class="align-content-center">
-                        <h6 class="price-accent">Rp {{ number_format($selectedProduct->price, 0, ',', '.') }}</h6>
-                    </div>
-                </div>
                 <hr>
         </div>
 
@@ -325,14 +433,19 @@
         <hr>
 
         <!-- Quantity and Add to Cart -->
+        @php $soldOut = $this->selectedProductSoldOut; @endphp
         <div class="d-flex flex-column mt-3 gap-3">
             <div class="input-group flex-grow-1">
-                <button class="btn btn-outline-secondary" type="button" wire:click="decrementQuantity">-</button>
+                <button class="btn btn-outline-secondary" type="button" wire:click="decrementQuantity" @disabled($soldOut)>-</button>
                 <input type="number" class="form-control text-center" wire:model="quantity" disabled min="1">
-                <button class="btn btn-outline-secondary" type="button" wire:click="incrementQuantity">+</button>
+                <button class="btn btn-outline-secondary" type="button" wire:click="incrementQuantity" @disabled($soldOut)>+</button>
             </div>
 
-            @if ($quantity > 0)
+            @if ($soldOut)
+                <button class="btn btn-secondary btn-sm w-100 w-sm-auto" disabled>
+                    Product Sold Out
+                </button>
+            @elseif ($quantity > 0)
                 <button class="reservation-btn btn-sm w-100 w-sm-auto" wire:click="addSelectedProductToCart">
                     Add to Cart — Rp {{ number_format($this->totalPrice, 0, ',', '.') }}
                 </button>
@@ -345,7 +458,11 @@
         </div>
                 <!-- Sticky CTA inside modal -->
         <div class="option-cta" id="option-cta">
-            @if ($quantity > 0)
+            @if ($soldOut)
+                <button class="btn-cta disabled" disabled>
+                    Product Sold Out
+                </button>
+            @elseif ($quantity > 0)
                 <button class="btn-cta" wire:click="addSelectedProductToCart">
                     Add to Cart — Rp {{ number_format($this->totalPrice, 0, ',', '.') }}
                 </button>
@@ -517,9 +634,8 @@ $js('voucherSlider', () => {
     let el = document.querySelector('#voucher-slider');
     if (el) {
         window.voucherSplideInstance = new Splide(el, {
-            type: 'loop',
             autoplay: true,
-            perPage: 2,
+            perPage: 1,
             gap: '2rem',
             breakpoints: {
                 768: {

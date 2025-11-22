@@ -169,7 +169,13 @@
                             if (! $taxLines instanceof \Illuminate\Support\Collection) {
                                 $taxLines = collect($taxLines);
                             }
-                            $subtotal = (float) ($order->subtotal ?? $order->total ?? 0);
+                            $itemsSubtotal = (float) $order->items->sum(fn($item) => ($item->unit_price ?? 0) * (int) $item->quantity);
+                            $itemsDiscount = (float) $order->items->sum(fn($item) => ($item->discount_amount ?? 0) * (int) $item->quantity);
+                            $itemsFinal = (float) $order->items->sum(fn($item) => ($item->final_price ?? $item->unit_price ?? 0) * (int) $item->quantity);
+                            $calculatedSubtotal = (float) ($order->subtotal ?? $order->total ?? 0);
+                            $subtotal = $itemsFinal > 0 ? $itemsFinal : $calculatedSubtotal;
+                            $preDiscountSubtotal = $itemsSubtotal > 0 ? $itemsSubtotal : $subtotal;
+                            $discountTotal = $itemsDiscount > 0 ? $itemsDiscount : max($preDiscountSubtotal - $subtotal, 0);
                             $totalTax = (float) ($order->total_tax ?? $taxLines->sum('amount'));
                             $grandTotal = (float) ($order->grand_total ?? $order->total ?? ($subtotal + $totalTax));
                             $amountDue = $grandTotal + $applicationFee;
@@ -290,6 +296,10 @@
                             @foreach($order->items as $item)
                                 @php
                                     $options = $resolveOptions($item);
+                                    $lineOriginal = (float) ($item->unit_price ?? 0) * (int) $item->quantity;
+                                    $lineFinal = (float) ($item->final_price ?? $item->unit_price ?? 0) * (int) $item->quantity;
+                                    $lineDiscount = (float) ($item->discount_amount ?? 0) * (int) $item->quantity;
+                                    $discountName = $item->discount?->name ?? null;
                                 @endphp
                                 <div class="py-3 border-bottom">
                                     <div class="d-flex justify-content-between align-items-start order-item-row">
@@ -308,8 +318,18 @@
                                                 </div>
                                             @endforeach
                                         </div>
-                                        <div class="fw-bold fs-5 text-dark">
-                                            {{ rupiahRp($item->unit_price * $item->quantity) }}
+                                        <div class="text-end">
+                                            <div class="text-muted small {{ $lineDiscount > 0 ? 'text-decoration-line-through' : '' }}">
+                                                Item price: {{ rupiahRp($lineOriginal) }}
+                                            </div>
+                                            @if($lineDiscount > 0)
+                                                <div class="text-success small">
+                                                    Discount ({{ $discountName ?? 'Promo' }}): -{{ rupiahRp($lineDiscount) }}
+                                                </div>
+                                            @endif
+                                            <div class="fw-bold fs-5 text-dark">
+                                                Final price: {{ rupiahRp($lineFinal) }}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -319,6 +339,14 @@
                         <div class="pt-3">
                             <div class="d-flex justify-content-between text-muted small mb-1 payment-total-line">
                                 <span>Subtotal</span>
+                                <span>{{ rupiahRp($preDiscountSubtotal) }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between text-muted small mb-1 payment-total-line">
+                                <span>Discount</span>
+                                <span class="text-success">- {{ rupiahRp($discountTotal) }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between text-muted small mb-1 payment-total-line">
+                                <span>Subtotal after discount</span>
                                 <span>{{ rupiahRp($subtotal) }}</span>
                             </div>
                             @foreach ($taxLines as $taxLine)

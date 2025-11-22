@@ -254,15 +254,31 @@ class EventSeeder extends Seeder
         ];
 
         foreach ($events as $payload) {
+            $startDate = $payload['date'] instanceof Carbon
+                ? $payload['date']->copy()
+                : Carbon::parse($payload['date']);
+
+            $start = Carbon::parse(
+                $startDate->format('Y-m-d') . ' ' . ($payload['time'] ?? '00:00')
+            );
+
+            $data = array_merge($payload, [
+                'tenant_id' => $tenantId,
+                'date' => $startDate->toDateString(),
+                'time' => $start->format('H:i:s'),
+                'event_date' => $start,
+                'date_from' => null,
+                'date_till' => null,
+                'uses_date_range' => false,
+            ]);
+
             Event::updateOrCreate(
                 [
                     'tenant_id' => $tenantId,
                     'title' => $payload['title'],
-                    'date' => $payload['date'],
+                    'date' => $startDate->toDateString(),
                 ],
-                array_merge($payload, [
-                    'tenant_id' => $tenantId,
-                ])
+                $data
             );
         }
     }

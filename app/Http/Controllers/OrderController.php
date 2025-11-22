@@ -17,7 +17,7 @@ class OrderController extends Controller
 
     public function view(Order $order) {
         // Eager load relations for efficient view rendering
-        $order->load(['customerDetail', 'items.product.options']);
+        $order->load(['customerDetail', 'items.product.options', 'items.discount', 'taxLines']);
         return view('backoffice.order.view', ['order' => $order]);
     }
 }

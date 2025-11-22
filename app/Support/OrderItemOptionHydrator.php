@@ -8,7 +8,7 @@ class OrderItemOptionHydrator
 {
     public static function hydrate(Order $order): Order
     {
-        $order->loadMissing(['items', 'customerDetail', 'taxLines']);
+        $order->loadMissing(['items.discount', 'customerDetail', 'taxLines']);
 
         $order->items->transform(function ($item) {
             $options = $item->product_options ?? $item->options ?? [];

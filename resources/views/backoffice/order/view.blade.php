@@ -5,6 +5,43 @@
         }
 
     </style>
+    @php
+        $items = $order->items ?? collect();
+        if (! $items instanceof \Illuminate\Support\Collection) {
+            $items = collect($items);
+        }
+
+        $lineSummaries = [];
+        foreach ($items as $lineItem) {
+            $quantity = (int) ($lineItem->quantity ?? 1);
+            $baseUnit = (float) ($lineItem->unit_price ?? data_get($lineItem, 'options.base_price', $lineItem->price ?? 0));
+            $finalUnit = (float) ($lineItem->final_price ?? $lineItem->price ?? $baseUnit);
+            $perUnitDiscount = (float) ($lineItem->discount_amount ?? max($baseUnit - $finalUnit, 0));
+
+            $lineSummaries[$lineItem->id] = [
+                'base_unit' => $baseUnit,
+                'final_unit' => $finalUnit,
+                'quantity' => $quantity,
+                'line_discount' => max($perUnitDiscount, 0) * $quantity,
+                'per_unit_discount' => max($perUnitDiscount, 0),
+            ];
+        }
+
+        $preDiscountSubtotal = collect($lineSummaries)->sum(fn ($data) => $data['base_unit'] * $data['quantity']);
+        $discountTotal = collect($lineSummaries)->sum(fn ($data) => $data['line_discount']);
+        $subtotalAfterDiscount = max($preDiscountSubtotal - $discountTotal, 0);
+        $softwareServices = (float) ($order->qash_fee ?? 0);
+        $taxTotal = (float) ($order->total_tax ?? 0);
+        $grandTotal = (float) ($order->grand_total ?? $order->total ?? ($subtotalAfterDiscount + $softwareServices + $taxTotal));
+
+        $appliedDiscounts = $items->filter(fn ($item) => (float) ($item->discount_amount ?? 0) > 0)
+            ->groupBy('discount_id')
+            ->map(function ($group) {
+                $name = optional($group->first()->discount)->name ?? 'Promo';
+                $amount = $group->sum(fn ($item) => (float) ($item->discount_amount ?? 0) * (int) ($item->quantity ?? 1));
+                return ['name' => $name, 'amount' => $amount];
+            });
+    @endphp
     <nav aria-label="breadcrumb">
       <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="{{route('backoffice.order.index')}}">Order</a></li>
@@ -73,6 +110,16 @@
                 </x-slot>
                 <x-slot name="tbody">
                     @foreach ($order->items as $item)
+                        @php
+                            $lineData = $lineSummaries[$item->id] ?? [
+                                'base_unit' => (float) ($item->unit_price ?? data_get($item, 'options.base_price', $item->price ?? 0)),
+                                'final_unit' => (float) ($item->final_price ?? $item->price ?? 0),
+                                'quantity' => (int) ($item->quantity ?? 1),
+                                'line_discount' => 0,
+                                'per_unit_discount' => 0,
+                            ];
+                            $hasLineDiscount = ($lineData['per_unit_discount'] ?? 0) > 0;
+                        @endphp
                         <tr>
                             <td>
                                 @php $image = optional($item->product)->product_image; @endphp
@@ -84,7 +131,21 @@
                             </td>
                             <td>{{ $item->product_name }}</td>
                             <td>{{ $item->quantity }}</td>
-                            <td>Rp. {{ number_format($item['options']['base_price'], 0, ',', '.') }}</td>
+                            <td>
+                                @if ($hasLineDiscount)
+                                    <div class="text-muted text-decoration-line-through">
+                                        Rp. {{ number_format($lineData['base_unit'], 0, ',', '.') }}
+                                    </div>
+                                    <div class="fw-semibold text-success">
+                                        Rp. {{ number_format($lineData['final_unit'], 0, ',', '.') }}
+                                    </div>
+                                    <span class="badge bg-success-subtle text-success">
+                                        - {{ rupiah($lineData['line_discount']) }}
+                                    </span>
+                                @else
+                                    Rp. {{ number_format($lineData['base_unit'], 0, ',', '.') }}
+                                @endif
+                            </td>
                             <td>
                                 @php
                                     $opts = $item->options ?? [];
@@ -118,33 +179,51 @@
                 <div class="col-lg-3 col-md-6 col-12">
                     <div class="card-style text-center">
                         <div class="d-flex justify-content-between">
-                            <div class="text-start"><p><strong>Sub Total :</strong></p></div>
-                            <div class="text-start"><p>Rp. {{ number_format($order->grand_total ?? $order->total ?? 0, 0, ',', '.') }}</p></div>
+                            <div class="text-start"><p><strong>Subtotal (before discount):</strong></p></div>
+                            <div class="text-start"><p>{{ rupiah($preDiscountSubtotal) }}</p></div>
                         </div>
                         <hr class="my-1">
 
                         <div class="d-flex justify-content-between">
-                            <div class="text-start"><p><strong>Discount :</strong></p></div>
-                            <div class="text-start"><p>Rp. 0.000</p></div>
+                            <div class="text-start"><p><strong>Discount:</strong></p></div>
+                            <div class="text-start text-success"><p>- {{ rupiah($discountTotal) }}</p></div>
                         </div>
                         <hr class="my-1">
 
                         <div class="d-flex justify-content-between">
-                            <div class="text-start"><p><strong>Software Services :</strong></p></div>
-                            <div class="text-start"><p>Rp. 1.000</p></div>
+                            <div class="text-start"><p><strong>Subtotal after discount:</strong></p></div>
+                            <div class="text-start"><p>{{ rupiah($subtotalAfterDiscount) }}</p></div>
                         </div>
                         <hr class="my-1">
 
                         <div class="d-flex justify-content-between">
-                            <div class="text-start"><p><strong>Tax :</strong></p></div>
-                            <div class="text-start"><p>{{ rupiah($order->total_tax)  }}</p></div>
+                            <div class="text-start"><p><strong>Software Services:</strong></p></div>
+                            <div class="text-start"><p>{{ rupiah($softwareServices) }}</p></div>
                         </div>
                         <hr class="my-1">
 
                         <div class="d-flex justify-content-between">
-                            <div class="text-start"><p><strong>Grand Total :</strong></p></div>
-                            <div class="text-start"><p>Rp. {{ number_format($order->grand_total ?? $order->total ?? 0, 0, ',', '.') }}</p></div>
+                            <div class="text-start"><p><strong>Tax:</strong></p></div>
+                            <div class="text-start"><p>{{ rupiah($taxTotal)  }}</p></div>
                         </div>
+                        <hr class="my-1">
+
+                        <div class="d-flex justify-content-between">
+                            <div class="text-start"><p><strong>Grand Total:</strong></p></div>
+                            <div class="text-start"><p>{{ rupiah($grandTotal) }}</p></div>
+                        </div>
+
+                        @if($appliedDiscounts->isNotEmpty())
+                            <hr class="my-1">
+                            <div class="text-start w-100">
+                                <p class="fw-semibold mb-1">Applied Discounts</p>
+                                <ul class="list-unstyled text-start small mb-0">
+                                    @foreach($appliedDiscounts as $discount)
+                                        <li>{{ $discount['name'] }} — - {{ rupiah($discount['amount']) }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>

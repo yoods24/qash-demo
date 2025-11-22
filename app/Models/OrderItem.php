@@ -16,6 +16,9 @@ class OrderItem extends Model
         'product_id',
         'product_name',
         'unit_price',
+        'final_price',
+        'discount_amount',
+        'discount_id',
         'quantity',
         'estimate_seconds',
         'options',
@@ -24,6 +27,9 @@ class OrderItem extends Model
 
     protected $casts = [
         'options' => 'array',
+        'unit_price' => 'decimal:2',
+        'final_price' => 'decimal:2',
+        'discount_amount' => 'decimal:2',
     ];
 
     public function order()
@@ -34,5 +40,10 @@ class OrderItem extends Model
     public function product()
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function discount()
+    {
+        return $this->belongsTo(Discount::class);
     }
 }

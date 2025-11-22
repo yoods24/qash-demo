@@ -16,7 +16,9 @@
                     </div>
                     <button type="button" class="btn btn-sm rounded btn-outline-danger" wire:click="toggle"><i class="bi bi-x"></i></button>
                 </div>
-                <div class="d-flex align-items-center justify-content-between px-3 pt-3">
+                    <hr>
+
+                <div class="d-flex align-items-center justify-content-between px-3">
                     <div class="d-flex gap-3 align-items-center small text-muted tenant-notification-link">
                         <a href="#" class="text-decoration-none {{ $tab==='all' ? 'fw-semibold active' : '' }}" wire:click.prevent="changeTab('all')">All</a>
                         <a href="#" class="text-decoration-none {{ $tab==='new' ? 'fw-semibold active' : '' }}" wire:click.prevent="changeTab('new')">New @if($unreadCount) <span class="badge bg-danger ms-1">{{ $unreadCount }}</span> @endif</a>

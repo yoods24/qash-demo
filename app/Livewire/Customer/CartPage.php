@@ -14,6 +14,8 @@ use App\Models\DiningTable;
 use Illuminate\Support\Facades\Session;
 use App\Support\CartItemIdentifier;
 use App\Services\OrderTaxCalculator;
+use App\Support\PriceAfterDiscount;
+use App\Services\Order\OrderCreationService;
 
 class CartPage extends Component
 {
@@ -34,6 +36,8 @@ class CartPage extends Component
     public $note = '';
     public array $taxPreview = [];
     public $currentTable = null; // label for current dining table
+    public $subtotalBeforeDiscount = 0;
+    public $discountTotal = 0;
     protected OrderTaxCalculator $orderTaxCalculator;
 
     public function boot(OrderTaxCalculator $orderTaxCalculator): void
@@ -51,7 +55,10 @@ class CartPage extends Component
     public function refreshCart()
     {
         $this->items = Cart::getContent();
-        $this->total = (float) Cart::getTotal();
+        $summary = $this->summarizeCart($this->items);
+        $this->subtotalBeforeDiscount = $summary['subtotal'];
+        $this->discountTotal = $summary['discount'];
+        $this->total = $summary['final'];
 
         $calculation = $this->orderTaxCalculator->calculate($this->tenantId, $this->total);
 
@@ -81,13 +88,18 @@ class CartPage extends Component
     }
     public function showProductOptions($productId)
     {
-        $this->selectedProduct = Product::with(['options.values'])->findOrFail($productId);
+        $this->selectedProduct = Product::with(['options.values', 'category'])->findOrFail($productId);
 
         // reset options
         $this->selectedOptions = [];
         foreach ($this->selectedProduct->options as $option) {
             $this->selectedOptions[$option->id] = null;
         }
+
+        $this->selectedProduct->setAttribute(
+            'discount_details',
+            PriceAfterDiscount::calculate($this->selectedProduct, $this->resolveTenantId())
+        );
 
         $this->quantity = 1;
         $this->note = '';
@@ -106,7 +118,7 @@ class CartPage extends Component
         }
 
         $productId = CartItemIdentifier::extractProductId($item) ?? $item->id;
-        $this->selectedProduct = Product::with(['options.values'])->findOrFail($productId);
+        $this->selectedProduct = Product::with(['options.values', 'category'])->findOrFail($productId);
 
         // Prefill selected options using saved attributes
         $this->selectedOptions = [];
@@ -124,6 +136,11 @@ class CartPage extends Component
                 $this->selectedOptions[$optId] = null;
             }
         }
+
+        $this->selectedProduct->setAttribute(
+            'discount_details',
+            PriceAfterDiscount::calculate($this->selectedProduct, $this->resolveTenantId())
+        );
 
         $this->quantity = $item->quantity;
         $this->editingItemId = $id;
@@ -216,24 +233,15 @@ class CartPage extends Component
             }
         }
 
-        $attributes = [
-            'product_id' => $this->selectedProduct->id,
-            'options'     => $options,
-            'base_price'  => $this->selectedProduct->price,
-            'image'       => $this->selectedProduct->product_image ?? null,
-            'description' => $this->selectedProduct->description ?? null,
-            'category'    => $this->selectedProduct->category->name ?? null,
-            'estimated_seconds' => (int) ($this->selectedProduct->estimated_seconds ?? 0),
-            'note'        => $this->note,
-        ];
+        $this->selectedProduct->loadMissing('category');
 
-        $payload = [
-            'id' => CartItemIdentifier::make($this->selectedProduct->id, $options),
-            'name' => $this->selectedProduct->name,
-            'price' => $price,
-            'quantity' => $this->quantity,
-            'attributes' => $attributes,
-        ];
+        $payload = $this->buildCartPayload(
+            $this->selectedProduct,
+            $options,
+            $price,
+            $this->quantity,
+            $this->note
+        );
 
         if ($this->editingItemId) {
             Cart::remove($this->editingItemId);
@@ -316,11 +324,12 @@ class CartPage extends Component
         }
 
         $itemCount = Cart::getTotalQuantity();
+        $summary = $this->summarizeCart();
 
-        $order = DB::transaction(function () use ($tenantId, $customerDetailId) {
+        $order = DB::transaction(function () use ($tenantId, $customerDetailId, $summary) {
             $reference = $this->generateReference($tenantId);
             $expectedSeconds = $this->calculateExpectedSeconds();
-            $calculation = $this->orderTaxCalculator->calculate($tenantId, (float) Cart::getTotal());
+            $calculation = $this->orderTaxCalculator->calculate($tenantId, $summary['final']);
 
             $order = Order::create([
                 'reference_no' => $reference,
@@ -339,23 +348,31 @@ class CartPage extends Component
             ]);
 
             foreach (Cart::getContent() as $item) {
-                $options = $item->attributes ? $item->attributes->toArray() : null;
+                $attributes = $item->attributes ? $item->attributes->toArray() : [];
+                $options = $attributes;
 
-                if (is_array($options)) {
-                    unset($options['image'], $options['product_id']);
+                foreach (['image', 'product_id', 'raw_price', 'discount_id', 'discount_amount', 'discount_name', 'discount_badge', 'final_price', 'note'] as $key) {
+                    unset($options[$key]);
                 }
 
                 $productId = CartItemIdentifier::extractProductId($item) ?? $item->id;
+                $unitPrice = (float) ($attributes['raw_price'] ?? $item->price);
+                $finalPrice = (float) ($attributes['final_price'] ?? $item->price);
+                $discountAmount = (float) ($attributes['discount_amount'] ?? max($unitPrice - $finalPrice, 0));
+                $discountId = $attributes['discount_id'] ?? null;
 
                 OrderItem::create([
                     'order_id'     => $order->id,
                     'product_id'   => $productId,
                     'product_name' => $item->name,
-                    'unit_price'   => $item->price,
+                    'unit_price'   => $unitPrice,
+                    'final_price'  => $finalPrice,
+                    'discount_amount' => $discountAmount,
+                    'discount_id'  => $discountId,
                     'quantity'     => $item->quantity,
                     'options'      => $options,
-                    'estimate_seconds' => (int) ($options['estimated_seconds'] ?? 0),
-                    'special_instructions' => $options['note'] ?? null,
+                    'estimate_seconds' => (int) ($attributes['estimated_seconds'] ?? 0),
+                    'special_instructions' => $attributes['note'] ?? null,
                     'tenant_id'    => $tenantId ?? $this->tenantId,
                 ]);
             }
@@ -369,6 +386,8 @@ class CartPage extends Component
                     'amount' => $line['amount'],
                 ]);
             }
+
+            app(OrderCreationService::class)->handleDiscountUsage($order);
 
             session(['last_order_id' => $order->id]);
 
@@ -468,5 +487,59 @@ class CartPage extends Component
         }
 
         return $insufficient;
+    }
+
+    private function buildCartPayload(Product $product, array $options, float $price, int $quantity, string $note = ''): array
+    {
+        $tenantId = $this->resolveTenantId();
+        $pricing = PriceAfterDiscount::calculate($product, $tenantId, $price);
+
+        $attributes = [
+            'product_id' => $product->id,
+            'options' => $options,
+            'base_price' => $product->price,
+            'raw_price' => $price,
+            'image' => $product->product_image ?? null,
+            'description' => $product->description ?? null,
+            'category' => $product->category->name ?? null,
+            'estimated_seconds' => (int) ($product->estimated_seconds ?? 0),
+            'note' => $note,
+            'discount_id' => $pricing['discount_id'],
+            'discount_amount' => $pricing['discount_amount'],
+            'discount_name' => $pricing['discount_name'],
+            'discount_badge' => $pricing['badge'],
+            'final_price' => $pricing['final_price'],
+        ];
+
+        return [
+            'id' => CartItemIdentifier::make($product->id, $options),
+            'name' => $product->name,
+            'price' => $pricing['final_price'],
+            'quantity' => $quantity,
+            'attributes' => $attributes,
+        ];
+    }
+
+    private function summarizeCart($items = null): array
+    {
+        $items = $items ?? Cart::getContent();
+        $subtotal = 0.0;
+        $discount = 0.0;
+
+        foreach ($items as $item) {
+            $raw = (float) ($item->attributes['raw_price'] ?? $item->price);
+            $subtotal += $raw * (int) $item->quantity;
+
+            $lineDiscount = (float) ($item->attributes['discount_amount'] ?? 0);
+            $discount += $lineDiscount * (int) $item->quantity;
+        }
+
+        $final = max($subtotal - $discount, 0);
+
+        return [
+            'subtotal' => $subtotal,
+            'discount' => $discount,
+            'final' => $final,
+        ];
     }
 }

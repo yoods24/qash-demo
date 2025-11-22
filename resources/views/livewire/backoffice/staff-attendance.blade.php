@@ -115,9 +115,7 @@
             <div class="d-flex align-items-center justify-content-between mb-3">
                 <h6 class="mb-0">Attendance</h6>
             </div>
-            <div id="fi-app">
-                {{ $this->table }}
-            </div>
+            @livewire('backoffice.tables.staff-attendance-table')
         </div>
     </div>
 

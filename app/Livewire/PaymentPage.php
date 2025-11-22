@@ -34,7 +34,7 @@ class PaymentPage extends Component
 
     public function mount(Order $order): void
     {
-        $this->order = $order->loadMissing(['items', 'customerDetail', 'taxLines']);
+        $this->order = $order->loadMissing(['items.discount', 'customerDetail', 'taxLines']);
         $this->tenantId = request()->route('tenant') ?? $order->tenant_id;
     }
 
@@ -79,7 +79,7 @@ class PaymentPage extends Component
                     throw new \RuntimeException('Missing order instance.');
                 }
 
-                $order->loadMissing(['items', 'customerDetail', 'taxLines']);
+                $order->loadMissing(['items.discount', 'customerDetail', 'taxLines']);
 
                 if ($order->payment_status === 'paid') {
                     throw new \RuntimeException('Paid orders cannot be cancelled.');
@@ -135,7 +135,7 @@ class PaymentPage extends Component
                     throw new \RuntimeException('Missing order instance.');
                 }
 
-                $order->loadMissing(['items', 'customerDetail', 'taxLines']);
+                $order->loadMissing(['items.discount', 'customerDetail', 'taxLines']);
                 $this->orderStockService->deduct($order);
 
                 $order->forceFill([

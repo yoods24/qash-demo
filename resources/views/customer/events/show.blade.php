@@ -19,12 +19,14 @@
 
         $typeConfig = $eventTypeStyles[$event->event_type] ?? $eventTypeStyles['default'];
 
-        $timeValue = $event->time;
-        $timeDisplay = $timeValue
-            ? ($timeValue instanceof \Carbon\CarbonInterface
-                ? $timeValue->format('g:i A')
-                : \Illuminate\Support\Carbon::parse($timeValue)->format('g:i A'))
-            : 'All Day';
+        $start = $event->starts_at;
+        $end = $event->uses_date_range ? $event->ends_at : null;
+        $scheduleLabel = $end
+            ? sprintf('%s – %s', optional($start)->format('l, F j, Y g:i A'), optional($end)->format('l, F j, Y g:i A'))
+            : optional($start)->format('l, F j, Y g:i A');
+        $timeDisplay = $end
+            ? sprintf('%s – %s', optional($start)->format('g:i A'), optional($end)->format('g:i A'))
+            : ($start ? $start->format('g:i A') : 'All Day');
 
         $descriptionExcerpt = \Illuminate\Support\Str::limit(strip_tags($event->description ?? ''), 140);
     @endphp
@@ -205,7 +207,7 @@
                             <i class="fa-regular fa-calendar"></i>
                         </div>
                         <h6 class="text-uppercase text-muted mb-1">Date</h6>
-                        <p class="fw-semibold mb-0">{{ optional($event->date)->format('l, F j, Y') }}</p>
+                        <p class="fw-semibold mb-0">{{ $scheduleLabel ?? 'Schedule to be announced' }}</p>
                     </div>
                 </div>
                 <div class="col-md-4">

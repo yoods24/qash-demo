@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 class Event extends Model
@@ -30,6 +31,10 @@ class Event extends Model
         'event_type',
         'date',
         'time',
+        'event_date',
+        'date_from',
+        'date_till',
+        'uses_date_range',
         'location',
         'about',
         'event_highlights',
@@ -41,6 +46,10 @@ class Event extends Model
     protected $casts = [
         'date' => 'date',
         'time' => 'datetime:H:i',
+        'event_date' => 'datetime',
+        'date_from' => 'datetime',
+        'date_till' => 'datetime',
+        'uses_date_range' => 'boolean',
         'is_featured' => 'boolean',
     ];
 
@@ -53,7 +62,11 @@ class Event extends Model
 
     public function getIsExpiredAttribute(): bool
     {
-        return $this->date < now()->toDateString();
+        $reference = $this->uses_date_range
+            ? ($this->ends_at ?? $this->starts_at)
+            : $this->starts_at;
+
+        return $reference ? $reference->lt(now()) : false;
     }
 
     public function getAboutPointsAttribute(): array
@@ -109,5 +122,45 @@ class Event extends Model
         $lines = array_map('trim', explode("\n", $normalized));
 
         return array_values(array_filter($lines, fn ($line) => $line !== ''));
+    }
+
+    public function getStartsAtAttribute(): ?Carbon
+    {
+        if ($this->uses_date_range && $this->date_from) {
+            return $this->date_from instanceof Carbon ? $this->date_from : Carbon::parse($this->date_from);
+        }
+
+        if ($this->event_date) {
+            return $this->event_date instanceof Carbon ? $this->event_date : Carbon::parse($this->event_date);
+        }
+
+        if ($this->date) {
+            $timeString = null;
+
+            if ($this->time instanceof Carbon) {
+                $timeString = $this->time->format('H:i:s');
+            } elseif (is_string($this->time)) {
+                $timeString = $this->time;
+            }
+
+            $dateString = $this->date instanceof Carbon ? $this->date->format('Y-m-d') : $this->date;
+
+            return Carbon::parse(trim($dateString . ' ' . ($timeString ?? '00:00:00')));
+        }
+
+        return null;
+    }
+
+    public function getEndsAtAttribute(): ?Carbon
+    {
+        if (! $this->uses_date_range) {
+            return null;
+        }
+
+        if ($this->date_till) {
+            return $this->date_till instanceof Carbon ? $this->date_till : Carbon::parse($this->date_till);
+        }
+
+        return $this->starts_at;
     }
 }
