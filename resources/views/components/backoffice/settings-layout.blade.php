@@ -44,12 +44,10 @@
                             <i class="bi bi-chevron-down ms-auto settings-caret"></i>
                         </button>
                         <div id="settings-app" class="collapse show settings-subwrap">
-                            {{-- <a href="#" class="settings-sublink">Invoice Settings</a>
-                            <a href="#" class="settings-sublink">Invoice Templates</a>
-                            <a href="#" class="settings-sublink">Printer</a>
-                            <a href="#" class="settings-sublink">POS</a>
-                            <a href="#" class="settings-sublink">Signatures</a>
-                            <a href="#" class="settings-sublink">Custom Fields</a> --}}
+                            <a href="{{ route('backoffice.settings.invoice-settings') }}"
+                               class="settings-sublink {{ request()->routeIs('backoffice.settings.invoice-settings') ? 'active' : '' }}">Invoice Settings</a>
+                            <a href="{{ route('backoffice.invoice-templates.index') }}"
+                               class="settings-sublink {{ request()->routeIs('backoffice.invoice-templates.*') ? 'active' : '' }}">Invoice Templates</a>
                             <div class="settings-divider"></div>
                             <a href="{{ route('backoffice.settings.attendance-settings') }}"
                                class="settings-sublink {{ request()->routeIs('backoffice.settings.attendance-settings') ? 'active' : '' }}">Attendance Settings</a>

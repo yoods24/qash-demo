@@ -387,6 +387,16 @@ html[data-theme='dark'] .ko-tab { background:#0f172a; color:#e5e7eb; border-colo
 .settings-sublink:hover { background-color: #f8fafc; color: #0f172a; }
 .settings-sublink.active { background-color: #fff6ee; color: #c0560c; border: 1px solid #ffe2cc; }
 .settings-divider { height: 1px; background-color: #f0f0f0; margin: .35rem 0; }
+.invoice-settings-preview { width: 64px; height: 64px; overflow: hidden; }
+.invoice-settings-preview img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.invoice-logo-box { width: 160px; height: 160px; border-style: dashed !important; }
+.invoice-template-card { border: 1px solid #e2e8f0; border-radius: .75rem; padding: 1.25rem; background-color: #fff; transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease; }
+.invoice-template-card .template-preview { border: 1px solid #f1f5f9; border-radius: .5rem; background: linear-gradient(180deg, #fff, #f8fafc); padding: 1rem; min-height: 270px; }
+.invoice-template-card .logo-circle { width: 48px; height: 48px; border-radius: 50%; background-color: #fde68a; color: #92400e; display: inline-flex; align-items: center; justify-content: center; font-weight: 600; }
+.invoice-template-card hr { margin: .75rem 0; }
+.invoice-template-card.is-selected { border-color: #f97316; box-shadow: 0 8px 24px rgba(249, 115, 22, .15); }
+.invoice-template-card:hover { border-color: #94a3b8; transform: translateY(-2px); box-shadow: 0 12px 30px rgba(15, 23, 42, .08); }
+.invoice-template-tabs .btn { min-width: 110px; }
 /* Dark theme tweaks */
 html[data-theme='dark'] .panel-header * { background-color: #0f172a !important; }
 html[data-theme='dark'] .dlmode-backup * { 

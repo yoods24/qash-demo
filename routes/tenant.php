@@ -22,6 +22,8 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\FaceRecognitionController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\Backoffice\InvoiceSettingsController;
+use App\Http\Controllers\Backoffice\InvoiceTemplateController;
 use App\Http\Controllers\Backoffice\TenantProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Hrm\ShiftController;
@@ -268,11 +270,20 @@ Route::middleware([
                       ->name('backoffice.settings.index');
                   Route::get('/general-information', 'generalInformationShow')
                       ->name('backoffice.settings.general-information');
+                  Route::get('/invoice', 'invoiceSettingsShow')
+                      ->name('backoffice.settings.invoice-settings');
                   Route::get('/attendance', 'attendanceShow')
                       ->name('backoffice.settings.attendance-settings');
                   Route::get('/geolocation', 'geolocationShow')
                       ->name('backoffice.settings.geolocation-settings');
               });
+
+              Route::get('/invoice/templates', [InvoiceTemplateController::class, 'index'])
+                  ->name('backoffice.invoice-templates.index');
+              Route::post('/invoice/templates', [InvoiceTemplateController::class, 'select'])
+                  ->name('backoffice.invoice-templates.select');
+              Route::put('/invoice', [InvoiceSettingsController::class, 'update'])
+                  ->name('backoffice.invoice-settings.update');
 
               Route::prefix('tenant-profile')
                   ->controller(TenantProfileController::class)

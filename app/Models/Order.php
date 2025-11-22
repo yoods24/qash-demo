@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Jobs\SendInvoiceEmailJob;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
@@ -61,6 +62,15 @@ class Order extends Model
     public function taxLines()
     {
         return $this->hasMany(OrderTax::class);
+    }
+
+    protected static function booted(): void
+    {
+        static::updated(function (Order $order): void {
+            if ($order->wasChanged('payment_status') && $order->payment_status === 'paid') {
+                SendInvoiceEmailJob::dispatch($order->id, (string) $order->tenant_id);
+            }
+        });
     }
 
     // Computed durations derived from timestamps (source of truth for UI)
