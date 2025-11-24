@@ -14,6 +14,7 @@ use App\Support\CartItemIdentifier;
 use App\Services\Customer\DiscountFetcher;
 use App\Support\PriceAfterDiscount;
 use Illuminate\Support\Collection;
+use App\Services\OrderService;
 
 class OrderPage extends Component
 {
@@ -36,6 +37,9 @@ class OrderPage extends Component
     public $tenantName = null; // display-only name
     public $currentTable = null; // label for current dining table
     public $availableDiscounts;
+    public string $orderType = 'takeaway';
+    public bool $showSwitchOrderTypeModal = false;
+    public ?string $pendingOrderType = null;
 
     public function mount()
     {
@@ -61,6 +65,8 @@ class OrderPage extends Component
                 Session::put('dining_table_id', (int) $table);
             }
         }
+
+        $this->orderType = OrderService::currentOrderType();
 
         // Preload customer from session if exists (for greeting/UI)
         if (Session::has('customer_detail_id')) {
@@ -88,9 +94,29 @@ class OrderPage extends Component
         if ($tableId) {
             $t = DiningTable::where('tenant_id', $this->tenantId)->find($tableId);
             $this->currentTable = $t?->label;
-        } else {
-            $this->currentTable = null;
+            if ($this->currentTable) {
+                $this->applyOrderType(OrderService::DINE_IN);
+                return;
+            }
         }
+
+        $this->currentTable = null;
+        if ($this->orderType === OrderService::DINE_IN) {
+            $this->applyOrderType(OrderService::TAKEAWAY);
+        }
+    }
+
+    private function applyOrderType(string $type): void
+    {
+        if (! in_array($type, OrderService::allowedTypes(), true)) {
+            return;
+        }
+
+        if ($this->orderType !== $type) {
+            $this->orderType = $type;
+        }
+
+        OrderService::persistOrderType($type);
     }
 
     private function loadProducts(): Collection
@@ -133,6 +159,52 @@ class OrderPage extends Component
                 'items' => $items,
             ]
         ]);
+    }
+
+    public function selectOrderType(string $type): void
+    {
+        if (! in_array($type, OrderService::allowedTypes(), true)) {
+            return;
+        }
+
+        if ($this->orderType === $type) {
+            return;
+        }
+
+        $hasTable = (bool) Session::get('dining_table_id');
+
+        if ($type === OrderService::TAKEAWAY && $hasTable) {
+            $this->pendingOrderType = $type;
+            $this->showSwitchOrderTypeModal = true;
+            return;
+        }
+
+        if ($type === OrderService::DINE_IN && ! $hasTable) {
+            $this->showTableModal = true;
+            return;
+        }
+
+        $this->pendingOrderType = null;
+        $this->showSwitchOrderTypeModal = false;
+        $this->applyOrderType($type);
+    }
+
+    public function confirmOrderTypeSwitch(): void
+    {
+        if ($this->pendingOrderType === OrderService::TAKEAWAY) {
+            OrderService::clearTableAssignment(Session::get('customer_detail_id'));
+            $this->currentTable = null;
+            $this->applyOrderType(OrderService::TAKEAWAY);
+        }
+
+        $this->pendingOrderType = null;
+        $this->showSwitchOrderTypeModal = false;
+    }
+
+    public function cancelOrderTypeSwitch(): void
+    {
+        $this->pendingOrderType = null;
+        $this->showSwitchOrderTypeModal = false;
     }
 
     public function filterCategory($categoryId)
@@ -203,8 +275,8 @@ class OrderPage extends Component
             $this->dispatch('unlock-scroll');
             return;
         }
-        // Require dining table assignment before adding to cart
-        if (!Session::has('dining_table_id') || !Session::get('dining_table_id')) {
+        // Require dining table assignment before adding to cart for dine-in orders
+        if ($this->orderType === OrderService::DINE_IN && ! Session::get('dining_table_id')) {
             $this->showTableModal = true;
             return;
         }
@@ -282,7 +354,7 @@ class OrderPage extends Component
         $tenantId = tenant()?->id ?? request()->route('tenant') ?? $this->tenantId;
         $defaults = ['name' => $data['customerName'], 'gender' => $gender, 'tenant_id' => $tenantId];
         $tableId = Session::get('dining_table_id');
-        if ($tableId) {
+        if ($this->orderType === OrderService::DINE_IN && $tableId) {
             $defaults['dining_table_id'] = (int) $tableId;
         }
         $customer = CustomerDetail::firstOrCreate(
@@ -298,8 +370,10 @@ class OrderPage extends Component
         if (($customer->gender ?? null) !== $gender) {
             $updates['gender'] = $gender;
         }
-        if ($tableId && $customer->dining_table_id !== (int) $tableId) {
+        if ($this->orderType === OrderService::DINE_IN && $tableId && $customer->dining_table_id !== (int) $tableId) {
             $updates['dining_table_id'] = (int) $tableId;
+        } elseif ($this->orderType === OrderService::TAKEAWAY && $customer->dining_table_id !== null) {
+            $updates['dining_table_id'] = null;
         }
         if (!empty($updates)) {
             $customer->update($updates);

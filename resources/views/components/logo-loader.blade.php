@@ -3,7 +3,7 @@
 <div id="logoLoaderOverlay" class="logo-loader-overlay" aria-hidden="true" role="status" aria-live="polite">
   <div class="logo-loader-card" aria-hidden="true">
     <!-- Use the spinning class by default; change to logo-translate to use the translate/fade animation -->
-    <img src="{{ asset('storage/logos/Logogram-Orange.png') }}" alt="Loading" id="logoLoaderImg" class="logo-spin">
+    <img src="{{ global_asset('storage/logos/Logogram-Orange.png') }}" alt="Loading" id="logoLoaderImg" class="logo-spin">
     <span class="visually-hidden">Loading…</span>
   </div>
 </div>

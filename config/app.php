@@ -69,6 +69,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Display Timezone Override
+    |--------------------------------------------------------------------------
+    |
+    | Use this to control how timestamps are rendered for end users without
+    | changing the storage timezone. Defaults back to app.timezone.
+    |
+    */
+
+    'display_timezone' => env('APP_DISPLAY_TIMEZONE'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Locale Configuration
     |--------------------------------------------------------------------------
     |

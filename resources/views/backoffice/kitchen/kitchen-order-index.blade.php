@@ -1,5 +1,5 @@
 <x-backoffice.layout>
-    <div>
+    <div data-takeaway-enabled="true">
         <livewire:backoffice.kitchen-orders />
     </div>
 </x-backoffice.layout>

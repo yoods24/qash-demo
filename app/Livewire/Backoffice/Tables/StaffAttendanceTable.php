@@ -5,6 +5,7 @@ namespace App\Livewire\Backoffice\Tables;
 use Livewire\Component;
 use App\Models\Attendance;
 use Filament\Tables\Table;
+use Livewire\Attributes\On;
 use Illuminate\Support\Facades\Auth;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Contracts\HasTable;
@@ -35,6 +36,8 @@ class StaffAttendanceTable extends Component implements HasTable, HasActions, Ha
         $start = now()->startOfMonth()->toDateString();
         $end = now()->endOfMonth()->toDateString();
 
+        $displayTimezone = $this->displayTimezone();
+
         return $table
             ->query(
                 Attendance::query()
@@ -62,19 +65,19 @@ class StaffAttendanceTable extends Component implements HasTable, HasActions, Ha
 
                 TextColumn::make('clock_in_at')
                     ->label('Clock In')
-                    ->formatStateUsing(function ($state) {
+                    ->formatStateUsing(function ($state) use ($displayTimezone) {
                         if (!$state) return '-';
                         $dt = $state instanceof \Carbon\Carbon ? $state : \Carbon\Carbon::parse($state);
-                        return $dt->copy()->setTimezone(config('app.timezone', 'UTC'))->format('h:i A');
+                        return $dt->copy()->setTimezone($displayTimezone)->format('H:i');
                     })
                     ->toggleable(),
 
                 TextColumn::make('clock_out_at')
                     ->label('Clock Out')
-                    ->formatStateUsing(function ($state) {
+                    ->formatStateUsing(function ($state) use ($displayTimezone) {
                         if (!$state) return '-';
                         $dt = $state instanceof \Carbon\Carbon ? $state : \Carbon\Carbon::parse($state);
-                        return $dt->copy()->setTimezone(config('app.timezone', 'UTC'))->format('h:i A');
+                        return $dt->copy()->setTimezone($displayTimezone)->format('H:i');
                     })
                     ->toggleable(),
 
@@ -115,6 +118,37 @@ class StaffAttendanceTable extends Component implements HasTable, HasActions, Ha
             ])
             ->striped();
     }
+
+    private function fmt(int $seconds): string
+    {
+        $seconds = max(0, $seconds);
+        $hours = intdiv($seconds, 3600);
+        $minutes = intdiv($seconds % 3600, 60);
+
+        return sprintf('%02dh %02dm', $hours, $minutes);
+    }
+
+    private function displayTimezone(): string
+    {
+        $tenantTimezone = null;
+        if (function_exists('tenant') && tenant()) {
+            $data = tenant()->data ?? [];
+            $tenantTimezone = is_array($data) ? ($data['timezone'] ?? null) : null;
+            if (is_string($tenantTimezone) && $tenantTimezone !== '') {
+                return $tenantTimezone;
+            }
+        }
+
+        $configured = config('app.display_timezone') ?? config('app.timezone', 'UTC');
+        return is_string($configured) && $configured !== '' ? $configured : 'UTC';
+    }
+
+    #[On('attendance-record-updated')]
+    public function refreshAttendanceTable(): void
+    {
+        $this->resetTable();
+    }
+
     public function render()
     {
         return view('livewire.backoffice.tables.staff-attendance-table');

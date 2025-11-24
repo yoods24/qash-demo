@@ -25,6 +25,7 @@
     $profile = $tenantProfile ?? null;
     $customer = $customer ?? $order->customerDetail;
     $companyName = $profile->brand_heading ?? ($tenant->name ?? 'Your Company');
+    $invoiceLogoUrl = tenant_storage_url($settings->invoice_logo ?? null);
 @endphp
 <div class="invoice-wrapper">
     <div class="top-bar">
@@ -39,8 +40,8 @@
             @endif
         </div>
         <div style="text-align:right;">
-            @if(!empty($settings?->invoice_logo))
-                <img src="{{ $settings->invoice_logo }}" alt="Logo" style="max-height:70px;">
+            @if($invoiceLogoUrl)
+                <img src="{{ $invoiceLogoUrl }}" alt="Logo" style="max-height:70px;">
             @endif
             <div class="badge" style="margin-top:12px;">Invoice #{{ $invoiceNumber }}</div>
         </div>
@@ -63,6 +64,11 @@
                 <div>Status: {{ ucfirst($order->payment_status ?? 'pending') }}</div>
                 <div>Channel: {{ $order->payment_channel ?? '-' }}</div>
             </div>
+        </div>
+
+        <div class="info-card" style="margin-bottom: 24px;">
+            <div style="font-size:11px; text-transform:uppercase; color:#475569;">Order Type</div>
+            <div style="font-weight:600;">{{ $orderTypeDisplay ?? ($order->isTakeaway() ? 'Takeaway' : 'Dine In') }}</div>
         </div>
 
         <table>

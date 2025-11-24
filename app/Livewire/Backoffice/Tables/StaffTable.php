@@ -35,7 +35,9 @@ class StaffTable extends Component implements HasTable, HasActions, HasSchemas
     }
     public function table(Table $table) {
         return $table
-            ->query(User::query())
+            ->query(
+                User::query()->with(['roles', 'shift'])
+            )
             ->headerActions([
                 ExportAction::make()
                     ->icon('heroicon-o-document')
@@ -68,6 +70,16 @@ class StaffTable extends Component implements HasTable, HasActions, HasSchemas
                                     ->orWhere('lastName', 'like', "%{$search}%");
                         });
                     }),
+                TextColumn::make('role_name')
+                    ->label('Role')
+                    ->getStateUsing(fn (User $record) => $record->roles->first()->name ?? '—')
+                    ->toggleable()
+                    ->badge()
+                    ->color('warning'),
+                TextColumn::make('shift.name')
+                    ->label('Shift')
+                    ->toggleable()
+                    ->placeholder('—'),
                 TextColumn::make('email'),
                 ToggleColumn::make('status')
                     ->sortable()
@@ -75,9 +87,9 @@ class StaffTable extends Component implements HasTable, HasActions, HasSchemas
                         ->recordActions([
                 Action::make('edit')
                     ->label('')
-                    ->url(fn (User $record) => route('backoffice.product.edit', [
+                    ->url(fn (User $record) => route('backoffice.staff.edit', [
                         'tenant' => $this->tenantParam,
-                        'product' => $record,
+                        'staff' => $record,
                     ]))
                     ->icon('heroicon-o-pencil-square')
                     ->extraAttributes([

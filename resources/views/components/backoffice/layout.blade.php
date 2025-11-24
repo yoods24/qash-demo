@@ -27,7 +27,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@splidejs/splide/dist/css/splide.min.css">
     {{-- map for geolocation --}}
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
-    <link rel="icon" href="{{ asset('storage/logos/Qash_single_logogram.png') }}" type="image/png">
+    <link rel="icon" href="{{ global_asset('storage/logos/Qash_single_logogram.png') }}" type="image/png">
 
     @vite([
       'resources/css/backoffice.css',

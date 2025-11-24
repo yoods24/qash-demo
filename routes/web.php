@@ -5,11 +5,18 @@ use App\Http\Controllers\AuthenticatedSessionController;
 use App\Http\Controllers\PaymentWebhookController;
 use App\Http\Controllers\Qash\TenantController;
 use App\Http\Controllers\Qash\QashAuthenticatedSessionController;
+use Stancl\Tenancy\Controllers\TenantAssetsController;
+use Stancl\Tenancy\Middleware\InitializeTenancyByPath;
 
 
 Route::get('/', function () {
     return view('customer.home');
 })->name('home');
+
+Route::middleware(['web', InitializeTenancyByPath::class])
+    ->get('/t/{tenant}/tenancy/assets/{path?}', [TenantAssetsController::class, 'asset'])
+    ->where('path', '.*')
+    ->name('stancl.tenancy.asset');
 
 
 // Qash central auth (separate guard)

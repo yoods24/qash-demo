@@ -7,7 +7,7 @@ namespace App\Services;
 use App\Models\TenantInvoiceSettings;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Storage;
+use App\Models\Order;
 
 class InvoiceSettingsService
 {
@@ -44,7 +44,7 @@ class InvoiceSettingsService
 
         if (isset($data['invoice_logo']) && $data['invoice_logo'] instanceof UploadedFile) {
             $path = $data['invoice_logo']->store('tenant-invoices/logos', 'public');
-            $payload['invoice_logo'] = Storage::disk('public')->url($path);
+            $payload['invoice_logo'] = $path;
         }
 
         $settings->fill($payload);
@@ -55,5 +55,18 @@ class InvoiceSettingsService
         }
 
         return $settings;
+    }
+
+    public function formatOrderType(Order $order): string
+    {
+        if ($order->isTakeaway()) {
+            return 'Takeaway';
+        }
+
+        $label = $order->orderTypeLabel();
+
+        return $label === 'Dine In'
+            ? 'Dine In'
+            : 'Dine In – ' . $label;
     }
 }

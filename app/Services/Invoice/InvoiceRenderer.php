@@ -11,6 +11,7 @@ use App\Models\TenantProfile;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\View;
+use App\Services\InvoiceSettingsService;
 
 class InvoiceRenderer
 {
@@ -26,6 +27,7 @@ class InvoiceRenderer
         $invoiceNumber = $this->buildInvoiceNumber($order, $settings);
         $dueDate = $this->resolveDueDate($order, $settings);
         $totals = $this->buildTotals($order, $settings);
+        $orderTypeDisplay = app(InvoiceSettingsService::class)->formatOrderType($order);
 
         return View::make($view, [
             'order' => $order,
@@ -38,6 +40,7 @@ class InvoiceRenderer
             'dueDate' => $dueDate,
             'customer' => $order->customerDetail,
             'totals' => $totals,
+            'orderTypeDisplay' => $orderTypeDisplay,
         ])->render();
     }
 

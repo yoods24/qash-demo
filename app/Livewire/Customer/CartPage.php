@@ -16,6 +16,7 @@ use App\Support\CartItemIdentifier;
 use App\Services\OrderTaxCalculator;
 use App\Support\PriceAfterDiscount;
 use App\Services\Order\OrderCreationService;
+use App\Services\OrderService;
 
 class CartPage extends Component
 {
@@ -38,6 +39,7 @@ class CartPage extends Component
     public $currentTable = null; // label for current dining table
     public $subtotalBeforeDiscount = 0;
     public $discountTotal = 0;
+    public string $orderType = 'takeaway';
     protected OrderTaxCalculator $orderTaxCalculator;
 
     public function boot(OrderTaxCalculator $orderTaxCalculator): void
@@ -48,6 +50,7 @@ class CartPage extends Component
     public function mount()
     {
         $this->tenantId = tenant()?->id ?? request()->route('tenant');
+        $this->orderType = OrderService::currentOrderType();
         $this->refreshCart();
         $this->syncCurrentTable();
     }
@@ -76,9 +79,16 @@ class CartPage extends Component
         if ($tableId) {
             $t = DiningTable::where('tenant_id', $this->tenantId)->find($tableId);
             $this->currentTable = $t?->label;
-        } else {
-            $this->currentTable = null;
+            if ($this->currentTable) {
+                $this->orderType = OrderService::DINE_IN;
+                OrderService::persistOrderType($this->orderType);
+                return;
+            }
         }
+
+        $this->currentTable = null;
+        $this->orderType = OrderService::TAKEAWAY;
+        OrderService::persistOrderType($this->orderType);
     }
 
         public function closeOptionModal()
@@ -313,6 +323,11 @@ class CartPage extends Component
             return redirect()->route('payment.show', ['tenant' => $tenantId, 'order' => $pendingOrder]);
         }
 
+        if ($this->orderType === OrderService::DINE_IN && ! Session::get('dining_table_id')) {
+            session()->flash('error', 'Please scan the table QR to continue with a dine-in order.');
+            return;
+        }
+
         $insufficient = $this->validateCartStock($tenantId);
         if (! empty($insufficient)) {
             session()->flash('error', 'Insufficient stock for: ' . implode(', ', $insufficient));
@@ -326,10 +341,17 @@ class CartPage extends Component
         $itemCount = Cart::getTotalQuantity();
         $summary = $this->summarizeCart();
 
-        $order = DB::transaction(function () use ($tenantId, $customerDetailId, $summary) {
+        $orderType = $this->orderType;
+        $shouldClearTable = $orderType === OrderService::TAKEAWAY;
+
+        $order = DB::transaction(function () use ($tenantId, $customerDetailId, $summary, $orderType, $shouldClearTable) {
             $reference = $this->generateReference($tenantId);
             $expectedSeconds = $this->calculateExpectedSeconds();
             $calculation = $this->orderTaxCalculator->calculate($tenantId, $summary['final']);
+
+            if ($shouldClearTable) {
+                OrderService::clearTableAssignment($customerDetailId);
+            }
 
             $order = Order::create([
                 'reference_no' => $reference,
@@ -344,7 +366,7 @@ class CartPage extends Component
                 'tenant_id' => $tenantId,
                 'expected_seconds_total' => $expectedSeconds,
                 'source' => 'qr',
-                'order_type' => Session::has('dining_table_id') ? 'dine-in' : 'takeaway',
+                'order_type' => $orderType,
             ]);
 
             foreach (Cart::getContent() as $item) {
@@ -393,6 +415,11 @@ class CartPage extends Component
 
             return $order;
         });
+
+        if ($shouldClearTable) {
+            $this->currentTable = null;
+            $this->orderType = OrderService::TAKEAWAY;
+        }
 
         try {
             TenantNotification::create([

@@ -35,6 +35,11 @@ class StaffController extends Controller
         $bloodGroups = BloodGroup::cases();
         return view('backoffice.staff.create', compact(['shifts', 'roles', 'bloodGroups']));
     }
+
+    public function createFull()
+    {
+        return $this->create();
+    }
     public function view(User $staff)
     {
         $role = $staff->getRoleNames()->first();
@@ -158,6 +163,78 @@ class StaffController extends Controller
 
         return redirect()->route('backoffice.staff.index')
             ->with('message', 'Employee created successfully.');
+    }
+
+    public function editFull(User $staff)
+    {
+        $staff->load('roles');
+
+        $shifts = Shift::where('tenant_id', tenant('id'))->orderBy('name')->get(['id', 'name']);
+        $roles = \App\Models\Role::all();
+        $bloodGroups = BloodGroup::cases();
+
+        return view('backoffice.staff.edit', compact('staff', 'shifts', 'roles', 'bloodGroups'));
+    }
+
+    public function updateFull(Request $request, User $staff)
+    {
+        $validated = $request->validate([
+            'firstName' => ['required', 'string', 'max:120'],
+            'lastName' => ['required', 'string', 'max:120'],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email,' . $staff->id],
+            'phone' => ['required', 'string', 'max:20'],
+            'emp_code' => ['nullable', 'string', 'max:120', 'unique:users,emp_code,' . $staff->id],
+            'date_of_birth' => ['nullable', 'date'],
+            'gender' => ['nullable', 'in:Male,Female'],
+            'nationality' => ['nullable', 'string', 'max:120'],
+            'joining_date' => ['nullable', 'date'],
+            'shift_id' => ['nullable', 'exists:shifts,id'],
+            'blood_group' => ['nullable', 'in:O,A,B,AB'],
+            'about' => ['nullable', 'string', 'max:500'],
+            'address' => ['nullable', 'string', 'max:255'],
+            'country' => ['nullable', 'string', 'max:120'],
+            'state' => ['nullable', 'string', 'max:120'],
+            'city' => ['nullable', 'string', 'max:120'],
+            'zipcode' => ['nullable', 'string', 'max:30'],
+            'emergency_contact_number_1' => ['nullable', 'string', 'max:30'],
+            'emergency_contact_relation_1' => ['nullable', 'string', 'max:60'],
+            'emergency_contact_name_1' => ['nullable', 'string', 'max:120'],
+            'emergency_contact_number_2' => ['nullable', 'string', 'max:30'],
+            'emergency_contact_relation_2' => ['nullable', 'string', 'max:60'],
+            'emergency_contact_name_2' => ['nullable', 'string', 'max:120'],
+            'bank_name' => ['nullable', 'string', 'max:120'],
+            'account_number' => ['nullable', 'string', 'max:60'],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+            'profile-image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+        ]);
+
+        $staff->fill(collect($validated)->except([
+            'password',
+            'profile-image',
+        ])->toArray());
+
+        if ($request->filled('password')) {
+            $staff->password = Hash::make($request->input('password'));
+        }
+
+        if ($request->filled('role')) {
+            $staff->syncRoles([$request->input('role')]);
+        }
+
+        if ($request->hasFile('profile-image')) {
+            $currentImage = $staff->getAttribute('profile-image');
+            if ($currentImage) {
+                \Storage::disk('public')->delete($currentImage);
+            }
+
+            $path = $request->file('profile-image')->store('users/' . $staff->id, 'public');
+            $staff->setAttribute('profile-image', $path);
+        }
+
+        $staff->save();
+
+        return redirect()->route('backoffice.staff.index')
+            ->with('message', 'Employee updated successfully.');
     }
 
     public function indexPermission(\App\Models\Role $role) {

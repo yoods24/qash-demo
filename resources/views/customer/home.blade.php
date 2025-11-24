@@ -161,9 +161,9 @@
               <div class="row g-4 align-items-stretch">
                 <div class="col-md-5">
                   <div class="menu-featured-wrapper">
-                    @if($featured && $featured->product_image)
+                    @if($featured && $featured->product_image_url)
                       <img
-                        src="{{ asset('storage/' . $featured->product_image) }}"
+                        src="{{ $featured->product_image_url }}"
                         alt="{{ $featured->name }}"
                         class="menu-featured-img"
                       >

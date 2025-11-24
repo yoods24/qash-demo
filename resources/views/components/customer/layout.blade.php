@@ -19,7 +19,7 @@
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@splidejs/splide/dist/css/splide.min.css">
 
-    <link rel="icon" href="{{ asset('storage/logos/Qash_single_logogram.png') }}" type="image/png">
+    <link rel="icon" href="{{ global_asset('storage/logos/Qash_single_logogram.png') }}" type="image/png">
     <link rel="stylesheet" href="https://unpkg.com/lenis@1.3.15/dist/lenis.css">
 
     <title>Qash</title>

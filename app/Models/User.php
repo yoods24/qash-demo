@@ -11,8 +11,6 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Spatie\Permission\Traits\HasRoles;
 use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
-use Illuminate\Support\Facades\Storage;
-
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
@@ -105,16 +103,6 @@ class User extends Authenticatable
     }
     public function getProfileImageUrlAttribute(): ?string
     {
-        $path = $this->getProfileImagePathAttribute();
-        if (! $path) {
-            return null;
-        }
-        if (function_exists('tenant_asset')) {
-            $tenantId = function_exists('tenant') ? tenant('id') : null;
-            if ($tenantId) {
-                return route('stancl.tenancy.asset', ['path' => $path, 'tenant' => $tenantId]);
-            }
-        }
-        return Storage::disk('public')->url($path);
+        return tenant_storage_url($this->getProfileImagePathAttribute());
     }
 }

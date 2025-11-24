@@ -112,11 +112,11 @@
 
                 <div class="mb-2"><label class="form-label">Select Order Type</label></div>
                 <div class="btn-group mb-3 w-100" role="group">
-                    <input type="radio" class="btn-check" name="orderType" id="ot-dine" value="dine-in" autocomplete="off" wire:model="orderType">
-                    <label class="btn btn-outline-warning" for="ot-dine"><i class="bi bi-shop"></i> Dine-In</label>
+                    <input type="radio" class="btn-check" name="orderType" id="ot-dine" value="dine-in" autocomplete="off" wire:model.live="orderType">
+                    <label class="btn {{ $orderType === 'dine-in' ? 'btn-primary' : 'btn-outline-primary' }}" for="ot-dine"><i class="bi bi-shop"></i> Dine-In</label>
 
-                    <input type="radio" class="btn-check" name="orderType" id="ot-take" value="takeaway" autocomplete="off" wire:model="orderType">
-                    <label class="btn btn-outline-warning" for="ot-take"><i class="bi bi-bag"></i> Takeaway</label>
+                    <input type="radio" class="btn-check" name="orderType" id="ot-take" value="takeaway" autocomplete="off" wire:model.live="orderType">
+                    <label class="btn {{ $orderType === 'takeaway' ? 'btn-primary' : 'btn-outline-primary' }}" for="ot-take"><i class="bi bi-bag"></i> Takeaway</label>
                 </div>
 
                 @if($orderType === 'dine-in')

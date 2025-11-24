@@ -185,8 +185,8 @@ class KitchenOrders extends Component
         // Build two lists shown simultaneously (no tabs): confirmed and preparing
         $base = Order::with(['items.product.options', 'customerDetail.diningTable'])->latest();
         $term = trim($this->search);
-        $confirmedQuery = (clone $base)->where('status', 'confirmed');
-        $preparingQuery = (clone $base)->where('status', 'preparing');
+        $confirmedQuery = (clone $base)->where('status', 'confirmed')->where('order_type', 'dine-in');
+        $preparingQuery = (clone $base)->where('status', 'preparing')->where('order_type', 'dine-in');
         if ($term !== '') {
             $like = "%{$term}%";
             $confirmedQuery->where('id', 'like', $like);
@@ -212,8 +212,24 @@ class KitchenOrders extends Component
         $counts['active'] = ($counts['confirmed'] ?? 0) + ($counts['preparing'] ?? 0);
 
         // Build aggregated items board from active orders (confirmed + preparing)
+        $takeawayBase = Order::with(['items.product.options', 'customerDetail'])
+            ->where('order_type', 'takeaway')
+            ->whereIn('status', ['confirmed', 'preparing', 'ready'])
+            ->latest();
+        if ($term !== '') {
+            $takeawayBase->where('id', 'like', "%{$term}%");
+        }
+        $takeawayGrouped = $takeawayBase->get()->groupBy('status');
+        $takeawayOrders = [
+            'confirmed' => $takeawayGrouped->get('confirmed', collect()),
+            'preparing' => $takeawayGrouped->get('preparing', collect()),
+            'ready' => $takeawayGrouped->get('ready', collect()),
+        ];
+
+        $activeTakeaway = $takeawayOrders['confirmed']->concat($takeawayOrders['preparing']);
+
         $itemsBoard = $this->buildItemsBoard(
-            $confirmedOrders->concat($preparingOrders)
+            $confirmedOrders->concat($preparingOrders)->concat($activeTakeaway)
         );
 
         // Today overview stats (ready orders only)
@@ -235,28 +251,6 @@ class KitchenOrders extends Component
             else $onTime++;
         }
         $todayStats = compact('totalCompleted','onTime','lateWarn','lateDanger');
-
-        $takeawayOrders = collect([
-            [
-                'id' => 710254,
-                'status' => 'ready',
-                'token' => '0104',
-                'time' => now()->format('h:i A, d-m-Y'),
-                'items' => [
-                    ['name' => 'Club Sandwich', 'qty' => 1],
-                    ['name' => 'Iced Tea', 'qty' => 1],
-                ],
-            ],
-            [
-                'id' => 710253,
-                'status' => 'preparing',
-                'token' => '0103',
-                'time' => now()->subMinutes(6)->format('h:i A, d-m-Y'),
-                'items' => [
-                    ['name' => 'Veg Burger', 'qty' => 1],
-                ],
-            ],
-        ]);
 
         return view('livewire.backoffice.kitchen-orders', [
             'status' => $this->status,

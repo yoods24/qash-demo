@@ -17,6 +17,7 @@ use Livewire\Attributes\Validate;
 use Livewire\Component;
 use App\Support\CartItemIdentifier;
 use App\Services\OrderTaxCalculator;
+use App\Jobs\SendInvoiceEmailJob;
 
 class PosPage extends Component
 {
@@ -334,7 +335,7 @@ class PosPage extends Component
             return;
         }
 
-        DB::transaction(function () {
+        $order = DB::transaction(function () {
             $tenantId = $this->tenantId;
             $tenantCode = strtoupper(substr((string)($tenantId ?? ''), 0, 3));
             $rand = strtoupper(substr(bin2hex(random_bytes(8)), 0, 10));
@@ -404,8 +405,16 @@ class PosPage extends Component
                     ->update(['dining_table_id' => $this->tableId]);
                 DiningTable::where('tenant_id', $tenantId)->where('id', $this->tableId)
                     ->update(['status' => 'occupied']);
+            } elseif ($this->orderType === 'takeaway') {
+                CustomerDetail::where('tenant_id', $tenantId)->where('id', $this->customerId)
+                    ->update(['dining_table_id' => null]);
             }
+            return $order;
         });
+
+        if ($order) {
+            SendInvoiceEmailJob::dispatch($order->id, (string) $order->tenant_id);
+        }
 
         Cart::clear();
         $this->dispatch('pos-flash', type: 'success', message: 'Order placed.');

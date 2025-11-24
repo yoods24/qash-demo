@@ -122,9 +122,9 @@
                         @endphp
                         <tr>
                             <td>
-                                @php $image = optional($item->product)->product_image; @endphp
-                                @if ($image)
-                                    <img src="{{ asset('storage/' . $image) }}" alt="{{ $item->product_name }}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">
+                                @php $imageUrl = optional($item->product)->product_image_url; @endphp
+                                @if ($imageUrl)
+                                    <img src="{{ $imageUrl }}" alt="{{ $item->product_name }}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">
                                 @else
                                     <span class="text-muted">No image</span>
                                 @endif

@@ -39,12 +39,14 @@ class RolePermissionsEditor extends Component
         $this->roleName = $role->name;
 
         $names = $this->allPermissionNamesFromTree();
+        $currentAssignments = $this->role->permissions->pluck('name')->all();
 
-        // Only include permissions that exist for this tenant
+        // Ensure the editor always exposes every permission in the tree,
+        // even if the tenant hasn't seeded it yet.
         $existing = Permission::query()->whereIn('name', $names)->pluck('name')->all();
-        foreach ($existing as $name) {
-            $this->available[$name] = true;
-            $this->state[$name] = $this->role->hasPermissionTo($name);
+        foreach ($names as $name) {
+            $this->available[$name] = in_array($name, $existing, true);
+            $this->state[$name] = in_array($name, $currentAssignments, true);
         }
     }
 
@@ -192,81 +194,7 @@ class RolePermissionsEditor extends Component
      */
     protected function modules(): array
     {
-        return [
-            [
-                'key' => 'pos',
-                'label' => 'POS & Orders',
-                'view' => 'pos_view',
-                'children' => [
-                    [
-                        'key' => 'pos_orders',
-                        'label' => 'POS Orders',
-                        'view' => 'pos_orders_view',
-                        'actions' => [],
-                    ],
-                    [
-                        'key' => 'table_orders',
-                        'label' => 'Table Orders',
-                        'view' => 'pos_table_orders_view',
-                        'actions' => [],
-                    ],
-                ],
-            ],
-            [
-                'key' => 'kitchen',
-                'label' => 'Kitchen',
-                'view' => 'kitchen_view',
-                'children' => [
-                    [
-                        'key' => 'kds',
-                        'label' => 'K.D.S',
-                        'view' => 'kitchen_kds_view',
-                        'actions' => [
-                            ['name' => 'kitchen_kds_update_order', 'label' => 'KDS Update Order'],
-                            ['name' => 'kitchen_kds_confirm_order', 'label' => 'KDS Confirm Order'],
-                        ],
-                    ],
-                    [
-                        'key' => 'oss',
-                        'label' => 'O.S.S',
-                        'view' => 'kitchen_oss_view',
-                        'actions' => [
-                            ['name' => 'kitchen_oss_update_order', 'label' => 'OSS Update Order'],
-                            ['name' => 'kitchen_oss_confirm_order', 'label' => 'OSS Confirm Order'],
-                        ],
-                    ],
-                ],
-            ],
-            [
-                'key' => 'inventory',
-                'label' => 'Inventory',
-                'view' => 'inventory_view',
-                'children' => [
-                    ['key' => 'products', 'label' => 'Products', 'view' => 'inventory_products_view', 'actions' => []],
-                    ['key' => 'category', 'label' => 'Category', 'view' => 'inventory_category_view', 'actions' => []],
-                    ['key' => 'special', 'label' => 'Special Type', 'view' => 'inventory_special_type_view', 'actions' => []],
-                ],
-            ],
-            [
-                'key' => 'sales',
-                'label' => 'Sales',
-                'view' => 'sales_view',
-                'children' => [
-                    ['key' => 'invoices', 'label' => 'Invoices', 'view' => 'sales_invoices_view', 'actions' => []],
-                    ['key' => 'return', 'label' => 'Sales Return', 'view' => 'sales_return_view', 'actions' => []],
-                ],
-            ],
-            [
-                'key' => 'hrm',
-                'label' => 'HRM',
-                'view' => 'hrm_view',
-                'children' => [
-                    ['key' => 'employees', 'label' => 'Employees', 'view' => 'hrm_employees_view', 'actions' => []],
-                    ['key' => 'roles', 'label' => 'Roles', 'view' => 'hrm_roles_view', 'actions' => []],
-                    ['key' => 'shifts', 'label' => 'Shifts', 'view' => 'hrm_shifts_view', 'actions' => []],
-                ],
-            ],
-        ];
+        return config('tenant_permissions.modules', []);
     }
 
     /**

@@ -30,13 +30,14 @@
     $companyPhone = $profile->contact_phone ?? 'Phone unavailable';
     $companyEmail = $profile->contact_email ?? 'Email unavailable';
     $customer = $customer ?? $order->customerDetail;
+    $invoiceLogoUrl = tenant_storage_url($settings->invoice_logo ?? null);
 @endphp
 <div class="invoice-wrapper">
     <div class="invoice-header">
         <div>
             <div class="invoice-logo">
-                @if(!empty($settings?->invoice_logo))
-                    <img src="{{ $settings->invoice_logo }}" alt="Company Logo">
+                @if($invoiceLogoUrl)
+                    <img src="{{ $invoiceLogoUrl }}" alt="Company Logo">
                 @else
                     <span>{{ Str::of($companyName)->substr(0, 2)->upper() }}</span>
                 @endif
@@ -70,6 +71,11 @@
             <div>{{ $order->reference_no ?? '-' }}</div>
             <div>Status: {{ ucfirst($order->status ?? 'confirmed') }}</div>
         </div>
+    </div>
+
+    <div style="margin-bottom:16px; font-size:13px;">
+        <div class="muted">Order Type</div>
+        <div><strong>{{ $orderTypeDisplay ?? ($order->isTakeaway() ? 'Takeaway' : 'Dine In') }}</strong></div>
     </div>
 
     <table>

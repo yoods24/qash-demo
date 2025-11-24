@@ -10,7 +10,7 @@
         ></dotlottie-wc>
     </div>
     {{-- Banner Section --}}
-    <div class="position-relative text-white rounded overflow-hidden mb-4" style="background: url('{{ asset('storage/ui/banner-coffee.png') }}') center/cover; min-height: 200px;">
+    <div class="position-relative text-white rounded overflow-hidden mb-4" style="background: url('{{ global_asset('storage/ui/banner-coffee.png') }}') center/cover; min-height: 200px;">
         <div class="p-5" style="background: rgba(0,0,0,0.4); height: 100%;">
             <h5 class="fw-bold">Discover Your Perfect Brew!</h5>
             <h2 class="fw-bold">30% OFF</h2>
@@ -31,32 +31,73 @@
                 @endif
             </div>
         </div>
-            <hr>
-
-        <div class="mt-3 align-content-center">
-    {{-- Pickup Location --}}
-    @if($currentTable)
-    <div class="soft-card  mb-3">
-        <div class="card-body border-none">
-            <div class="d-flex justify-content-between align-items-start">
-                <div>
-                    <div class="d-flex align-items-center gap-2 mb-1">
-                        <i class="bi bi-tv-fill text-primer"></i>
-                        <span class="fw-semibold">{{ $currentTable }}</span>
-                    </div>
-                    <div class="small text-muted">Do you want to change your Table?</div>
-                </div>
-            </div>
-            <div class="rounded-3 mt-3 p-2 d-flex justify-content-between text-center align-items-center" style="background:#fff7f2; color:#815f4e;">
-                <div>
-                    <i class="bi bi-clock me-1"></i>
-                    <small>Want to change Tables?</small>
-                </div>
-                <button class="btn btn-sm btn-light border">Change</button>
+        <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between mt-3">
+            <div class="text-uppercase small text-muted fw-semibold">Order Type</div>
+            <div class="btn-group" role="group" aria-label="Order type toggle">
+                <button type="button"
+                    class="btn btn-sm {{ $orderType === 'dine-in' ? 'btn-primary' : 'btn-outline-primary' }}"
+                    wire:click="selectOrderType('dine-in')">
+                    Dine In
+                </button>
+                <button type="button"
+                    class="btn btn-sm {{ $orderType === 'takeaway' ? 'btn-primary' : 'btn-outline-primary' }}"
+                    wire:click="selectOrderType('takeaway')">
+                    Takeaway
+                </button>
             </div>
         </div>
-    </div>
-    @endif
+        <hr>
+
+        <div class="mt-3 align-content-center">
+        {{-- Order Type Messaging --}}
+        @if($orderType === 'dine-in')
+            @if($currentTable)
+                <div class="soft-card mb-3">
+                    <div class="card-body border-none">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="d-flex align-items-center gap-2 mb-1">
+                                    <i class="bi bi-tv-fill text-primer"></i>
+                                    <span class="fw-semibold">Table {{ $currentTable }}</span>
+                                </div>
+                                <div class="small text-muted">Linked to this order.</div>
+                            </div>
+                            <span class="badge bg-primary-subtle text-primary">Dine In</span>
+                        </div>
+                        <div class="rounded-3 mt-3 p-2 d-flex justify-content-between text-center align-items-center" style="background:#fff7f2; color:#815f4e;">
+                            <div>
+                                <i class="bi bi-clock me-1"></i>
+                                <small>Need to move to a different table?</small>
+                            </div>
+                            <button class="btn btn-sm btn-light border" type="button" wire:click="$set('showTableModal', true)">Change</button>
+                        </div>
+                    </div>
+                </div>
+            @else
+                <div class="alert alert-info d-flex justify-content-between align-items-center mb-3" role="alert">
+                    <div>
+                        <div class="fw-semibold text-dark">Scan your table</div>
+                        <div class="small text-muted">Use the QR code on your table to continue dine-in ordering.</div>
+                    </div>
+                    <button class="btn btn-outline-primary btn-sm" type="button" wire:click="$set('showTableModal', true)">
+                        Show instructions
+                    </button>
+                </div>
+            @endif
+        @else
+            <div class="soft-card mb-3">
+                <div class="card-body d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <i class="bi bi-bag text-warning"></i>
+                            <span class="fw-semibold text-warning">Takeaway</span>
+                        </div>
+                        <div class="small text-muted">Pick up at the counter. We will notify you when items are ready.</div>
+                    </div>
+                    <span class="badge bg-warning text-dark">TAKEAWAY</span>
+                </div>
+            </div>
+        @endif
         </div>
     </div>
 
@@ -116,8 +157,9 @@
                                         @endphp
                                         <div class="d-flex gap-2 align-items-center">
                                             @foreach($products->take(3) as $product)
-                                                <img src="{{ $product?->product_image ? asset('storage/' . $product->product_image) : 'https://via.placeholder.com/48' }}"
-                                                     alt="{{ $product?->name }}"
+                                                @php $productImage = tenant_storage_url($product->product_image ?? null); @endphp
+                                                <img src="{{ $productImage ?? 'https://via.placeholder.com/48' }}"
+                                                     alt="{{ $product->name ?? '' }}"
                                                      class="rounded" style="width: 48px; height: 48px; object-fit: cover;">
                                             @endforeach
                                             @if($products->count() > 3)
@@ -155,7 +197,7 @@
                             @endif
                             <div class="d-flex gap-3">
                                 <div>
-                                    <img src="{{ asset('storage/'. $product->product_image) }}"  
+                                    <img src="{{ $product->product_image_url ?? 'https://via.placeholder.com/160' }}"  
                                         class="product-img rounded-md" 
                                         alt="{{ $product->name }}">
                                 </div>
@@ -226,7 +268,7 @@
                     </span>
                 @endif
                 {{-- Product Image --}}
-                <img src="{{ asset('storage/' . $product->product_image) }}" 
+                <img src="{{ $product->product_image_url ?? 'https://via.placeholder.com/96' }}" 
                     alt="{{ $product->name }}" 
                     class="product-thumb rounded">
 
@@ -287,7 +329,7 @@
         </div>
         {{-- product image --}}
         <div class="option-img-container">
-            <img src="{{ asset('storage/' . $selectedProduct->product_image) }}" 
+            <img src="{{ $selectedProduct->product_image_url ?? 'https://via.placeholder.com/320x200' }}" 
                 class="img-fluid rounded mb-3 option-img">
         </div>
 
@@ -471,9 +513,33 @@
                     Add Quantity First!
                 </button>
             @endif
-        </div>
-    </div>
  </div>
+ </div>
+</div>
+@endif
+
+@if($showSwitchOrderTypeModal)
+<div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.4);">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Switch to Takeaway?</h5>
+        <button type="button" class="btn-close" aria-label="Close" wire:click="cancelOrderTypeSwitch"></button>
+      </div>
+      <div class="modal-body">
+        <p>You are currently assigned to <strong>{{ $currentTable ? 'Table ' . $currentTable : 'a table' }}</strong>.</p>
+        <p class="mb-0">If you continue, the table assignment will be removed and your order will be treated as takeaway.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" wire:click="cancelOrderTypeSwitch">Cancel</button>
+        <button type="button" class="btn btn-danger" wire:click="confirmOrderTypeSwitch">Confirm</button>
+      </div>
+    </div>
+  </div>
+</div>
+<style>
+  body { overflow: hidden; }
+</style>
 @endif
 
 @if($showTableModal)

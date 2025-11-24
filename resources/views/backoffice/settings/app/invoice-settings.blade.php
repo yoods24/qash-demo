@@ -1,7 +1,7 @@
 <x-backoffice.settings-layout>
     @php
         $settings = $invoiceSettings ?? new \App\Models\TenantInvoiceSettings();
-        $logoUrl = $settings->invoice_logo;
+        $logoUrl = tenant_storage_url($settings->invoice_logo);
         $dueOptions = range(0, 60);
     @endphp
 

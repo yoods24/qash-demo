@@ -33,6 +33,7 @@ class StaffAttendance extends Component implements HasTable, HasActions, HasSche
     public ?float $lng = null;
     public ?bool $geoOk = null;
     public ?int $geoDistance = null; // meters
+    public ?int $geoAccuracy = null; // meters reported by navigator
     public string|int|null $tenantParam = null;
 
     public function boot(): void
@@ -107,6 +108,9 @@ class StaffAttendance extends Component implements HasTable, HasActions, HasSche
             'lng' => $this->lng,
             'device' => request()->userAgent(),
         ]);
+
+        $this->refreshAttendanceState();
+        $this->dispatch('attendance-record-updated');
     }
 
     public function clockOut(): void
@@ -118,6 +122,9 @@ class StaffAttendance extends Component implements HasTable, HasActions, HasSche
             'device' => request()->userAgent(),
         ]);
         $this->onBreak = false;
+
+        $this->refreshAttendanceState();
+        $this->dispatch('attendance-record-updated');
     }
 
     public function toggleBreak(): void
@@ -130,6 +137,8 @@ class StaffAttendance extends Component implements HasTable, HasActions, HasSche
             $this->service()->startBreak($user, now());
             $this->onBreak = true;
         }
+
+        $this->refreshAttendanceState();
     }
 
     #[Computed]
@@ -279,7 +288,11 @@ class StaffAttendance extends Component implements HasTable, HasActions, HasSche
         }
         $dist = $this->distanceMeters($this->lat, $this->lng, (float) $geo['lat'], (float) $geo['lng']);
         $this->geoDistance = $dist;
-        $this->geoOk = $dist <= (int) ($geo['radius'] ?? 0);
+        $accuracyAllowance = $this->geoAccuracy !== null
+            ? min(max((int) round($this->geoAccuracy / 2), 0), 300)
+            : 0;
+        $allowedRadius = (int) ($geo['radius'] ?? 0) + $accuracyAllowance;
+        $this->geoOk = $dist <= $allowedRadius;
     }
 
     protected function distanceMeters(float $lat1, float $lon1, float $lat2, float $lon2): int
@@ -303,7 +316,12 @@ class StaffAttendance extends Component implements HasTable, HasActions, HasSche
             'requiresGeo' => $this->requiresGeo,
             'geofenceConfigured' => $this->geofenceConfigured,
             'requiresFace' => $this->requiresFace,
+            'geoAccuracy' => $this->geoAccuracy,
         ]);
     }
 
+    protected function refreshAttendanceState(): void
+    {
+        unset($this->today, $this->records, $this->overview, $this->runningBreakStart);
+    }
 }

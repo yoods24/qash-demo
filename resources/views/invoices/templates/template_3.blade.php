@@ -44,6 +44,11 @@
         </div>
     </div>
 
+    <div style="margin-bottom:18px;">
+        <div style="font-size:11px; color:#94a3b8; text-transform:uppercase;">Order Type</div>
+        <div style="font-weight:600;">{{ $orderTypeDisplay ?? ($order->isTakeaway() ? 'Takeaway' : 'Dine In') }}</div>
+    </div>
+
     <table>
         <thead>
             <tr>

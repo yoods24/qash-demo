@@ -27,12 +27,11 @@ class AdminSeeder extends Seeder
         // Get or create the 'Super Admin' role (if you want a specific role for the super admin)
         $superAdminRole = Role::firstOrCreate(['name' => 'Super Admin']);
 
-        // Assign the 'Super Admin' role to the user
-        $user->assignRole($superAdminRole);
+        // Ensure the Super Admin role always contains every permission
+        $superAdminRole->syncPermissions(Permission::all());
 
-        // Give the user all permissions
-        $permissions = Permission::all(); // Get all permissions from the database
-        $user->syncPermissions($permissions); // Assign all permissions to the superadmin
+        // Assign the 'Super Admin' role to the user (no direct permissions needed)
+        $user->assignRole($superAdminRole);
 
         // Optionally, if you have permissions defined in a seeder or manually,
         // you can assign specific permissions like so:

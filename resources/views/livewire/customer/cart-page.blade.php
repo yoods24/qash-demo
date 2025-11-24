@@ -120,6 +120,22 @@
         <div class="progress-thin"><div class="progress-bar"></div></div>
     </div>
 
+    <div class="soft-card card mb-3">
+        <div class="card-body d-flex justify-content-between align-items-start">
+            <div>
+                <div class="text-uppercase small text-muted">Order Type</div>
+                @if($orderType === 'dine-in')
+                    <div class="fw-semibold">Dine In</div>
+                    <div class="small text-muted">{{ $currentTable ? 'Table ' . $currentTable : 'Scan table QR to link this order' }}</div>
+                @else
+                    <div class="fw-semibold">Takeaway</div>
+                    <div class="small text-muted">Pickup at the counter once ready.</div>
+                @endif
+            </div>
+            <span class="badge {{ $orderType === 'dine-in' ? 'bg-primary' : 'bg-warning text-dark' }}">{{ $orderType === 'dine-in' ? 'DINE IN' : 'TAKEAWAY' }}</span>
+        </div>
+    </div>
+
     {{-- Pickup Location --}}
     @if($currentTable)
     <div class="soft-card card mb-3">
@@ -162,10 +178,11 @@
                     $hasDiscount = ($item->attributes->discount_id ?? null) && (($item->attributes->discount_amount ?? 0) > 0);
                 @endphp
                 {{-- Product Image --}}
-                @if($item->attributes->image)
-                    <img src="{{ asset('storage/' . $item->attributes->image) }}" alt="{{ $item->name }}" class="item-img me-3">
+                @php $itemImage = tenant_storage_url($item->attributes->image ?? null); @endphp
+                @if($itemImage)
+                    <img src="{{ $itemImage }}" alt="{{ $item->name }}" class="item-img me-3">
                 @else
-                    <img src="{{ asset('default.png') }}" alt="No Image" class="item-img me-3">
+                    <img src="{{ global_asset('default.png') }}" alt="No Image" class="item-img me-3">
                 @endif
 
                 <div class="flex-grow-1">
@@ -235,7 +252,7 @@
                         <div wire:click="showProductOptions({{ $product->id }})" class="d-flex gap-1 p-3 flex-row justify-content-between bg-white rounded-xl shadow product-card">
                             <div class="d-flex gap-3">
                                 <div>
-                                    <img src="{{ asset('storage/'. $product->product_image) }}"  
+                                    <img src="{{ $product->product_image_url ?? 'https://via.placeholder.com/160' }}"  
                                         class="product-img rounded-md" 
                                         alt="{{ $product->name }}">
                                 </div>
@@ -343,7 +360,7 @@
         </div>
         {{-- product image --}}
         <div class="option-img-container">
-            <img src="{{ asset('storage/' . $selectedProduct->product_image) }}" 
+            <img src="{{ $selectedProduct->product_image_url ?? 'https://via.placeholder.com/320x200' }}" 
                 class="img-fluid rounded mb-3 option-img">
         </div>
 

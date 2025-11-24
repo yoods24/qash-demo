@@ -71,7 +71,7 @@
                             <input type="file" name="product_image" class="form-control">
                             @error('product_image')<small class="text-danger">{{ $message }}</small>@enderror
                             @if($product->product_image)
-                                <div class="mt-2"><img src="{{ asset('storage/'.$product->product_image) }}" alt="Current image" style="height:64px; border-radius:8px"></div>
+                                <div class="mt-2"><img src="{{ $product->product_image_url ?? 'https://via.placeholder.com/64' }}" alt="Current image" style="height:64px; border-radius:8px"></div>
                             @endif
                         </div>
                         <div class="col-md-6">

@@ -105,4 +105,27 @@ class Order extends Model
         }
         return $q + $p;
     }
+
+    public function isTakeaway(): bool
+    {
+        return ($this->order_type ?? 'dine-in') === 'takeaway';
+    }
+
+    public function isDineIn(): bool
+    {
+        return ! $this->isTakeaway();
+    }
+
+    public function orderTypeLabel(): string
+    {
+        if ($this->isTakeaway()) {
+            return 'Takeaway';
+        }
+
+        $tableLabel = $this->customerDetail?->diningTable?->label;
+
+        return $tableLabel
+            ? 'Table ' . $tableLabel
+            : 'Dine In';
+    }
 }

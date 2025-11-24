@@ -110,13 +110,14 @@ class TenancyServiceProvider extends ServiceProvider
 
         // Provide default {tenant} param to route() when tenancy is active (path-based)
         Event::listen(Events\TenancyInitialized::class, function ($event) {
-            // Use helper to get current tenant id (avoid relying on event properties)
-            $id = tenant('id');
+            $tenant = tenant();
+            $id = $tenant?->id;
+
             if ($id) {
                 URL::defaults(['tenant' => $id]);
             }
-            // Share current tenant to all views for convenience
-            View::share('currentTenant', tenant());
+
+            View::share('currentTenant', $tenant);
         });
 
         Event::listen(Events\TenancyEnded::class, function () {

@@ -25,7 +25,7 @@
     <!-- Splide slider CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@splidejs/splide/dist/css/splide.min.css">
     {{-- map for geolocation --}}
-    <link rel="icon" href="{{ asset('storage/logos/Qash_single_logogram.png') }}" type="image/png">
+    <link rel="icon" href="{{ global_asset('storage/logos/Qash_single_logogram.png') }}" type="image/png">
 
     @vite([
       'resources/css/backoffice.css',

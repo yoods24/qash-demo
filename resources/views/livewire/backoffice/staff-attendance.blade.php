@@ -42,28 +42,32 @@
                 </div>
                 @if(($requiresGeo ?? false))
                     <div class="px-3 pb-2 small">
-                        @if(!($geofenceConfigured ?? false))
-                            <span class="text-warning">Geofence is not configured. Please contact admin.</span>
-                        @elseif(is_null($geoOk))
-                            <span class="text-muted">Detecting location… allow location access.</span>
-                        @elseif(!$geoOk)
-                            <span class="text-danger">Outside geofence ({{ $geoDistance }} m). Clock in disabled.</span>
-                        @else
-                            <span class="text-success">Within geofence ({{ $geoDistance }} m). You can clock in.</span>
+                        <div>
+                            @if(!($geofenceConfigured ?? false))
+                                <span class="text-warning">Geofence is not configured. Please contact admin.</span>
+                            @elseif(is_null($geoOk))
+                                <span class="text-muted">Detecting location… allow location access.</span>
+                            @elseif(!$geoOk)
+                                <span class="text-danger">Outside geofence ({{ $geoDistance }} m). Clock in disabled.</span>
+                            @else
+                                <span class="text-success">Within geofence ({{ $geoDistance }} m). You can clock in.</span>
+                            @endif
+                        </div>
+
+                        @if(($geofenceConfigured ?? false))
+                            <div class="mt-1 text-muted">
+                                @if(!empty($geofence))
+                                    <span>You: {{ number_format($lat ?? 0, 5) }}, {{ number_format($lng ?? 0, 5) }} | Site: {{ number_format($geofence['lat'] ?? 0, 5) }}, {{ number_format($geofence['lng'] ?? 0, 5) }} (r={{ (int)($geofence['radius'] ?? 0) }}m)</span>
+                                @endif
+                                @if(!is_null($geoAccuracy))
+                                    <span class="ms-2">Accuracy ±{{ (int) $geoAccuracy }} m</span>
+                                    @if(($geoAccuracy ?? 0) > 120)
+                                        <span class="ms-1">– move closer to open area or enable GPS for better precision.</span>
+                                    @endif
+                                @endif
+                            </div>
                         @endif
                     </div>
-                @endif
-                @if(($requiresGeo ?? false) && !is_null($geoOk))
-                <div class="px-3 pb-2 small">
-                    @if($geoOk)
-                        <span class="text-success">Within geofence ({{ $geoDistance }} m)</span>
-                    @else
-                        <span class="text-danger">Outside geofence ({{ $geoDistance }} m)</span>
-                    @endif
-                    @if(!empty($geofence))
-                        <span class="ms-2 text-muted">You: {{ number_format($lat ?? 0, 5) }}, {{ number_format($lng ?? 0, 5) }} | Site: {{ number_format($geofence['lat'] ?? 0, 5) }}, {{ number_format($geofence['lng'] ?? 0, 5) }} (r={{ (int)($geofence['radius'] ?? 0) }}m)</span>
-                    @endif
-                </div>
                 @endif
 
                 @if(($requiresFace ?? false))
@@ -177,15 +181,25 @@
             const G = @json($geofence ?? null);
             const geofenceRadius = parseInt((G && G.radius) ? G.radius : 200, 10);
             const accuracyThreshold = Math.min(500, Math.max(50, Math.round(geofenceRadius / 2))); // 50–500m
+            const staleMs = 15000;
+            const improvementMeters = 75;
+            const maxJumpMeters = 2500;
 
             let last = { lat: null, lng: null, acc: Infinity, ts: 0 };
 
+            const normalizeAccuracy = (value) => {
+                if (!Number.isFinite(value) || value <= 0) return 9999;
+                return Math.max(5, value);
+            };
+
             const setGeo = (lat, lng, acc) => {
+                const normalizedAcc = normalizeAccuracy(acc);
                 try {
                     @this.set('lat', parseFloat(lat));
                     @this.set('lng', parseFloat(lng));
+                    @this.set('geoAccuracy', Number.isFinite(normalizedAcc) ? Math.round(normalizedAcc) : null);
                     @this.call('validateGeofence');
-                    last = { lat, lng, acc: acc ?? last.acc, ts: Date.now() };
+                    last = { lat, lng, acc: normalizedAcc, ts: Date.now() };
                 } catch(e) { /* swallow */ }
             };
 
@@ -198,17 +212,36 @@
             };
 
             const acceptPosition = (coords) => {
-                const { latitude: lat, longitude: lng, accuracy: acc } = coords;
-                // Filter out very coarse or obviously wrong positions
-                if (!isFinite(acc)) return false;
-                // Accept if within threshold, or accuracy improves significantly, or we've never set a value
-                if (last.lat === null || acc <= accuracyThreshold || acc < (last.acc * 0.7)) {
-                    return true;
-                }
-                // If huge jump (> 2km) with poor accuracy, ignore
-                if (last.lat !== null && distanceMeters(last.lat, last.lng, lat, lng) > 2000 && acc > accuracyThreshold) {
+                const { latitude: lat, longitude: lng } = coords;
+                const acc = normalizeAccuracy(coords.accuracy);
+                const now = Date.now();
+                const neverSet = last.lat === null;
+
+                if (neverSet) return true;
+                if (acc <= accuracyThreshold) return true;
+
+                const improved = (last.acc ?? Infinity) - acc >= improvementMeters;
+                const percentImproved = acc < (last.acc ?? Infinity) * 0.9;
+                const stale = now - last.ts > staleMs;
+                const jumped = distanceMeters(last.lat, last.lng, lat, lng);
+
+                if (jumped > maxJumpMeters && acc > accuracyThreshold * 3) {
                     return false;
                 }
+
+                if (improved || percentImproved || stale) {
+                    return true;
+                }
+
+                if (acc > Math.max(accuracyThreshold * 6, 8000) && !stale) {
+                    return false;
+                }
+
+                // Allow gradual drift within the accuracy bubble
+                if (jumped <= Math.max(acc, last.acc ?? acc)) {
+                    return true;
+                }
+
                 return false;
             };
 

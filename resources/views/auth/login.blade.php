@@ -62,7 +62,7 @@
         <div class="custom-tabs my-5 text-black d-flex flex-column justify-content-center text-center">
             <div class="d-flex justify-content-center">
                 <img class="login-img" 
-                src="{{ asset('storage/logos/Logotype-Orange.png') }}" 
+                src="{{ global_asset('storage/logos/Logotype-Orange.png') }}" 
                 alt="qash-logo">
             </div>
             <div class="login-detail border rounded my-5 p-5 d-flex flex-column gap-5">
