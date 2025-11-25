@@ -71,10 +71,17 @@ return [
                     'view' => 'pos_orders_view',
                     'actions' => [],
                 ],
+            ],
+        ],
+        [
+            'key' => 'tables',
+            'label' => 'Table Management',
+            'view' => 'tables_view',
+            'children' => [
                 [
-                    'key' => 'table_orders',
+                    'key' => 'dining_tables',
                     'label' => 'Dining Tables',
-                    'view' => 'dining_tables_view',
+                    'view' => 'pos_table_orders_view',
                     'actions' => [
                         ['name' => 'dining_tables_create', 'label' => 'Create Table'],
                         ['name' => 'dining_tables_update', 'label' => 'Update Table'],
@@ -85,6 +92,18 @@ return [
                         ['name' => 'floors_update', 'label' => 'Update Floor'],
                         ['name' => 'floors_delete', 'label' => 'Delete Floor'],
                     ],
+                ],
+                [
+                    'key' => 'table_information',
+                    'label' => 'Table Information',
+                    'view' => 'table_information_view',
+                    'actions' => [],
+                ],
+                [
+                    'key' => 'table_plan',
+                    'label' => 'Table Plan',
+                    'view' => 'table_plan_view',
+                    'actions' => [],
                 ],
             ],
         ],

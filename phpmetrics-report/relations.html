@@ -49,7 +49,7 @@
 <div class="page">
     <div class="content content-first">
         <div class="report-details">
-            Created at 2025-11-19 11:51:30        , with PHPMetrics v2.9.1 (<a href="https://twitter.com/Halleck45">Jean-François Lépine</a>).
+            Created at 2025-11-24 18:52:56        , with PHPMetrics v2.9.1 (<a href="https://twitter.com/Halleck45">Jean-François Lépine</a>).
         </div>
 
         
@@ -93,7 +93,7 @@
                             <path d="M0 0h24v24H0z" fill="none">
                             <path d="M20 8h-2.81c-.45-.78-1.07-1.45-1.82-1.96L17 4.41 15.59 3l-2.17 2.17C12.96 5.06 12.49 5 12 5c-.49 0-.96.06-1.41.17L8.41 3 7 4.41l1.62 1.63C7.88 6.55 7.26 7.22 6.81 8H4v2h2.09c-.05.33-.09.66-.09 1v1H4v2h2v1c0 .34.04.67.09 1H4v2h2.81c1.04 1.79 2.97 3 5.19 3s4.15-1.21 5.19-3H20v-2h-2.09c.05-.33.09-.66.09-1v-1h2v-2h-2v-1c0-.34-.04-.67-.09-1H20V8zm-6 8h-4v-2h4v2zm0-4h-4v-2h4v2z">
                         </svg>
-                        Violations (47)
+                        Violations (59)
                     </a>
                 </li>
                                     <li>
@@ -322,6 +322,115 @@
         "relations": []
     },
     {
+        "name": "\\App\\Http\\Controllers\\Backoffice\\InvoiceSettingsController",
+        "size": 3000,
+        "relations": [
+            "\\App\\Http\\Controllers\\Controller",
+            "\\App\\Services\\InvoiceSettingsService",
+            "\\Illuminate\\Http\\RedirectResponse",
+            "\\App\\Http\\Requests\\backoffice\\InvoiceSettings\\UpdateInvoiceSettingsRequest",
+            "\\Illuminate\\Http\\Request"
+        ]
+    },
+    {
+        "name": "\\App\\Services\\InvoiceSettingsService",
+        "size": 3000,
+        "relations": [
+            "\\App\\Models\\TenantInvoiceSettings",
+            "\\Illuminate\\Support\\Arr",
+            "\\App\\Models\\Order"
+        ]
+    },
+    {
+        "name": "\\Illuminate\\Http\\RedirectResponse",
+        "size": 3000,
+        "relations": []
+    },
+    {
+        "name": "\\App\\Http\\Requests\\backoffice\\InvoiceSettings\\UpdateInvoiceSettingsRequest",
+        "size": 3000,
+        "relations": [
+            "\\Illuminate\\Foundation\\Http\\FormRequest"
+        ]
+    },
+    {
+        "name": "\\App\\Http\\Controllers\\Backoffice\\InvoiceTemplateController",
+        "size": 3000,
+        "relations": [
+            "\\App\\Http\\Controllers\\Controller",
+            "\\App\\Services\\InvoiceTemplateService",
+            "\\Illuminate\\View\\View",
+            "\\Illuminate\\Http\\Request",
+            "\\App\\Models\\TenantInvoiceTemplate",
+            "\\Illuminate\\Http\\RedirectResponse",
+            "\\App\\Http\\Requests\\backoffice\\InvoiceSettings\\UpdateInvoiceTemplateRequest"
+        ]
+    },
+    {
+        "name": "\\App\\Services\\InvoiceTemplateService",
+        "size": 3000,
+        "relations": [
+            "\\App\\Models\\TenantInvoiceTemplate"
+        ]
+    },
+    {
+        "name": "\\Illuminate\\View\\View",
+        "size": 3000,
+        "relations": []
+    },
+    {
+        "name": "\\App\\Models\\TenantInvoiceTemplate",
+        "size": 3000,
+        "relations": []
+    },
+    {
+        "name": "\\App\\Http\\Requests\\backoffice\\InvoiceSettings\\UpdateInvoiceTemplateRequest",
+        "size": 3000,
+        "relations": [
+            "\\Illuminate\\Foundation\\Http\\FormRequest"
+        ]
+    },
+    {
+        "name": "\\App\\Http\\Controllers\\Backoffice\\TenantProfileController",
+        "size": 3000,
+        "relations": [
+            "\\App\\Http\\Controllers\\Controller",
+            "\\App\\Services\\TenantProfileService",
+            "\\App\\Models\\TenantProfile",
+            "\\Illuminate\\Http\\RedirectResponse",
+            "\\App\\Http\\Requests\\backoffice\\TenantProfile\\UpdateAboutRequest",
+            "\\App\\Http\\Requests\\backoffice\\TenantProfile\\UpdateGeneralInfoRequest",
+            "\\Illuminate\\Http\\Request"
+        ]
+    },
+    {
+        "name": "\\App\\Services\\TenantProfileService",
+        "size": 3000,
+        "relations": [
+            "\\App\\Models\\TenantProfile",
+            "\\Illuminate\\Support\\Arr"
+        ]
+    },
+    {
+        "name": "\\App\\Models\\TenantProfile",
+        "size": 3000,
+        "relations": []
+    },
+    {
+        "name": "\\App\\Http\\Requests\\backoffice\\TenantProfile\\UpdateAboutRequest",
+        "size": 3000,
+        "relations": [
+            "\\Illuminate\\Foundation\\Http\\FormRequest"
+        ]
+    },
+    {
+        "name": "\\App\\Http\\Requests\\backoffice\\TenantProfile\\UpdateGeneralInfoRequest",
+        "size": 3000,
+        "relations": [
+            "\\Illuminate\\Foundation\\Http\\FormRequest"
+        ]
+    },
+    {
         "name": "\\App\\Http\\Controllers\\CareerController",
         "size": 3000,
         "relations": [
@@ -351,10 +460,7 @@
     {
         "name": "\\App\\Models\\Category",
         "size": 3000,
-        "relations": [
-            "\\Illuminate\\Database\\Eloquent\\Model",
-            "\\Illuminate\\Database\\Eloquent\\Relations\\HasMany"
-        ]
+        "relations": []
     },
     {
         "name": "\\Illuminate\\Validation\\Rules\\File",
@@ -389,10 +495,7 @@
     {
         "name": "\\App\\Models\\Event",
         "size": 3000,
-        "relations": [
-            "\\Illuminate\\Database\\Eloquent\\Model",
-            "\\Illuminate\\Database\\Eloquent\\Relations\\BelongsTo"
-        ]
+        "relations": []
     },
     {
         "name": "\\App\\Http\\Controllers\\DashboardController",
@@ -437,9 +540,7 @@
     {
         "name": "\\App\\Models\\Floor",
         "size": 3000,
-        "relations": [
-            "\\Illuminate\\Database\\Eloquent\\Model"
-        ]
+        "relations": []
     },
     {
         "name": "\\App\\Models\\DiningTable",
@@ -449,9 +550,7 @@
     {
         "name": "\\App\\Models\\CustomerDetail",
         "size": 3000,
-        "relations": [
-            "\\Illuminate\\Database\\Eloquent\\Model"
-        ]
+        "relations": []
     },
     {
         "name": "\\Illuminate\\Support\\Str",
@@ -459,42 +558,88 @@
         "relations": []
     },
     {
+        "name": "\\App\\Http\\Controllers\\DiscountController",
+        "size": 3000,
+        "relations": [
+            "\\App\\Http\\Controllers\\Controller",
+            "\\App\\Models\\Product",
+            "\\App\\Http\\Requests\\backoffice\\DiscountCreateRequest",
+            "\\App\\Services\\Discount\\DiscountService",
+            "\\App\\Services\\Discount\\DiscountTenantNotificationService",
+            "\\App\\Models\\Discount",
+            "\\App\\Http\\Requests\\backoffice\\DiscountUpdateRequest"
+        ]
+    },
+    {
+        "name": "\\App\\Http\\Requests\\backoffice\\DiscountCreateRequest",
+        "size": 3000,
+        "relations": []
+    },
+    {
+        "name": "\\App\\Services\\Discount\\DiscountService",
+        "size": 3000,
+        "relations": [
+            "\\App\\Models\\Discount",
+            "\\Illuminate\\Support\\Arr"
+        ]
+    },
+    {
+        "name": "\\App\\Services\\Discount\\DiscountTenantNotificationService",
+        "size": 3000,
+        "relations": [
+            "\\App\\Models\\Discount",
+            "\\App\\Models\\TenantNotification"
+        ]
+    },
+    {
+        "name": "\\App\\Models\\Discount",
+        "size": 3000,
+        "relations": []
+    },
+    {
+        "name": "\\App\\Http\\Requests\\backoffice\\DiscountUpdateRequest",
+        "size": 3000,
+        "relations": [
+            "\\App\\Http\\Requests\\backoffice\\DiscountCreateRequest"
+        ]
+    },
+    {
         "name": "\\App\\Http\\Controllers\\EventController",
         "size": 3000,
         "relations": [
             "\\App\\Http\\Controllers\\Controller",
+            "\\App\\Services\\Event\\EventService",
             "\\Illuminate\\View\\View",
-            "\\App\\Models\\Event",
-            "\\Illuminate\\Http\\RedirectResponse",
             "\\Illuminate\\Http\\Request",
-            "\\Illuminate\\Validation\\Rule",
-            "\\App\\Models\\Floor",
-            "\\Illuminate\\Support\\Str",
+            "\\Illuminate\\Http\\RedirectResponse",
+            "\\App\\Http\\Requests\\Event\\EventRequest",
+            "\\App\\Models\\Event",
             "\\App\\Models\\Tenant"
         ]
     },
     {
-        "name": "\\Illuminate\\View\\View",
+        "name": "\\App\\Services\\Event\\EventService",
         "size": 3000,
-        "relations": []
+        "relations": [
+            "\\App\\Models\\Event",
+            "\\Illuminate\\Http\\Request",
+            "\\Illuminate\\Support\\Carbon",
+            "\\App\\Models\\Floor",
+            "\\Illuminate\\Support\\Str"
+        ]
     },
     {
-        "name": "\\Illuminate\\Http\\RedirectResponse",
+        "name": "\\App\\Http\\Requests\\Event\\EventRequest",
         "size": 3000,
-        "relations": []
-    },
-    {
-        "name": "\\Illuminate\\Validation\\Rule",
-        "size": 3000,
-        "relations": []
+        "relations": [
+            "\\Illuminate\\Foundation\\Http\\FormRequest",
+            "\\Illuminate\\Validation\\Rule"
+        ]
     },
     {
         "name": "\\App\\Models\\Tenant",
         "size": 3000,
-        "relations": [
-            "\\Stancl\\Tenancy\\Database\\Models\\Tenant",
-            "\\Illuminate\\Database\\Eloquent\\Relations\\HasMany"
-        ]
+        "relations": []
     },
     {
         "name": "\\App\\Http\\Controllers\\FaceRecognitionController",
@@ -693,6 +838,7 @@
         "size": 3000,
         "relations": [
             "\\App\\Models\\Product",
+            "\\App\\Services\\User\\UserNameResolver",
             "\\App\\Models\\TenantNotification",
             "\\Illuminate\\Support\\Facades\\Log"
         ]
@@ -745,7 +891,23 @@
             "\\Illuminate\\Http\\RedirectResponse",
             "\\Illuminate\\Support\\Facades\\Hash",
             "\\App\\Models\\User",
+            "\\App\\Models\\Role",
+            "\\App\\Models\\Permission",
             "\\Illuminate\\Support\\Facades\\DB"
+        ]
+    },
+    {
+        "name": "\\App\\Models\\Role",
+        "size": 3000,
+        "relations": [
+            "\\Spatie\\Permission\\Models\\Role"
+        ]
+    },
+    {
+        "name": "\\App\\Models\\Permission",
+        "size": 3000,
+        "relations": [
+            "\\Spatie\\Permission\\Models\\Permission"
         ]
     },
     {
@@ -775,29 +937,45 @@
         "name": "\\App\\Http\\Controllers\\SettingsController",
         "size": 3000,
         "relations": [
-            "\\App\\Http\\Controllers\\Controller"
+            "\\App\\Http\\Controllers\\Controller",
+            "\\Illuminate\\Http\\RedirectResponse",
+            "\\Illuminate\\Http\\Request",
+            "\\App\\Models\\TenantProfile",
+            "\\App\\Models\\TenantInvoiceSettings"
         ]
+    },
+    {
+        "name": "\\App\\Models\\TenantInvoiceSettings",
+        "size": 3000,
+        "relations": []
     },
     {
         "name": "\\App\\Http\\Controllers\\StaffController",
         "size": 3000,
         "relations": [
             "\\App\\Http\\Controllers\\Controller",
+            "\\App\\Services\\Staff\\StaffService",
             "\\App\\Models\\User",
             "\\App\\Models\\Role",
             "\\App\\Models\\Shift",
             "\\App\\Http\\Enums\\BloodGroup",
+            "\\App\\Http\\Requests\\Staff\\UpdateStaffPhotoRequest",
             "\\Illuminate\\Http\\Request",
             "\\Filament\\Notifications\\Notification",
             "\\Illuminate\\Support\\Facades\\Hash",
+            "\\App\\Http\\Requests\\Staff\\StoreStaffRequest",
+            "\\App\\Http\\Requests\\Staff\\UpdateStaffRequest",
             "\\App\\Models\\Permission"
         ]
     },
     {
-        "name": "\\App\\Models\\Role",
+        "name": "\\App\\Services\\Staff\\StaffService",
         "size": 3000,
         "relations": [
-            "\\Spatie\\Permission\\Models\\Role"
+            "\\App\\Models\\User",
+            "\\Illuminate\\Http\\UploadedFile",
+            "\\Illuminate\\Support\\Facades\\Hash",
+            "\\Illuminate\\Support\\Facades\\Storage"
         ]
     },
     {
@@ -806,15 +984,29 @@
         "relations": []
     },
     {
+        "name": "\\App\\Http\\Requests\\Staff\\UpdateStaffPhotoRequest",
+        "size": 3000,
+        "relations": [
+            "\\Illuminate\\Foundation\\Http\\FormRequest"
+        ]
+    },
+    {
         "name": "\\Filament\\Notifications\\Notification",
         "size": 3000,
         "relations": []
     },
     {
-        "name": "\\App\\Models\\Permission",
+        "name": "\\App\\Http\\Requests\\Staff\\StoreStaffRequest",
         "size": 3000,
         "relations": [
-            "\\Spatie\\Permission\\Models\\Permission"
+            "\\Illuminate\\Foundation\\Http\\FormRequest"
+        ]
+    },
+    {
+        "name": "\\App\\Http\\Requests\\Staff\\UpdateStaffRequest",
+        "size": 3000,
+        "relations": [
+            "\\Illuminate\\Foundation\\Http\\FormRequest"
         ]
     },
     {
@@ -890,6 +1082,54 @@
         "relations": []
     },
     {
+        "name": "\\Illuminate\\Validation\\Rule",
+        "size": 3000,
+        "relations": []
+    },
+    {
+        "name": "\\App\\Http\\Requests\\backoffice\\TenantProfile\\UpdateBrandInfoRequest",
+        "size": 3000,
+        "relations": [
+            "\\Illuminate\\Foundation\\Http\\FormRequest"
+        ]
+    },
+    {
+        "name": "\\App\\Jobs\\SendInvoiceEmailJob",
+        "size": 3000,
+        "relations": []
+    },
+    {
+        "name": "\\Illuminate\\Contracts\\Queue\\ShouldQueue",
+        "size": 3000,
+        "relations": []
+    },
+    {
+        "name": "\\App\\Services\\Invoice\\InvoiceRenderer",
+        "size": 3000,
+        "relations": [
+            "\\App\\Models\\Order",
+            "\\App\\Models\\TenantInvoiceSettings",
+            "\\App\\Models\\TenantProfile",
+            "\\App\\Models\\Tenant",
+            "\\Illuminate\\Support\\Facades\\View",
+            "\\Barryvdh\\DomPDF\\Facade\\Pdf",
+            "\\Illuminate\\Support\\Carbon"
+        ]
+    },
+    {
+        "name": "\\Illuminate\\Support\\Facades\\Mail",
+        "size": 3000,
+        "relations": []
+    },
+    {
+        "name": "\\App\\Mail\\InvoiceMail",
+        "size": 3000,
+        "relations": [
+            "\\Illuminate\\Mail\\Mailable",
+            "\\App\\Models\\Order"
+        ]
+    },
+    {
         "name": "\\App\\Livewire\\Backoffice\\KitchenOrders",
         "size": 3000,
         "relations": [
@@ -942,7 +1182,8 @@
             "\\App\\Models\\Category",
             "\\App\\Models\\Order",
             "\\App\\Models\\OrderItem",
-            "\\Illuminate\\Support\\Facades\\DB"
+            "\\Illuminate\\Support\\Facades\\DB",
+            "\\App\\Jobs\\SendInvoiceEmailJob"
         ]
     },
     {
@@ -1006,11 +1247,7 @@
             "\\Illuminate\\Support\\Facades\\Auth",
             "\\App\\Models\\AttendanceSetting",
             "\\App\\Models\\Attendance",
-            "\\Illuminate\\Support\\Facades\\Http",
-            "\\Filament\\Tables\\Table",
-            "\\Filament\\Tables\\Columns\\TextColumn",
-            "\\Carbon\\Carbon",
-            "\\Filament\\Tables\\Filters\\SelectFilter"
+            "\\Illuminate\\Support\\Facades\\Http"
         ]
     },
     {
@@ -1034,21 +1271,6 @@
         "relations": []
     },
     {
-        "name": "\\Filament\\Tables\\Table",
-        "size": 3000,
-        "relations": []
-    },
-    {
-        "name": "\\Filament\\Tables\\Columns\\TextColumn",
-        "size": 3000,
-        "relations": []
-    },
-    {
-        "name": "\\Filament\\Tables\\Filters\\SelectFilter",
-        "size": 3000,
-        "relations": []
-    },
-    {
         "name": "\\App\\Livewire\\Backoffice\\Tables\\CareerTable",
         "size": 3000,
         "relations": [
@@ -1067,6 +1289,16 @@
             "\\Filament\\Actions\\DeleteBulkAction",
             "\\Filament\\Actions\\BulkActionGroup"
         ]
+    },
+    {
+        "name": "\\Filament\\Tables\\Table",
+        "size": 3000,
+        "relations": []
+    },
+    {
+        "name": "\\Filament\\Tables\\Columns\\TextColumn",
+        "size": 3000,
+        "relations": []
     },
     {
         "name": "\\Filament\\Tables\\Columns\\ToggleColumn",
@@ -1153,6 +1385,22 @@
         "relations": []
     },
     {
+        "name": "\\App\\Livewire\\Backoffice\\Tables\\DiscountTable",
+        "size": 3000,
+        "relations": [
+            "\\Livewire\\Component",
+            "\\Filament\\Tables\\Contracts\\HasTable",
+            "\\Filament\\Actions\\Contracts\\HasActions",
+            "\\Filament\\Schemas\\Contracts\\HasSchemas",
+            "\\Filament\\Tables\\Table",
+            "\\App\\Models\\Discount",
+            "\\Filament\\Tables\\Columns\\TextColumn",
+            "\\App\\Models\\Product",
+            "\\Filament\\Actions\\Action",
+            "\\Filament\\Notifications\\Notification"
+        ]
+    },
+    {
         "name": "\\App\\Livewire\\Backoffice\\Tables\\EventTable",
         "size": 3000,
         "relations": [
@@ -1173,6 +1421,11 @@
             "\\Filament\\Actions\\DeleteBulkAction",
             "\\Filament\\Actions\\BulkActionGroup"
         ]
+    },
+    {
+        "name": "\\Filament\\Tables\\Filters\\SelectFilter",
+        "size": 3000,
+        "relations": []
     },
     {
         "name": "\\Filament\\Forms\\Components\\DatePicker",
@@ -1263,6 +1516,22 @@
         ]
     },
     {
+        "name": "\\App\\Livewire\\Backoffice\\Tables\\StaffAttendanceTable",
+        "size": 3000,
+        "relations": [
+            "\\Livewire\\Component",
+            "\\Filament\\Tables\\Contracts\\HasTable",
+            "\\Filament\\Actions\\Contracts\\HasActions",
+            "\\Filament\\Schemas\\Contracts\\HasSchemas",
+            "\\Filament\\Tables\\Table",
+            "\\Illuminate\\Support\\Facades\\Auth",
+            "\\App\\Models\\Attendance",
+            "\\Filament\\Tables\\Columns\\TextColumn",
+            "\\Carbon\\Carbon",
+            "\\Filament\\Tables\\Filters\\SelectFilter"
+        ]
+    },
+    {
         "name": "\\App\\Livewire\\Backoffice\\Tables\\StaffTable",
         "size": 3000,
         "relations": [
@@ -1272,7 +1541,7 @@
             "\\Filament\\Schemas\\Contracts\\HasSchemas",
             "\\Filament\\Tables\\Table",
             "\\App\\Models\\User",
-            "\\App\\Livewire\\Backoffice\\Tables\\ExportAction",
+            "\\pxlrbt\\FilamentExcel\\Actions\\ExportAction",
             "\\pxlrbt\\FilamentExcel\\Exports\\ExcelExport",
             "\\Filament\\Tables\\Columns\\ImageColumn",
             "\\Filament\\Tables\\Columns\\TextColumn",
@@ -1280,11 +1549,6 @@
             "\\Filament\\Actions\\Action",
             "\\Filament\\Notifications\\Notification"
         ]
-    },
-    {
-        "name": "\\App\\Livewire\\Backoffice\\Tables\\ExportAction",
-        "size": 3000,
-        "relations": []
     },
     {
         "name": "\\App\\Livewire\\Backoffice\\Tables\\TableInfo",
@@ -1364,10 +1628,12 @@
         "relations": [
             "\\Livewire\\Component",
             "\\App\\Services\\OrderTaxCalculator",
+            "\\App\\Services\\OrderService",
             "\\Darryldecode\\Cart\\Facades\\CartFacade",
             "\\Illuminate\\Support\\Facades\\Session",
             "\\App\\Models\\DiningTable",
             "\\App\\Models\\Product",
+            "\\App\\Support\\PriceAfterDiscount",
             "\\App\\Support\\CartItemIdentifier",
             "\\App\\Models\\ProductOptionValue",
             "\\App\\Models\\Order",
@@ -1377,23 +1643,85 @@
         ]
     },
     {
+        "name": "\\App\\Services\\OrderService",
+        "size": 3000,
+        "relations": [
+            "\\Illuminate\\Support\\Facades\\Session",
+            "\\App\\Models\\CustomerDetail",
+            "\\App\\Models\\DiningTable"
+        ]
+    },
+    {
         "name": "\\Illuminate\\Support\\Facades\\Session",
         "size": 3000,
         "relations": []
     },
     {
-        "name": "\\App\\Livewire\\Customer\\OrderPage",
+        "name": "\\App\\Support\\PriceAfterDiscount",
         "size": 3000,
         "relations": [
-            "\\Livewire\\Component",
+            "\\App\\Models\\Product"
+        ]
+    },
+    {
+        "name": "\\App\\Livewire\\Customer\\OrderPage",
+        "size": 3000,
+        "relations": []
+    },
+    {
+        "name": "\\App\\Services\\Customer\\OrderPage\\OrderPageInitializer",
+        "size": 3000,
+        "relations": [
+            "\\App\\Services\\Customer\\DiscountFetcher",
+            "\\App\\Livewire\\Customer\\OrderPage",
             "\\App\\Models\\Category",
+            "\\App\\Services\\OrderService",
             "\\App\\Models\\DiningTable",
             "\\Illuminate\\Support\\Facades\\Session",
-            "\\App\\Models\\CustomerDetail",
+            "\\App\\Models\\CustomerDetail"
+        ]
+    },
+    {
+        "name": "\\App\\Services\\Customer\\OrderPage\\OrderPageOrderTypeService",
+        "size": 3000,
+        "relations": [
+            "\\App\\Livewire\\Customer\\OrderPage",
+            "\\Illuminate\\Support\\Facades\\Session",
+            "\\App\\Models\\DiningTable",
+            "\\App\\Services\\OrderService"
+        ]
+    },
+    {
+        "name": "\\App\\Services\\Customer\\OrderPage\\OrderPageProductService",
+        "size": 3000,
+        "relations": [
+            "\\Illuminate\\Support\\Collection",
             "\\App\\Models\\Product",
+            "\\App\\Models\\Category",
+            "\\App\\Support\\PriceAfterDiscount",
+            "\\App\\Livewire\\Customer\\OrderPage"
+        ]
+    },
+    {
+        "name": "\\App\\Services\\Customer\\OrderPage\\OrderPageCartService",
+        "size": 3000,
+        "relations": [
+            "\\App\\Services\\Customer\\OrderPage\\OrderPageProductService",
+            "\\App\\Livewire\\Customer\\OrderPage",
+            "\\App\\Models\\Product",
+            "\\Darryldecode\\Cart\\Facades\\CartFacade",
             "\\App\\Models\\ProductOptionValue",
-            "\\App\\Support\\CartItemIdentifier",
-            "\\Darryldecode\\Cart\\Facades\\CartFacade"
+            "\\App\\Support\\PriceAfterDiscount",
+            "\\App\\Support\\CartItemIdentifier"
+        ]
+    },
+    {
+        "name": "\\App\\Services\\Customer\\OrderPage\\OrderPageCustomerService",
+        "size": 3000,
+        "relations": [
+            "\\App\\Livewire\\Customer\\OrderPage",
+            "\\Illuminate\\Support\\Facades\\Session",
+            "\\App\\Models\\CustomerDetail"
         ]
     },
     {
@@ -1422,6 +1750,11 @@
         ]
     },
     {
+        "name": "\\Illuminate\\Mail\\Mailable",
+        "size": 3000,
+        "relations": []
+    },
+    {
         "name": "\\Illuminate\\Database\\Eloquent\\Model",
         "size": 3000,
         "relations": []
@@ -1438,6 +1771,16 @@
     },
     {
         "name": "\\App\\Models\\AttendanceBreak",
+        "size": 3000,
+        "relations": []
+    },
+    {
+        "name": "\\Illuminate\\Database\\Eloquent\\Builder",
+        "size": 3000,
+        "relations": []
+    },
+    {
+        "name": "\\static",
         "size": 3000,
         "relations": []
     },
@@ -1559,12 +1902,40 @@
         "relations": []
     },
     {
+        "name": "\\App\\Services\\Customer\\DiscountFetcher",
+        "size": 3000,
+        "relations": []
+    },
+    {
+        "name": "\\Illuminate\\Support\\Arr",
+        "size": 3000,
+        "relations": []
+    },
+    {
+        "name": "\\Barryvdh\\DomPDF\\Facade\\Pdf",
+        "size": 3000,
+        "relations": []
+    },
+    {
+        "name": "\\App\\Services\\Order\\OrderCreationService",
+        "size": 3000,
+        "relations": [
+            "\\App\\Models\\Order",
+            "\\App\\Models\\Discount"
+        ]
+    },
+    {
+        "name": "\\App\\Services\\User\\UserNameResolver",
+        "size": 3000,
+        "relations": []
+    },
+    {
         "name": "\\Illuminate\\Auth\\Access\\AuthorizationException",
         "size": 3000,
         "relations": []
     },
     {
-        "name": "\\static",
+        "name": "\\Illuminate\\Http\\UploadedFile",
         "size": 3000,
         "relations": []
     }

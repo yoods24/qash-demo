@@ -406,9 +406,19 @@ html[data-theme='dark'] .dlmode-backup * {
 }
 
 html[data-theme='dark'] .sekunder { color: #94a3b8; }
-
+.count-icon {
+}
 /* Tenant notification panel animation */
+.tenant-notification {
+    position: relative;
+}
 .tenant-notification .tenant-notification-card {
+    position: absolute;
+    right: 0;
+    top: 120%;
+    width: min(360px, calc(100vw - 2.5rem));
+    max-width: 100vw;
+    z-index: 1050;
     opacity: 0;
     transform: translateY(-8px);
     visibility: hidden;
@@ -421,6 +431,39 @@ html[data-theme='dark'] .sekunder { color: #94a3b8; }
     visibility: visible;
     pointer-events: auto;
     transition: opacity .2s ease, transform .2s ease, visibility 0s;
+}
+.tenant-notification .tenant-notification-card .card-body {
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - 4.5rem);
+}
+.tenant-notification-scroll {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    max-height: min(420px, calc(100vh - 14rem));
+}
+@media (max-width: 768px) {
+    .tenant-notification .tenant-notification-card {
+        position: fixed;
+        top: calc(var(--mobile-navbar-height, 64px) + .5rem);
+        left: 50%;
+        right: auto;
+        width: 100vw;
+        max-width: 100vw;
+        border-radius: 0;
+        transform: translate(-50%, -8px);
+        z-index: 1060;
+    }
+        .tenant-notification .tenant-notification-card.is-open {
+        transform: translate(-50%, 0);
+    }
+    .tenant-notification-scroll {
+        max-height: calc(100vh - 12rem);
+    }
+}
+@media (max-width: 575.98px) {
+
+
 }
 html[data-theme='dark'] .settings-toggle { color: #cbd5e1; }
 html[data-theme='dark'] .settings-toggle:hover { background-color: #0f172a; }
@@ -1234,10 +1277,14 @@ input:checked + .slider:before {
 /* Dark theme: tenant notification dropdown + links */
 html[data-theme='dark'] .tenant-notification-link a {
     color: #e5e7eb !important;
-}html[data-theme='dark'] .tenant-notification-link a.active {
-    color: var(--mainColorOrange) !important; 
-
 }
+html[data-theme='dark'] .tenant-notification-link a.active {
+    color: var(--mainColorOrange) !important; 
+}
+html[data-theme='dark'] .tenant-notification-link a:hover {
+    color: var(--mainColorOrange) !important; 
+}
+
 html[data-theme='dark'] .text-primer-dark {
     color: var(--mainColorOrange) !important; 
 }

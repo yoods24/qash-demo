@@ -11,8 +11,8 @@
         $promoPermissions = ['promo_view', 'promo_summary_view', 'promo_code_view', 'promo_discounts_view'];
         $reportPermissions = ['reports_view', 'reports_sales_view', 'reports_inventory_view', 'reports_invoice_view', 'reports_customer_view', 'reports_product_view', 'reports_profit_loss_view', 'reports_annual_view', 'reports_kitchen_view'];
         $peoplePermissions = ['peoples_customers_view', 'peoples_view'];
-        $posPermissions = ['pos_view', 'pos_orders_view', 'dining_tables_view', 'sales_orders_view'];
-        $tablePermissions = ['dining_tables_view'];
+        $posPermissions = ['pos_view', 'pos_orders_view', 'sales_orders_view'];
+        $tablePermissions = ['tables_view', 'pos_table_orders_view', 'table_information_view', 'table_plan_view'];
         $contentPermissions = [
             'content_view',
             'content_homepage_settings_view',
@@ -58,9 +58,15 @@
 
         @canany($tablePermissions)
           <x-backoffice.sidebar-nav-section section="Table">
-            <x-backoffice.sidebar-nav-link href="{{route('backoffice.tables.index')}}" class="bi bi-grid-3x3-gap-fill me-2" >Dining Tables</x-backoffice.sidebar-nav-link>
-            <x-backoffice.sidebar-nav-link href="{{route('backoffice.tables.info')}}" class="bi bi-info-circle me-2" >Table Information</x-backoffice.sidebar-nav-link>
-            <x-backoffice.sidebar-nav-link href="{{route('backoffice.tables.plan')}}" class="bi bi-info-circle me-2" >Table Plan</x-backoffice.sidebar-nav-link>
+            @can('pos_table_orders_view')
+              <x-backoffice.sidebar-nav-link href="{{route('backoffice.tables.index')}}" class="bi bi-grid-3x3-gap-fill me-2" >Dining Tables</x-backoffice.sidebar-nav-link>
+            @endcan
+            @can('table_information_view')
+              <x-backoffice.sidebar-nav-link href="{{route('backoffice.tables.info')}}" class="bi bi-info-circle me-2" >Table Information</x-backoffice.sidebar-nav-link>
+            @endcan
+            @can('table_plan_view')
+              <x-backoffice.sidebar-nav-link href="{{route('backoffice.tables.plan')}}" class="bi bi-info-circle me-2" >Table Plan</x-backoffice.sidebar-nav-link>
+            @endcan
           </x-backoffice.sidebar-nav-section>
         @endcanany
 
@@ -126,7 +132,7 @@
             @can('pos_orders_view')
               <x-backoffice.sidebar-nav-link class="bi bi-cash-coin me-2"  >POS Orders</x-backoffice.sidebar-nav-link>
             @endcan
-            @can('dining_tables_view')
+            @can('pos_table_orders_view')
               <x-backoffice.sidebar-nav-link class="bi bi-gear me-2" >Table Orders</x-backoffice.sidebar-nav-link>
             @endcan
             @can('sales_orders_view')
@@ -137,6 +143,7 @@
 
         @can('hrm_view')
           <x-backoffice.sidebar-nav-section section="HRM">
+            <x-backoffice.sidebar-nav-link href="{{ route('backoffice.attendance.staff') }}" class="bi bi-people-fill me-2">Staff Attendance</x-backoffice.sidebar-nav-link>
             @can('hrm_employees_view')
               <x-backoffice.sidebar-nav-link href="{{route('backoffice.staff.index')}}" class="bi bi-list-task me-2" >All Staff</x-backoffice.sidebar-nav-link>
             @endcan
@@ -160,8 +167,21 @@
         @endcan --}}
 
         @can('kitchen_view')
+          @php
+              $kdsPendingCount = \App\Models\Order::query()
+                  ->whereIn('status', ['confirmed', 'preparing'])
+                  ->whereIn('order_type', ['dine-in', 'takeaway'])
+                  ->count();
+          @endphp
           <x-backoffice.sidebar-nav-section section="Kitchen">
-              <x-backoffice.sidebar-nav-link href="{{route('backoffice.kitchen.index')}}" class="bi bi-fork-knife me-2" >K.D.S</x-backoffice.sidebar-nav-link>
+              <x-backoffice.sidebar-nav-link href="{{route('backoffice.kitchen.index')}}" class="bi bi-fork-knife me-2" >
+                <span class="d-inline-flex align-items-center gap-2">
+                  K.D.S
+                  @if($kdsPendingCount > 0)
+                    <span class="badge rounded-pill bg-danger-subtle text-danger fw-semibold ms-1">{{ $kdsPendingCount }}</span>
+                  @endif
+                </span>
+              </x-backoffice.sidebar-nav-link>
               <x-backoffice.sidebar-nav-link href="{{route('backoffice.kitchen.index')}}" class="bi bi-fork-knife me-2" >O.S.S</x-backoffice.sidebar-nav-link>
           </x-backoffice.sidebar-nav-section>
         @endcan

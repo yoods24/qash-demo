@@ -18,7 +18,16 @@
                         <span class="badge rounded-pill bg-warning-subtle text-warning border border-warning-subtle">{{ strtoupper($role ?? 'STAFF') }}</span>
                     </div>
                     <div>
-                        <button type="button" class="btn btn-primary shadow-sm"><i class="bi bi-upload me-2"></i>Upload New Photo</button>
+                        <form method="POST" action="{{ route('backoffice.staff.photo', $staff) }}" enctype="multipart/form-data">
+                            @csrf
+                            <label class="btn btn-primary shadow-sm mb-0">
+                                <i class="bi bi-upload me-2"></i>Upload New Photo
+                                <input type="file" name="profile-image" accept="image/*" class="d-none" onchange="this.form.submit()">
+                            </label>
+                            @error('profile-image')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
+                        </form>
                     </div>
                 </div>
             </div>

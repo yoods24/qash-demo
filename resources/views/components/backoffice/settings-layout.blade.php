@@ -8,6 +8,10 @@
                     <div class="settings-nav" id="settingsNav">
                         @php
                             $generalSettingsActive = request()->routeIs('backoffice.settings.general-information');
+                            $appSettingsActive = request()->routeIs('backoffice.settings.invoice-settings')
+                                || request()->routeIs('backoffice.invoice-templates.*')
+                                || request()->routeIs('backoffice.settings.attendance-settings')
+                                || request()->routeIs('backoffice.settings.geolocation-settings');
                         @endphp
                         <!-- General Settings -->
                         <button class="settings-toggle d-flex align-items-center w-100 {{ $generalSettingsActive ? '' : 'collapsed' }}" type="button"
@@ -22,7 +26,6 @@
                             <a href="#" class="settings-sublink">Branding</a>
                             <a href="#" class="settings-sublink">Localization</a>
                         </div>
-
                         <!-- Website Settings -->
                         <button class="settings-toggle d-flex align-items-center w-100 collapsed" type="button"
                                 data-bs-toggle="collapse" data-bs-target="#settings-website" aria-expanded="false">
@@ -37,13 +40,13 @@
                         </div>
 
                         <!-- App Settings (includes Attendance + Geolocation) -->
-                        <button class="settings-toggle d-flex align-items-center w-100" type="button"
-                                data-bs-toggle="collapse" data-bs-target="#settings-app" aria-expanded="true">
+                        <button class="settings-toggle d-flex align-items-center w-100 {{ $appSettingsActive ? '' : 'collapsed' }}" type="button"
+                                data-bs-toggle="collapse" data-bs-target="#settings-app" aria-expanded="{{ $appSettingsActive ? 'true' : 'false' }}">
                             <i class="bi bi-phone me-2"></i>
                             <span>App Settings</span>
                             <i class="bi bi-chevron-down ms-auto settings-caret"></i>
                         </button>
-                        <div id="settings-app" class="collapse show settings-subwrap">
+                        <div id="settings-app" class="collapse settings-subwrap {{ $appSettingsActive ? 'show' : '' }}">
                             <a href="{{ route('backoffice.settings.invoice-settings') }}"
                                class="settings-sublink {{ request()->routeIs('backoffice.settings.invoice-settings') ? 'active' : '' }}">Invoice Settings</a>
                             <a href="{{ route('backoffice.invoice-templates.index') }}"

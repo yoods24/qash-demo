@@ -128,6 +128,9 @@ Route::middleware([
           Route::get('/staff', [StaffController::class, 'index'])->name('backoffice.staff.index')
               ->middleware('permission:hrm_employees_view');
           Route::get('/staff/{staff}/view', [StaffController::class, 'view'])->name('backoffice.staff.view');
+          Route::post('/staff/{staff}/photo', [StaffController::class, 'updatePhoto'])->name('backoffice.staff.photo');
+          Route::get('/staff/{staff}/edit', [StaffController::class, 'editFull'])->name('backoffice.staff.edit');
+          Route::put('/staff/{staff}/update', [StaffController::class, 'updateFull'])->name('backoffice.staff.update');
           Route::get('staff/create', [StaffController::class, 'create'])->name('backoffice.staff.create');
           Route::post('/staff/store', [StaffController::class, 'storeStaff'])->name('backoffice.staff.store');
           // New full create form with collapsible sections
@@ -171,15 +174,15 @@ Route::middleware([
           // Waiter/Waitress plan view (Livewire component)
           Route::get('/tables/plan', function () {
               return view('backoffice.tables.plan');
-          })->name('backoffice.tables.plan')->middleware('permission:pos_table_orders_view');
+          })->name('backoffice.tables.plan')->middleware('permission:table_plan_view');
           // Table Information (Filament table list with filters)
           Route::get('/tables/info',[DiningTableController::class, 'information'])->name('backoffice.tables.info')
-              ->middleware('permission:pos_table_orders_view');
+              ->middleware('permission:table_information_view');
           // QR for a specific table
           Route::get('/tables/{dining_table}/qr', [DiningTableController::class, 'qr'])->name('backoffice.tables.qr')
-              ->middleware('permission:pos_table_orders_view');
+              ->middleware('permission:table_information_view');
           Route::post('/tables/{dining_table}/qr/generate', [DiningTableController::class, 'generateQr'])->name('backoffice.tables.qr.generate')
-              ->middleware('permission:pos_table_orders_view');
+              ->middleware('permission:table_information_view');
           Route::post('/tables', [DiningTableController::class, 'store'])->name('backoffice.tables.store');
           Route::put('/tables/positions', [DiningTableController::class, 'updatePositions'])->name('backoffice.tables.positions');
           Route::put('/tables/{dining_table}', [DiningTableController::class, 'update'])->name('backoffice.tables.update');
@@ -263,27 +266,40 @@ Route::middleware([
               return view('backoffice.hrm.attendance.index');
           })->name('backoffice.attendance.index');
 
+          Route::get('/hrm/staff-attendance', function () {
+              return view('backoffice.hrm.attendance.staff');
+          })->name('backoffice.attendance.staff')
+            ->middleware('permission:hrm_view');
+
 
           Route::prefix('/settings')->group(function () {
-              Route::controller(SettingsController::class)->group(function () {
-                  Route::get('/', 'index')
-                      ->name('backoffice.settings.index');
-                  Route::get('/general-information', 'generalInformationShow')
-                      ->name('backoffice.settings.general-information');
-                  Route::get('/invoice', 'invoiceSettingsShow')
-                      ->name('backoffice.settings.invoice-settings');
-                  Route::get('/attendance', 'attendanceShow')
-                      ->name('backoffice.settings.attendance-settings');
-                  Route::get('/geolocation', 'geolocationShow')
-                      ->name('backoffice.settings.geolocation-settings');
-              });
+              Route::get('/', [SettingsController::class, 'index'])
+                  ->name('backoffice.settings.index');
 
-              Route::get('/invoice/templates', [InvoiceTemplateController::class, 'index'])
-                  ->name('backoffice.invoice-templates.index');
-              Route::post('/invoice/templates', [InvoiceTemplateController::class, 'select'])
-                  ->name('backoffice.invoice-templates.select');
-              Route::put('/invoice', [InvoiceSettingsController::class, 'update'])
-                  ->name('backoffice.invoice-settings.update');
+              Route::prefix('general-settings')
+                  ->controller(SettingsController::class)
+                  ->group(function () {
+                      Route::get('/general-information', 'generalInformationShow')
+                          ->name('backoffice.settings.general-information');
+                  });
+
+              Route::prefix('app-settings')->group(function () {
+                  Route::controller(SettingsController::class)->group(function () {
+                      Route::get('/invoice', 'invoiceSettingsShow')
+                          ->name('backoffice.settings.invoice-settings');
+                      Route::get('/attendance', 'attendanceShow')
+                          ->name('backoffice.settings.attendance-settings');
+                      Route::get('/geolocation', 'geolocationShow')
+                          ->name('backoffice.settings.geolocation-settings');
+                  });
+
+                  Route::get('/invoice/templates', [InvoiceTemplateController::class, 'index'])
+                      ->name('backoffice.invoice-templates.index');
+                  Route::post('/invoice/templates', [InvoiceTemplateController::class, 'select'])
+                      ->name('backoffice.invoice-templates.select');
+                  Route::put('/invoice', [InvoiceSettingsController::class, 'update'])
+                      ->name('backoffice.invoice-settings.update');
+              });
 
               Route::prefix('tenant-profile')
                   ->controller(TenantProfileController::class)

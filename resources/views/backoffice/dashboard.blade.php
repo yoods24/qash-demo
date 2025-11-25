@@ -65,7 +65,9 @@
             </div>
           </a>
         </div>
+        
         <div class="col-12 col-md-6 col-lg-3">
+            <a href="{{route('backoffice.kitchen.index')}}" class="text-decoration-none text-dark">
             <div class="card shadow-sm h-100">
                 <div class="card-body d-flex justify-content-between align-items-start">
                     <div>
@@ -77,6 +79,7 @@
                     </div>
                 </div>
             </div>
+          </a>
         </div>
         <div class="col-12 col-md-6 col-lg-3">
             <div class="card shadow-sm h-100">
@@ -95,10 +98,11 @@
 
     <div class="row g-3 mb-4">
         <div class="col-12 col-md-6 col-lg-3">
+            <a href="{{route('backoffice.staff.index')}}" class="text-decoration-none text-dark">
             <div class="card shadow-sm h-100">
                 <div class="card-body d-flex justify-content-between align-items-start">
                     <div>
-                        <div class="text-muted small">Total Users</div>
+                        <div class="text-muted small">Total Staff</div>
                         <div class="fs-5 fw-bold">{{ number_format($m['totalUsers']) }}</div>
                     </div>
                     <div class="metric-icon rounded d-flex align-items-center justify-content-center text-warning bg-warning-subtle">
@@ -106,6 +110,7 @@
                     </div>
                 </div>
             </div>
+          </a>
         </div>
         <div class="col-12 col-md-6 col-lg-3">
             <div class="card shadow-sm h-100">

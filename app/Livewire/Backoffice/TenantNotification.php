@@ -41,7 +41,8 @@ class TenantNotification extends Component
 
         $query = TenantNotificationModel::query()
             ->where('tenant_id', $tenantId)
-            ->latest();
+            ->orderBy('is_read')
+            ->orderByDesc('created_at');
 
         if ($this->tab === 'new') {
             $query->where('is_read', false);

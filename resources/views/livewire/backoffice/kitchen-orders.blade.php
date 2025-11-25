@@ -55,7 +55,10 @@
             @endif
 
             <!-- Confirmed Orders (Queue) -->
-            <h6 class="mb-2">Confirmed</h6>
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <h6 class="mb-0">Confirmed</h6>
+                <span class="badge rounded-pill bg-danger-subtle text-danger fw-semibold">{{ $counts['confirmed'] ?? count($confirmedOrders ?? []) }}</span>
+            </div>
             <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3 mb-4">
                 @forelse(($confirmedOrders ?? []) as $order)
                     @php
@@ -105,10 +108,10 @@
                                             @if($optionsText)
                                                 <div class="text-muted small">{{ $optionsText }}</div>
                                             @endif
+                                            @if(!empty($it->special_instructions))
+                                                <div class="text-danger small mt-1">Note: {{ $it->special_instructions }}</div>
+                                            @endif
                                         </div>
-                                        @if(!empty($it->special_instructions))
-                                            <div class="text-danger small mt-1">Note: {{ $it->special_instructions }}</div>
-                                        @endif
                                         <div class="qty">x{{ $it->quantity }}</div>
                                     </div>
                                 @endforeach
@@ -128,7 +131,10 @@
             <hr>
 
             <!-- Preparing Orders -->
-            <h6 class="mb-2">Preparing</h6>
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <h6 class="mb-0">Preparing</h6>
+                <span class="badge rounded-pill bg-warning-subtle text-warning fw-semibold">{{ $counts['preparing'] ?? count($preparingOrders ?? []) }}</span>
+            </div>
             <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3 mb-4">
                 @forelse(($preparingOrders ?? []) as $order)
                     @php
@@ -179,10 +185,10 @@
                                             @if($optionsText)
                                                 <div class="text-muted small">{{ $optionsText }}</div>
                                             @endif
+                                            @if(!empty($it->special_instructions))
+                                                <div class="text-danger small mt-1">Note: {{ $it->special_instructions }}</div>
+                                            @endif
                                         </div>
-                                        @if(!empty($it->special_instructions))
-                                            <div class="text-danger small mt-1">Note: {{ $it->special_instructions }}</div>
-                                        @endif
                                         <div class="qty">x{{ $it->quantity }}</div>
                                     </div>
                                 @endforeach
@@ -250,10 +256,10 @@
                                             @if($optionsText)
                                                 <div class="text-muted small">{{ $optionsText }}</div>
                                             @endif
+                                            @if(!empty($it->special_instructions))
+                                                <div class="text-danger small mt-1">Note: {{ $it->special_instructions }}</div>
+                                            @endif
                                         </div>
-                                        @if(!empty($it->special_instructions))
-                                            <div class="text-danger small mt-1">Note: {{ $it->special_instructions }}</div>
-                                        @endif
                                         <div class="qty">x{{ $it->quantity }}</div>
                                     </div>
                                 @endforeach
@@ -265,87 +271,6 @@
                 @endforelse
             </div>
 
-            <h6 class="mb-2">Takeaway Orders</h6>
-            @foreach(['confirmed' => 'Confirmed', 'preparing' => 'Preparing', 'ready' => 'Ready'] as $statusKey => $statusLabel)
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                    <span class="fw-semibold">{{ $statusLabel }}</span>
-                    <span class="badge bg-warning text-dark">TAKEAWAY</span>
-                </div>
-                <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3 mb-3">
-                    @forelse(($takeawayOrders[$statusKey] ?? collect()) as $order)
-                        @php
-                            $stage = $statusKey;
-                            $startTs = $statusKey === 'preparing' ? ($order->confirmed_at ?? $order->created_at) : ($order->confirmed_at ?? $order->created_at);
-                            $expected = (int) ($order->expected_seconds_total ?? 0);
-                            $warnAt = $statusKey === 'preparing' ? $expected + 300 : 300;
-                            $dangerAt = $statusKey === 'preparing' ? $expected + 600 : 600;
-                        @endphp
-                        <div class="col" wire:key="takeaway-{{ $statusKey }}-{{ $order->id }}">
-                            <div class="ko-card ko-card-takeaway h-100">
-                                <div class="ko-card-top">
-                                    <div class="d-flex align-items-center gap-2">
-                                        <i class="bi bi-bag-fill text-purple"></i>
-                                        <span class="ko-order-link text-purple">#{{ str_pad((string)$order->id, 7, '0', STR_PAD_LEFT) }}</span>
-                                    </div>
-                                    <div class="ms-auto d-flex align-items-center gap-2">
-                                        @if($statusKey !== 'ready')
-                                            <span class="kds-timer badge bg-light text-dark kds-time-ok" data-role="kds-timer" data-stage="{{ $stage }}" data-start="{{ optional($startTs)->toIso8601String() }}" data-start-epoch="{{ optional($startTs)->getTimestamp() ?? 0 }}" data-expected="{{ $expected }}" data-warn="{{ $warnAt }}" data-danger="{{ $dangerAt }}">--:--</span>
-                                        @else
-                                            <span class="badge bg-success-subtle text-success">{{ $order->ready_at?->format('h:i A') }}</span>
-                                        @endif
-                                    </div>
-                                </div>
-                                <div class="ko-card-body p-3">
-                                    <div class="text-muted small">Customer: <span class="fw-semibold">{{ $order->customerDetail?->name ?? 'Guest' }}</span></div>
-                                    <div class="text-muted small">Placed: <span class="fw-semibold">{{ $order->created_at?->format('h:i A, d-m-Y') }}</span></div>
-                                    <hr class="my-2">
-                                    @foreach($order->items as $it)
-                                        @php
-                                            $raw = is_array($it->options) ? $it->options : [];
-                                            $raw = (is_array($raw) && array_key_exists('options', $raw)) ? ($raw['options'] ?? []) : $raw;
-                                            $pairs = [];
-                                            foreach ($raw as $optId => $data) {
-                                                $optModel = optional(optional($it->product)->options)->firstWhere('id', (int) $optId);
-                                                $optName = $optModel->name ?? 'Option';
-                                                $val = is_array($data) ? ($data['value'] ?? '') : (string) $data;
-                                                if ($val !== '') $pairs[] = $optName . ': ' . $val;
-                                            }
-                                            $optionsText = implode(', ', $pairs);
-                                        @endphp
-                                        <div class="kitem border-0 py-1">
-                                            <div class="min-w-0">
-                                                <div class="name">{{ $it->product_name }}</div>
-                                                @if($optionsText)
-                                                    <div class="text-muted small">{{ $optionsText }}</div>
-                                                @endif
-                                            </div>
-                                            @if(!empty($it->special_instructions))
-                                                <div class="text-danger small mt-1">Note: {{ $it->special_instructions }}</div>
-                                            @endif
-                                            <div class="qty">x{{ $it->quantity }}</div>
-                                        </div>
-                                    @endforeach
-                                    @if($statusKey === 'confirmed')
-                                        <div class="d-flex justify-content-end pt-2">
-                                            @can('kitchen_kds_update_order')
-                                                <button type="button" wire:click="startPreparing({{ $order->id }})" class="btn btn-sm btn-kitchen-preparing">Start Preparing</button>
-                                            @endcan
-                                        </div>
-                                    @elseif($statusKey === 'preparing')
-                                        <div class="d-flex justify-content-end pt-2">
-                                            @can('kitchen_kds_confirm_order')
-                                                <button type="button" wire:click="markReady({{ $order->id }})" class="btn btn-sm btn-kitchen-ready">Mark as Ready</button>
-                                            @endcan
-                                        </div>
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
-                    @empty
-                        <div class="col-12 text-muted small">No {{ strtolower($statusLabel) }} takeaway orders.</div>
-                    @endforelse
-                </div>
-            @endforeach
         </div>
     </div>
 </div>

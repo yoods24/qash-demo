@@ -23,14 +23,17 @@
         </div>
     </div>
 
-    <div class="d-flex gap-2 mb-3 flex-wrap">
-        <button wire:click="$set('type','all')" class="btn {{ $type==='all' ? 'btn-primary' : 'btn-outline-secondary' }} rounded-pill px-3">All</button>
-        @foreach($types as $t)
-            <button wire:click="$set('type','{{ $t }}')" class="btn {{ $type===$t ? 'btn-primary' : 'btn-outline-secondary' }} rounded-pill px-3">
-                {{ \Illuminate\Support\Str::of($t)->replace(['.', '_'], ' ')->headline() }}
-            </button>
-        @endforeach
-        <div class="w-75 d-flex justify-content-between">
+    <div class="mb-3">
+        <div class="mb-3">
+            <button wire:click="$set('type','all')" class="btn {{ $type==='all' ? 'btn-primary' : 'btn-outline-secondary' }} rounded-pill px-3">All</button>
+            @foreach($types as $t)
+                <button wire:click="$set('type','{{ $t }}')" class="btn {{ $type===$t ? 'btn-primary' : 'btn-outline-secondary' }} rounded-pill px-3">
+                    {{ \Illuminate\Support\Str::of($t)->replace(['.', '_'], ' ')->headline() }}
+                </button>
+            @endforeach
+        </div>
+
+        <div class="d-flex justify-content-between">
             <div class="input-group" style="max-width: 280px;">
                 <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
                 <input type="text" class="form-control" placeholder="Search" wire:model.debounce.300ms="search">
@@ -43,58 +46,57 @@
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm">
-        <div class="list-group list-group-flush border shadow mt-3">
-            @forelse($notifications as $note)
-                <div class="list-group-item py-3">
-                    <div class="d-flex gap-3 align-items-start">
-                        <div class="flex-shrink-0">
-                            <div class="rounded-circle note-icon d-inline-flex align-items-center justify-content-center" style="width:42px;height:42px;background:#e8f0fe;">
-                                @php
-                                    $icon = match($note->type) {
-                                        'order.created' => 'bi-bag-check',
-                                        'order.updated' => 'bi-receipt-cutoff',
-                                        default => 'bi-bell'
-                                    };
-                                @endphp
-                                <i class="bi {{ $icon }} text-primary"></i>
+    <div class="list-group list-group-flush border shadow mt-3">
+        @forelse($notifications as $note)
+            <div class="list-group-item py-3">
+                <div class="d-flex gap-3 align-items-start">
+                    <div class="flex-shrink-0">
+                        <div class="rounded-circle note-icon d-inline-flex align-items-center justify-content-center" style="width:42px;height:42px;background:#e8f0fe;">
+                            @php
+                                $icon = match($note->type) {
+                                    'order.created' => 'bi-bag-check',
+                                    'tax.created' => 'bi-receipt-cutoff',
+                                    'order.updated' => 'bi-receipt-cutoff',
+                                    default => 'bi-bell'
+                                };
+                            @endphp
+                            <i class="bi {{ $icon }} text-primary"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 min-w-0">
+                        <div class="d-flex align-items-center justify-content-between mb-1">
+                            <div class="text-muted small">{{ \Illuminate\Support\Str::of($note->type)->replace(['.', '_'], ' ')->headline() }}</div>
+                            <div class="text-muted small">{{ $note->created_at?->diffForHumans() }}</div>
+                        </div>
+                        <div class="d-flex align-items-start justify-content-between gap-2">
+                            <div class="min-w-0">
+                                <div class="{{ $note->is_read ? '' : 'fw-semibold' }}">{{ $note->title }}</div>
+                                <div class="text-muted text-truncate-2 small">{{ $note->description }}</div>
+                            </div>
+                            <div class="ms-2 mt-1">
+                                @if(!$note->is_read)
+                                    <span class="badge bg-primary rounded-pill">new</span>
+                                @endif
                             </div>
                         </div>
-                        <div class="flex-grow-1 min-w-0">
-                            <div class="d-flex align-items-center justify-content-between mb-1">
-                                <div class="text-muted small">{{ \Illuminate\Support\Str::of($note->type)->replace(['.', '_'], ' ')->headline() }}</div>
-                                <div class="text-muted small">{{ $note->created_at?->diffForHumans() }}</div>
-                            </div>
-                            <div class="d-flex align-items-start justify-content-between gap-2">
-                                <div class="min-w-0">
-                                    <div class="{{ $note->is_read ? '' : 'fw-semibold' }}">{{ $note->title }}</div>
-                                    <div class="text-muted text-truncate-2 small">{{ $note->description }}</div>
-                                </div>
-                                <div class="ms-2 mt-1">
-                                    @if(!$note->is_read)
-                                        <span class="badge bg-primary rounded-pill">new</span>
-                                    @endif
-                                </div>
-                            </div>
-                            <div class="mt-2 d-flex gap-2">
-                                <button class="btn btn-sm {{ $note->is_read ? 'btn-outline-secondary' : 'btn-outline-primary' }}" wire:click="toggleRead({{ $note->id }})">
-                                    <i class="bi {{ $note->is_read ? 'bi-check2-circle' : 'bi-circle' }} me-1"></i>
-                                    {{ $note->is_read ? 'Mark as unread' : 'Mark as read' }}
-                                </button>
-                            </div>
+                        <div class="mt-2 d-flex gap-2">
+                            <button class="btn btn-sm {{ $note->is_read ? 'btn-outline-secondary' : 'btn-outline-primary' }}" wire:click="toggleRead({{ $note->id }})">
+                                <i class="bi {{ $note->is_read ? 'bi-check2-circle' : 'bi-circle' }} me-1"></i>
+                                {{ $note->is_read ? 'Mark as unread' : 'Mark as read' }}
+                            </button>
                         </div>
                     </div>
                 </div>
-            @empty
-                <div class="list-group-item p-5 text-center text-muted">
-                    <i class="bi bi-inbox me-2"></i> No notifications found
-                </div>
-            @endforelse
-        </div>
-        @if($notifications->hasPages())
-            <div class="card-footer bg-white">
-                {{ $notifications->onEachSide(1)->links() }}
             </div>
-        @endif
+        @empty
+            <div class="list-group-item p-5 text-center text-muted">
+                <i class="bi bi-inbox me-2"></i> No notifications found
+            </div>
+        @endforelse
     </div>
+    @if($notifications->hasPages())
+        <div class="card-footer bg-white">
+            {{ $notifications->onEachSide(1)->links() }}
+        </div>
+    @endif
 </div>

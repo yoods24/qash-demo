@@ -183,10 +183,15 @@ class KitchenOrders extends Component
         $statusForFilter = $this->mapFilterToStatus($this->status);
 
         // Build two lists shown simultaneously (no tabs): confirmed and preparing
+        $activeOrderTypes = ['dine-in', 'takeaway'];
         $base = Order::with(['items.product.options', 'customerDetail.diningTable'])->latest();
         $term = trim($this->search);
-        $confirmedQuery = (clone $base)->where('status', 'confirmed')->where('order_type', 'dine-in');
-        $preparingQuery = (clone $base)->where('status', 'preparing')->where('order_type', 'dine-in');
+        $confirmedQuery = (clone $base)
+            ->where('status', 'confirmed')
+            ->whereIn('order_type', $activeOrderTypes);
+        $preparingQuery = (clone $base)
+            ->where('status', 'preparing')
+            ->whereIn('order_type', $activeOrderTypes);
         if ($term !== '') {
             $like = "%{$term}%";
             $confirmedQuery->where('id', 'like', $like);
@@ -194,7 +199,9 @@ class KitchenOrders extends Component
         }
         $confirmedOrders = $confirmedQuery->get();
         $preparingOrders = $preparingQuery->get();
-        $doneQuery = (clone $base)->where('status', 'ready')
+        $doneQuery = (clone $base)
+            ->where('status', 'ready')
+            ->whereIn('order_type', $activeOrderTypes)
             ->orderByDesc('ready_at')
             ->orderByDesc('created_at');
         if ($term !== '') {
@@ -203,33 +210,18 @@ class KitchenOrders extends Component
         }
         $doneOrders = $doneQuery->get();
 
+        $countsBase = Order::whereIn('order_type', $activeOrderTypes);
         $counts = [
-            'all' => Order::count(),
-            'confirmed' => Order::where('status', 'confirmed')->count(),
-            'preparing' => Order::where('status', 'preparing')->count(),
-            'done' => Order::where('status', 'ready')->count(),
+            'all' => (clone $countsBase)->count(),
+            'confirmed' => (clone $countsBase)->where('status', 'confirmed')->count(),
+            'preparing' => (clone $countsBase)->where('status', 'preparing')->count(),
+            'done' => (clone $countsBase)->where('status', 'ready')->count(),
         ];
         $counts['active'] = ($counts['confirmed'] ?? 0) + ($counts['preparing'] ?? 0);
 
         // Build aggregated items board from active orders (confirmed + preparing)
-        $takeawayBase = Order::with(['items.product.options', 'customerDetail'])
-            ->where('order_type', 'takeaway')
-            ->whereIn('status', ['confirmed', 'preparing', 'ready'])
-            ->latest();
-        if ($term !== '') {
-            $takeawayBase->where('id', 'like', "%{$term}%");
-        }
-        $takeawayGrouped = $takeawayBase->get()->groupBy('status');
-        $takeawayOrders = [
-            'confirmed' => $takeawayGrouped->get('confirmed', collect()),
-            'preparing' => $takeawayGrouped->get('preparing', collect()),
-            'ready' => $takeawayGrouped->get('ready', collect()),
-        ];
-
-        $activeTakeaway = $takeawayOrders['confirmed']->concat($takeawayOrders['preparing']);
-
         $itemsBoard = $this->buildItemsBoard(
-            $confirmedOrders->concat($preparingOrders)->concat($activeTakeaway)
+            $confirmedOrders->concat($preparingOrders)
         );
 
         // Today overview stats (ready orders only)
@@ -259,7 +251,6 @@ class KitchenOrders extends Component
             'confirmedOrders' => $confirmedOrders,
             'preparingOrders' => $preparingOrders,
             'doneOrders' => $doneOrders,
-            'takeawayOrders' => $takeawayOrders,
             'itemsBoard' => $itemsBoard,
             'todayStats' => $todayStats,
         ]);

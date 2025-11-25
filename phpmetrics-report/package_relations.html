@@ -49,7 +49,7 @@
 <div class="page">
     <div class="content content-first">
         <div class="report-details">
-            Created at 2025-11-19 11:51:31        , with PHPMetrics v2.9.1 (<a href="https://twitter.com/Halleck45">Jean-François Lépine</a>).
+            Created at 2025-11-24 18:52:56        , with PHPMetrics v2.9.1 (<a href="https://twitter.com/Halleck45">Jean-François Lépine</a>).
         </div>
 
         
@@ -93,7 +93,7 @@
                             <path d="M0 0h24v24H0z" fill="none">
                             <path d="M20 8h-2.81c-.45-.78-1.07-1.45-1.82-1.96L17 4.41 15.59 3l-2.17 2.17C12.96 5.06 12.49 5 12 5c-.49 0-.96.06-1.41.17L8.41 3 7 4.41l1.62 1.63C7.88 6.55 7.26 7.22 6.81 8H4v2h2.09c-.05.33-.09.66-.09 1v1H4v2h2v1c0 .34.04.67.09 1H4v2h2.81c1.04 1.79 2.97 3 5.19 3s4.15-1.21 5.19-3H20v-2h-2.09c.05-.33.09-.66.09-1v-1h2v-2h-2v-1c0-.34-.04-.67-.09-1H20V8zm-6 8h-4v-2h4v2zm0-4h-4v-2h4v2z">
                         </svg>
-                        Violations (47)
+                        Violations (59)
                     </a>
                 </li>
                                     <li>
@@ -292,18 +292,22 @@
             "Illuminate\\Validation\\Rules",
             "Illuminate\\Contracts\\View",
             "Illuminate\\Support",
+            "App\\Http\\Requests\\backoffice",
+            "App\\Services\\Discount",
+            "App\\Services\\Event",
             "Illuminate\\View",
-            "Illuminate\\Validation",
+            "App\\Http\\Requests\\Event",
             "App\\Services",
             "App\\Support",
             "global",
             "Xendit",
             "Xendit\\Invoice",
-            "App\\Http\\Requests\\backoffice",
             "App\\Services\\Product",
             "Carbon",
             "Symfony\\Component\\HttpFoundation",
+            "App\\Services\\Staff",
             "App\\Http\\Enums",
+            "App\\Http\\Requests\\Staff",
             "Filament\\Notifications",
             "App\\Services\\Tax"
         ]
@@ -319,8 +323,10 @@
         "relations": [
             "Illuminate\\Database\\Eloquent",
             "Illuminate\\Database\\Eloquent\\Relations",
+            "Illuminate\\Support",
+            "App\\Jobs",
+            "global",
             "Spatie\\Permission\\Models",
-            "Illuminate\\Support\\Facades",
             "Illuminate\\Foundation\\Auth",
             "Stancl\\Tenancy\\Database\\Models"
         ]
@@ -341,14 +347,42 @@
         "relations": []
     },
     {
+        "name": "App\\Http\\Requests\\backoffice",
+        "size": 3000,
+        "relations": [
+            "Illuminate\\Foundation\\Http",
+            "Illuminate\\Validation"
+        ]
+    },
+    {
+        "name": "App\\Services\\Discount",
+        "size": 3000,
+        "relations": [
+            "App\\Models",
+            "Illuminate\\Support"
+        ]
+    },
+    {
+        "name": "App\\Services\\Event",
+        "size": 3000,
+        "relations": [
+            "App\\Models",
+            "Illuminate\\Http",
+            "Illuminate\\Support"
+        ]
+    },
+    {
         "name": "Illuminate\\View",
         "size": 3000,
         "relations": []
     },
     {
-        "name": "Illuminate\\Validation",
+        "name": "App\\Http\\Requests\\Event",
         "size": 3000,
-        "relations": []
+        "relations": [
+            "Illuminate\\Foundation\\Http",
+            "Illuminate\\Validation"
+        ]
     },
     {
         "name": "App\\Services",
@@ -357,6 +391,7 @@
             "App\\Models",
             "Illuminate\\Support\\Facades",
             "Carbon",
+            "Illuminate\\Support",
             "App\\Exceptions",
             "App\\Data"
         ]
@@ -380,17 +415,11 @@
         "relations": []
     },
     {
-        "name": "App\\Http\\Requests\\backoffice",
-        "size": 3000,
-        "relations": [
-            "Illuminate\\Foundation\\Http"
-        ]
-    },
-    {
         "name": "App\\Services\\Product",
         "size": 3000,
         "relations": [
             "App\\Models",
+            "App\\Services\\User",
             "Illuminate\\Support\\Facades",
             "Illuminate\\Auth\\Access"
         ]
@@ -406,9 +435,25 @@
         "relations": []
     },
     {
+        "name": "App\\Services\\Staff",
+        "size": 3000,
+        "relations": [
+            "App\\Models",
+            "Illuminate\\Http",
+            "Illuminate\\Support\\Facades"
+        ]
+    },
+    {
         "name": "App\\Http\\Enums",
         "size": 3000,
         "relations": []
+    },
+    {
+        "name": "App\\Http\\Requests\\Staff",
+        "size": 3000,
+        "relations": [
+            "Illuminate\\Foundation\\Http"
+        ]
     },
     {
         "name": "Filament\\Notifications",
@@ -420,6 +465,33 @@
         "size": 3000,
         "relations": [
             "App\\Models"
+        ]
+    },
+    {
+        "name": "App\\Http\\Controllers\\Backoffice",
+        "size": 3000,
+        "relations": [
+            "App\\Http\\Controllers",
+            "App\\Services",
+            "Illuminate\\Http",
+            "App\\Http\\Requests\\backoffice\\InvoiceSettings",
+            "Illuminate\\View",
+            "App\\Models",
+            "App\\Http\\Requests\\backoffice\\TenantProfile"
+        ]
+    },
+    {
+        "name": "App\\Http\\Requests\\backoffice\\InvoiceSettings",
+        "size": 3000,
+        "relations": [
+            "Illuminate\\Foundation\\Http"
+        ]
+    },
+    {
+        "name": "App\\Http\\Requests\\backoffice\\TenantProfile",
+        "size": 3000,
+        "relations": [
+            "Illuminate\\Foundation\\Http"
         ]
     },
     {
@@ -458,6 +530,45 @@
         "relations": []
     },
     {
+        "name": "Illuminate\\Validation",
+        "size": 3000,
+        "relations": []
+    },
+    {
+        "name": "App\\Jobs",
+        "size": 3000,
+        "relations": [
+            "Illuminate\\Contracts\\Queue",
+            "App\\Services\\Invoice",
+            "App\\Models",
+            "Illuminate\\Support\\Facades",
+            "App\\Mail"
+        ]
+    },
+    {
+        "name": "Illuminate\\Contracts\\Queue",
+        "size": 3000,
+        "relations": []
+    },
+    {
+        "name": "App\\Services\\Invoice",
+        "size": 3000,
+        "relations": [
+            "App\\Models",
+            "Illuminate\\Support\\Facades",
+            "Barryvdh\\DomPDF\\Facade",
+            "Illuminate\\Support"
+        ]
+    },
+    {
+        "name": "App\\Mail",
+        "size": 3000,
+        "relations": [
+            "Illuminate\\Mail",
+            "App\\Models"
+        ]
+    },
+    {
         "name": "App\\Livewire\\Backoffice",
         "size": 3000,
         "relations": [
@@ -469,13 +580,10 @@
             "App\\Support",
             "Darryldecode\\Cart\\Facades",
             "Illuminate\\Support\\Facades",
+            "App\\Jobs",
             "Filament\\Tables\\Contracts",
             "Filament\\Actions\\Contracts",
-            "Filament\\Schemas\\Contracts",
-            "Filament\\Tables",
-            "Filament\\Tables\\Columns",
-            "Carbon",
-            "Filament\\Tables\\Filters"
+            "Filament\\Schemas\\Contracts"
         ]
     },
     {
@@ -509,21 +617,6 @@
         "relations": []
     },
     {
-        "name": "Filament\\Tables",
-        "size": 3000,
-        "relations": []
-    },
-    {
-        "name": "Filament\\Tables\\Columns",
-        "size": 3000,
-        "relations": []
-    },
-    {
-        "name": "Filament\\Tables\\Filters",
-        "size": 3000,
-        "relations": []
-    },
-    {
         "name": "App\\Livewire\\Backoffice\\Settings",
         "size": 3000,
         "relations": [
@@ -548,8 +641,24 @@
             "Filament\\Notifications",
             "pxlrbt\\FilamentExcel\\Actions",
             "pxlrbt\\FilamentExcel\\Exports",
-            "Carbon"
+            "Carbon",
+            "Illuminate\\Support\\Facades"
         ]
+    },
+    {
+        "name": "Filament\\Tables",
+        "size": 3000,
+        "relations": []
+    },
+    {
+        "name": "Filament\\Tables\\Columns",
+        "size": 3000,
+        "relations": []
+    },
+    {
+        "name": "Filament\\Tables\\Filters",
+        "size": 3000,
+        "relations": []
     },
     {
         "name": "Filament\\Forms\\Components",
@@ -595,8 +704,28 @@
             "Darryldecode\\Cart\\Facades",
             "Illuminate\\Support\\Facades",
             "App\\Models",
-            "App\\Support"
+            "App\\Support",
+            "App\\Services\\Customer\\OrderPage"
         ]
+    },
+    {
+        "name": "App\\Services\\Customer\\OrderPage",
+        "size": 3000,
+        "relations": [
+            "App\\Livewire\\Customer",
+            "App\\Models",
+            "Darryldecode\\Cart\\Facades",
+            "App\\Support",
+            "Illuminate\\Support\\Facades",
+            "App\\Services\\Customer",
+            "App\\Services",
+            "Illuminate\\Support"
+        ]
+    },
+    {
+        "name": "Illuminate\\Mail",
+        "size": 3000,
+        "relations": []
     },
     {
         "name": "Illuminate\\Database\\Eloquent",
@@ -654,6 +783,31 @@
     },
     {
         "name": "Database\\Seeders",
+        "size": 3000,
+        "relations": []
+    },
+    {
+        "name": "App\\Services\\Customer",
+        "size": 3000,
+        "relations": [
+            "Illuminate\\Support",
+            "App\\Models"
+        ]
+    },
+    {
+        "name": "Barryvdh\\DomPDF\\Facade",
+        "size": 3000,
+        "relations": []
+    },
+    {
+        "name": "App\\Services\\Order",
+        "size": 3000,
+        "relations": [
+            "App\\Models"
+        ]
+    },
+    {
+        "name": "App\\Services\\User",
         "size": 3000,
         "relations": []
     },

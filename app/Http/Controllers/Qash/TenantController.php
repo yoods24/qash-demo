@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Qash;
 
 use App\Http\Controllers\Controller;
+use App\Models\Permission;
+use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -70,6 +72,18 @@ class TenantController extends Controller
                     'admin_email' => $admin->email,
                 ],
             ]);
+
+            if (function_exists('tenancy')) {
+                tenancy()->initialize($tenant);
+            }
+
+            $superAdminRole = Role::firstOrCreate(['name' => 'Super Admin']);
+            $superAdminRole->syncPermissions(Permission::all());
+            $admin->assignRole($superAdminRole);
+
+            if (function_exists('tenancy')) {
+                tenancy()->end();
+            }
         });
 
         return redirect()

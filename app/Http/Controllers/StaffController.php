@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Enums\BloodGroup;
+use App\Http\Requests\Staff\StoreStaffRequest;
+use App\Http\Requests\Staff\UpdateStaffPhotoRequest;
+use App\Http\Requests\Staff\UpdateStaffRequest;
 use App\Models\Shift;
 use Illuminate\Http\Request;
 use App\Models\User;
@@ -10,14 +13,20 @@ use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Role;
 use App\Models\Permission;
+use App\Services\Staff\StaffService;
+
 class StaffController extends Controller
 {
+    public function __construct(private StaffService $staffService)
+    {
+    }
+
     public function index() {
         $staffs = User::where('tenant_id', tenant('id'))
             ->where('is_admin', 0)
             ->with('roles')
             ->paginate(10);
-        $roles = \App\Models\Role::select('name')->pluck('name');
+        $roles = Role::select('name')->pluck('name');
         $staffCount = User::where('tenant_id', tenant('id'))
             ->where('is_admin', 0)
             ->count();
@@ -31,7 +40,7 @@ class StaffController extends Controller
     // New full user create page (collapsible sections)
     public function create() {
         $shifts = Shift::where('tenant_id', tenant('id'))->orderBy('name')->get(['id', 'name']);
-        $roles = \App\Models\Role::all();
+        $roles = Role::all();
         $bloodGroups = BloodGroup::cases();
         return view('backoffice.staff.create', compact(['shifts', 'roles', 'bloodGroups']));
     }
@@ -48,6 +57,16 @@ class StaffController extends Controller
             'role' => $role,
         ]);
     }
+    public function updatePhoto(UpdateStaffPhotoRequest $request, User $staff)
+    {
+        if ($staff->tenant_id !== tenant('id')) {
+            abort(403);
+        }
+
+        $this->staffService->updatePhoto($staff, $request->file('profile-image'));
+
+        return back()->with('message', 'Profile photo updated.');
+    }
 
     public function destroy(User $staff) {
         $staff->delete();
@@ -55,17 +74,17 @@ class StaffController extends Controller
     }
 
     public function indexRoles() {
-        $roles = \App\Models\Role::all();
+        $roles = Role::all();
         return view('backoffice.staff.roles', ['roles' => $roles]);
     }
 
     public function storeRole(Request $request) {
-        \App\Models\Role::firstOrCreate(['name' => $request['role']]);
+        Role::firstOrCreate(['name' => $request['role']]);
         return redirect()->route('backoffice.roles.index')->with('message', 'Role successfully Created!');
     }    
 
     public function storeRoleWr(Request $request) {
-        \App\Models\Role::firstOrCreate(['name' => $request['role']]);
+        Role::firstOrCreate(['name' => $request['role']]);
         Notification::make()
             ->title('Success')
             ->body('Role Successfully created!')
@@ -105,61 +124,12 @@ class StaffController extends Controller
     }
 
     // Store from the new full create form
-    public function storeFull(Request $request) {
-        $validated = $request->validate([
-            'firstName' => ['required', 'string', 'max:120'],
-            'lastName' => ['required', 'string', 'max:120'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
-            'phone' => ['required', 'string', 'max:20'],
-            'emp_code' => ['nullable', 'string', 'max:120', 'unique:users,emp_code'],
-            'date_of_birth' => ['nullable', 'date'],
-            'gender' => ['nullable', 'in:Male,Female'],
-            'nationality' => ['nullable', 'string', 'max:120'],
-            'joining_date' => ['nullable', 'date'],
-            'shift_id' => ['nullable', 'exists:shifts,id'],
-            'blood_group' => ['nullable', 'in:O,A,B,AB'],
-            'about' => ['nullable', 'string', 'max:500'],
-            // Address
-            'address' => ['nullable', 'string', 'max:255'],
-            'country' => ['nullable', 'string', 'max:120'],
-            'state' => ['nullable', 'string', 'max:120'],
-            'city' => ['nullable', 'string', 'max:120'],
-            'zipcode' => ['nullable', 'string', 'max:30'],
-            // Emergency
-            'emergency_contact_number_1' => ['nullable', 'string', 'max:30'],
-            'emergency_contact_relation_1' => ['nullable', 'string', 'max:60'],
-            'emergency_contact_name_1' => ['nullable', 'string', 'max:120'],
-            'emergency_contact_number_2' => ['nullable', 'string', 'max:30'],
-            'emergency_contact_relation_2' => ['nullable', 'string', 'max:60'],
-            'emergency_contact_name_2' => ['nullable', 'string', 'max:120'],
-            // Bank
-            'bank_name' => ['nullable', 'string', 'max:120'],
-            'account_number' => ['nullable', 'string', 'max:60'],
-            // Password
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
-            // Profile image
-            'profile-image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
-        ]);
-
-        $user = new User($validated);
-        $user->tenant_id = tenant('id');
-        $user->is_admin = 0;
-        $user->assignRole($request->role);
-        $user->status = 1;
-        if (!$request->hasFile('profile-image')) {
-            // Ensure non-nullable column gets a default value
-            $user->setAttribute('profile-image', '');
-        }
-        $user->save();
-
-        // Handle profile image upload (store within tenant's public disk, namespaced by user)
-        $imagePath = null;
-        if ($request->hasFile('profile-image')) {
-            // Store under users/{user_id}/... on the tenant-scoped 'public' disk
-            $imagePath = $request->file('profile-image')->store('users/' . $user->id, 'public');
-            $user->setAttribute('profile-image', $imagePath);
-            $user->save();
-        }
+    public function storeFull(StoreStaffRequest $request) {
+        $this->staffService->createStaff(
+            $request->validated(),
+            $request->file('profile-image'),
+            $request->input('role')
+        );
 
         return redirect()->route('backoffice.staff.index')
             ->with('message', 'Employee created successfully.');
@@ -170,75 +140,27 @@ class StaffController extends Controller
         $staff->load('roles');
 
         $shifts = Shift::where('tenant_id', tenant('id'))->orderBy('name')->get(['id', 'name']);
-        $roles = \App\Models\Role::all();
+        $roles = Role::all();
         $bloodGroups = BloodGroup::cases();
 
         return view('backoffice.staff.edit', compact('staff', 'shifts', 'roles', 'bloodGroups'));
     }
 
-    public function updateFull(Request $request, User $staff)
+    public function updateFull(UpdateStaffRequest $request, User $staff)
     {
-        $validated = $request->validate([
-            'firstName' => ['required', 'string', 'max:120'],
-            'lastName' => ['required', 'string', 'max:120'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email,' . $staff->id],
-            'phone' => ['required', 'string', 'max:20'],
-            'emp_code' => ['nullable', 'string', 'max:120', 'unique:users,emp_code,' . $staff->id],
-            'date_of_birth' => ['nullable', 'date'],
-            'gender' => ['nullable', 'in:Male,Female'],
-            'nationality' => ['nullable', 'string', 'max:120'],
-            'joining_date' => ['nullable', 'date'],
-            'shift_id' => ['nullable', 'exists:shifts,id'],
-            'blood_group' => ['nullable', 'in:O,A,B,AB'],
-            'about' => ['nullable', 'string', 'max:500'],
-            'address' => ['nullable', 'string', 'max:255'],
-            'country' => ['nullable', 'string', 'max:120'],
-            'state' => ['nullable', 'string', 'max:120'],
-            'city' => ['nullable', 'string', 'max:120'],
-            'zipcode' => ['nullable', 'string', 'max:30'],
-            'emergency_contact_number_1' => ['nullable', 'string', 'max:30'],
-            'emergency_contact_relation_1' => ['nullable', 'string', 'max:60'],
-            'emergency_contact_name_1' => ['nullable', 'string', 'max:120'],
-            'emergency_contact_number_2' => ['nullable', 'string', 'max:30'],
-            'emergency_contact_relation_2' => ['nullable', 'string', 'max:60'],
-            'emergency_contact_name_2' => ['nullable', 'string', 'max:120'],
-            'bank_name' => ['nullable', 'string', 'max:120'],
-            'account_number' => ['nullable', 'string', 'max:60'],
-            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
-            'profile-image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
-        ]);
-
-        $staff->fill(collect($validated)->except([
-            'password',
-            'profile-image',
-        ])->toArray());
-
-        if ($request->filled('password')) {
-            $staff->password = Hash::make($request->input('password'));
-        }
-
-        if ($request->filled('role')) {
-            $staff->syncRoles([$request->input('role')]);
-        }
-
-        if ($request->hasFile('profile-image')) {
-            $currentImage = $staff->getAttribute('profile-image');
-            if ($currentImage) {
-                \Storage::disk('public')->delete($currentImage);
-            }
-
-            $path = $request->file('profile-image')->store('users/' . $staff->id, 'public');
-            $staff->setAttribute('profile-image', $path);
-        }
-
-        $staff->save();
+        $this->staffService->updateStaff(
+            $staff,
+            $request->validated(),
+            $request->file('profile-image'),
+            $request->input('role')
+        );
 
         return redirect()->route('backoffice.staff.index')
             ->with('message', 'Employee updated successfully.');
     }
 
-    public function indexPermission(\App\Models\Role $role) {
-        $permissions = \App\Models\Permission::all();
+    public function indexPermission(Role $role) {
+        $permissions = Permission::all();
 
         // Group permissions based on the module prefix
         $groupedPermissions = $permissions->groupBy(function ($permission) {
@@ -248,8 +170,8 @@ class StaffController extends Controller
         return view('backoffice.staff.update-permission', compact('role', 'groupedPermissions'));
     }
 
-    public function updatePermission(Request $request, \App\Models\Role $role) {
-        \App\Models\Role::where('id', $role->id)->update(['name' => $request->role]);
+    public function updatePermission(Request $request, Role $role) {
+        Role::where('id', $role->id)->update(['name' => $request->role]);
         
         $permissions = $request->input('permissions', []);
         $role->syncPermissions($permissions);

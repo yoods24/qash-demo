@@ -6,8 +6,6 @@ namespace App\Livewire\Backoffice;
 
 use App\Models\Permission;
 use App\Models\Role;
-use Illuminate\Support\Arr;
-use Livewire\Attributes\On;
 use Livewire\Component;
 use Spatie\Permission\PermissionRegistrar;
 
