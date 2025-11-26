@@ -3,7 +3,7 @@
         <div class="alert alert-danger">{{ session('error') }}</div>
     @endif
     <div class="d-flex align-items-center justify-content-between mb-3">
-        <h3 class="mb-0">Good {{ now()->format('A') === 'AM' ? 'Morning' : 'Evening' }}, {{ auth()->user()->firstName }} {{ auth()->user()->lastName }}</h3>
+        <h3 class="mb-0">Good {{ now()->format('A') === 'AM' ? 'Morning' : 'Evening' }},<span class="text-primer">{{ auth()->user()->fullName() }}</span> </h3>
         <div class="text-muted">{{ now()->format('d M Y') }}</div>
     </div>
 

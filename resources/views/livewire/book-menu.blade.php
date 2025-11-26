@@ -38,6 +38,24 @@
                     <div class="fw-semibold text-muted">This menu is being plated. Please check back soon.</div>
                 </div>
             @else
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3 px-3">
+                        <button
+                            type="button"
+                            class="btn btn-outline-dark btn-sm"
+                            data-menu-book-nav="prev"
+                            data-component-id="{{ $this->getId() }}"
+                        >
+                            <i class="fa-solid fa-arrow-left"></i>
+                        </button>
+                        <button
+                            type="button"
+                            class="btn btn-outline-dark btn-sm"
+                            data-menu-book-nav="next"
+                            data-component-id="{{ $this->getId() }}"
+                        >
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                </div>
                 <div class="menu-book-scroll">
                     <div class="premium-book flip-book" id="{{ $componentDomId }}" wire:ignore>
                         @foreach ($pages as $index => $page)
@@ -205,6 +223,45 @@ $wire.on('goToCategory', (payload) => {
     }
     const pageIndex = Number(payload.pageIndex ?? 0);
     window.__menuBooks[componentId].turnToPage(pageIndex);
+});
+
+document.addEventListener('click', (event) => {
+    const btn = event.target.closest('[data-menu-book-nav]');
+    if (!btn) {
+        return;
+    }
+    const dir = btn.getAttribute('data-menu-book-nav');
+    const componentId = btn.getAttribute('data-component-id');
+    const book = window.__menuBooks?.[componentId];
+    if (!book) {
+        return;
+    }
+
+    const turn = (offset) => {
+        if (typeof book.getCurrentPageIndex === 'function' && typeof book.turnToPage === 'function') {
+            const nextIndex = Math.max(0, (book.getCurrentPageIndex() ?? 0) + offset);
+            book.turnToPage(nextIndex);
+            return true;
+        }
+        return false;
+    };
+
+    if (dir === 'next') {
+        if (typeof book.flipNext === 'function') {
+            book.flipNext();
+            return;
+        }
+        turn(1);
+        return;
+    }
+
+    if (dir === 'prev') {
+        if (typeof book.flipPrev === 'function') {
+            book.flipPrev();
+            return;
+        }
+        turn(-1);
+    }
 });
 </script>
 @endscript

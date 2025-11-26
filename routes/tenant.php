@@ -27,6 +27,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Hrm\ShiftController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\CustomerEventController;
+use App\Http\Controllers\Customer\CustomerOrderLookupController;
 // Models
 use App\Http\Controllers\DiningTableController;
 use App\Http\Controllers\TaxController;
@@ -73,6 +74,8 @@ Route::middleware([
 
 
       Route::get('/order', OrderPage::class)->name('customer.order');
+      Route::get('/orders/check', [CustomerOrderLookupController::class, 'showForm'])->name('customer.orders.check');
+      Route::post('/orders/check', [CustomerOrderLookupController::class, 'search'])->name('customer.orders.search');
       Route::get('/cart', CartPage::class)->name('cart.page');
       Route::get('/payment/{order}', [PaymentController::class, 'show'])->name('payment.show');
       Route::post('/payment/{order}', [PaymentController::class, 'process'])->name('payment.process');

@@ -223,7 +223,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const desktopToggle = document.querySelector('#sidebarToggleDesktop');
     const mobileToggle = document.querySelector('#sidebarToggleMobile');
     const SIDEBAR_KEY = 'qash:sidebar:shrunk';
-
+    const brandWrap = document.querySelector('.brand-wrap');
     // Helper: whether viewport is mobile
     const isMobile = () => window.innerWidth <= 768;
 

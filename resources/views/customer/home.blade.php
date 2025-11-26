@@ -185,7 +185,7 @@
                             <div class="menu-item-row">
                               <div class="menu-item-header d-flex justify-content-between">
                                 <span class="menu-item-name">{{ $product->name }}</span>
-                                <span class="menu-item-leader"></span>
+                                <span class="flex-grow-1 border-bottom" style="border-bottom-style: dashed;"></span>
                                 @if(!is_null($product->price))
                                   <span class="menu-item-price">
                                     {{ number_format($product->price, 0, ',', '.') }}

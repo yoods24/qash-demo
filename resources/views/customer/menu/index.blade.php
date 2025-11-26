@@ -6,8 +6,8 @@
         <h2 class="fw-bold mb-1">Our Menu</h2>
         <p class="text-muted">Discover the taste of real coffee.</p>
       </div>
-      <div class="text-center mb-4">
-        <a href="{{ route('customer.order') }}" class="btn btn-main px-4 py-2">
+      <div class="d-flex mb-4 w-50 justify-content-center container-center">
+        <a href="{{ route('customer.order') }}" class="btn btn-main px-4 py-2 w-100">
           Order Now
         </a>
       </div>

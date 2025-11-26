@@ -41,7 +41,9 @@ body {
     --handle-overlap: 16px;       /* how much the handle overlaps when hidden */
 }
 
-
+.container-center {
+    margin: 0 auto;
+}
 .img-fluid {
     max-width: 100%;
     height: auto;

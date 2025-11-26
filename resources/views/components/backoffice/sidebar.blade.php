@@ -1,5 +1,5 @@
 <nav class="sidebar shrunk d-flex flex-column flex-shrink-0 p-3" data-lenis-prevent>
-      <div class="brand-wrap d-flex align-items-center justify-content-center text-white text-decoration-none">
+      <div class="brand-wrap d-flex align-items-center justify-content-between justify-content-md-center text-white text-decoration-none">
           <!-- Expanded: full logo | Shrunk: compact mark -->
           <img onclick="window.location='{{ route('backoffice.dashboard') }}'" src="{{ global_asset('storage/logos/Main Logo-Orange.png') }}" alt="Qash" class="brand-img brand-compact" />
           <img onclick="window.location='{{ route('backoffice.dashboard') }}'" src="{{ global_asset('storage/logos/Logotype-Orange.png') }}" alt="Qash" class="brand-img brand-full" />

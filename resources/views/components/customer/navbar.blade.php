@@ -19,6 +19,7 @@
     <div id="customerNavMenu" class="customer-nav-links d-flex align-items-start gap-4">
         <x-customer.nav-link href="{{ route('customer.home') }}">Home</x-customer.nav-link>
         <x-customer.nav-link href="{{ route('customer.menu.layout') }}">Menu</x-customer.nav-link>
+        <x-customer.nav-link href="{{ route('customer.orders.check') }}">Check Orders</x-customer.nav-link>
         <x-customer.nav-link href="{{ route('customer.career.index') }}">Careers</x-customer.nav-link>
         <x-customer.nav-link href="{{ route('customer.events.index') }}">Events</x-customer.nav-link>
     </div>
