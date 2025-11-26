@@ -2,17 +2,15 @@
 
 declare(strict_types=1);
 
-use Livewire\Livewire;
-use App\Models\Product;
 use App\Models\Category;
 
 // Controllers
 use App\Livewire\Customer\CartPage;
 use App\Livewire\Customer\OrderPage;
-use App\Livewire\BookMenu;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\FloorController;
+use App\Http\Controllers\Customer\MenuGridController;
 use App\Http\Controllers\OrderTrackingController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\StaffController;
@@ -64,10 +62,14 @@ Route::middleware([
       })->name('customer.home');
 
       Route::get('/menu', function () {
-          return view('customer.menu.index');
-      })->name('customer.menu');
+          return view('customer.menu.layout-choice');
+      })->name('customer.menu.layout');
 
-      Route::get('/menu/book', BookMenu::class)->name('customer.menu.book');
+      Route::get('/menu/book', function () {
+          return view('customer.menu.index');
+      })->name('customer.menu.book');
+
+      Route::get('/menu/grid', [MenuGridController::class, 'index'])->name('customer.menu.grid');
 
 
       Route::get('/order', OrderPage::class)->name('customer.order');

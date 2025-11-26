@@ -2,7 +2,7 @@
   <section class="secondary-white">
     <div class="section-wrapper text-black" style="min-height: auto;">
       <div class="mb-4">
-        <a href="{{ route('career.index', ['tenant' => request()->route('tenant')]) }}" class="text-decoration-none text-muted small">
+        <a href="{{ route('customer.career.index', ['tenant' => request()->route('tenant')]) }}" class="text-decoration-none text-muted small">
           &larr; Back to open positions
         </a>
       </div>
