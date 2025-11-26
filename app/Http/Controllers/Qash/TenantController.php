@@ -41,7 +41,8 @@ class TenantController extends Controller
             'name' => ['required', 'string', 'max:150'],
             'slug' => ['required', 'alpha_dash', 'max:80', 'unique:tenants,id'],
             'description' => ['nullable', 'string', 'max:500'],
-            'admin_name' => ['required', 'string', 'max:150'],
+            'admin_first_name' => ['required', 'string', 'max:120'],
+            'admin_last_name' => ['required', 'string', 'max:120'],
             'admin_email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email'],
             'admin_phone' => ['nullable', 'string', 'max:25'],
             'admin_password' => ['required', 'string', 'min:8', 'confirmed'],
@@ -57,7 +58,8 @@ class TenantController extends Controller
             ]);
 
             $admin = User::create([
-                'name' => $validated['admin_name'],
+                'firstName' => $validated['admin_first_name'],
+                'lastName' => $validated['admin_last_name'],
                 'email' => $validated['admin_email'],
                 'phone' => $validated['admin_phone'] ?? null,
                 'password' => Hash::make($validated['admin_password']),

@@ -844,6 +844,8 @@ document.addEventListener('DOMContentLoaded', function () {
     hideOverlayDeferred();
   });
 })();
+
+
 // Toast success
 document.addEventListener('DOMContentLoaded', function () {
     const button = document.querySelector('.close-toast');
@@ -861,7 +863,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const timeout = setTimeout(() => {
         toast.classList.remove('show');
         toast.classList.add('hide');
-    }, 5100);
+    }, 2000);
 
     // Manual close
     if (button) {

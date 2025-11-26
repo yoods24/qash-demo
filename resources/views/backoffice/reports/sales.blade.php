@@ -1,13 +1,8 @@
 <x-backoffice.layout>
-    <div class="d-flex align-items-center justify-content-between mb-3 mb-md-4">
+    <div class="d-flex align-items-center justify-content-between mb-3 mb-md-4 flex-wrap gap-2">
         <div class="d-flex align-items-center">
             <i class="bi bi-cash text-orange fs-3 me-2"></i>
             <h4 class="mb-0">Sales Report</h4>
-        </div>
-        <div>
-            <a href="{{ route('backoffice.reports.sales', array_merge(request()->route()->parameters(), request()->query(), ['export' => 1])) }}" class="btn btn-sm btn-warning">
-                <i class="bi bi-box-arrow-down me-1"></i> Export
-            </a>
         </div>
     </div>
 
@@ -15,35 +10,67 @@
         <div class="card-body">
             <form method="GET" action="{{ route('backoffice.reports.sales', request()->route()->parameters()) }}" class="row g-2 g-md-3 align-items-end">
                 <div class="col-12 col-md-3">
-                    <label class="form-label">From</label>
-                    <input type="date" name="from" value="{{ $from }}" class="form-control" />
+                    <label class="form-label">Start date</label>
+                    <input type="date" name="start_date" value="{{ $startDate->toDateString() }}" class="form-control" />
                 </div>
                 <div class="col-12 col-md-3">
-                    <label class="form-label">To</label>
-                    <input type="date" name="to" value="{{ $to }}" class="form-control" />
+                    <label class="form-label">End date</label>
+                    <input type="date" name="end_date" value="{{ $endDate->toDateString() }}" class="form-control" />
                 </div>
                 <div class="col-6 col-md-3">
-                    <label class="form-label">Status</label>
-                    <select name="status" class="form-select">
-                        <option value="">Any</option>
-                        @foreach(['waiting_for_payment','confirmed','preparing','ready','cancelled'] as $s)
-                            <option value="{{ $s }}" @selected($status === $s)>{{ ucfirst($s) }}</option>
+                    <label class="form-label">Granularity</label>
+                    <select name="granularity" class="form-select">
+                        @foreach(['daily' => 'Daily', 'monthly' => 'Monthly'] as $value => $label)
+                            <option value="{{ $value }}" @selected($granularity === $value)>{{ $label }}</option>
                         @endforeach
                     </select>
                 </div>
                 <div class="col-6 col-md-2">
-                    <label class="form-label">Payment</label>
-                    <select name="payment_status" class="form-select">
-                        <option value="">Any</option>
-                        @foreach(['pending','paid','failed','cancelled'] as $p)
-                            <option value="{{ $p }}" @selected(($payment_status ?? null) === $p)>{{ ucfirst($p) }}</option>
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-select">
+                        <option value="">Successful</option>
+                        @foreach(['confirmed','preparing','ready','cancelled','waiting_for_payment'] as $s)
+                            <option value="{{ $s }}" @selected($status === $s)>{{ ucfirst(str_replace('_',' ', $s)) }}</option>
                         @endforeach
                     </select>
                 </div>
-                <div class="col-12 col-md-1 text-end">
-                    <button class="btn btn-primary w-100"><i class="bi bi-funnel me-1"></i> Filter</button>
+                <div class="col-lg-1 col-sm-12 col-md-12 text-center">
+                    <button class="btn btn-main w-100"><i class="bi bi-funnel me-1"></i></button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        @php
+            $summaryCards = [
+                ['label' => 'Gross Sales', 'value' => $totalSalesBeforeDiscount],
+                ['label' => 'Discounts', 'value' => $totalDiscount],
+                ['label' => 'Net Sales', 'value' => $netSales],
+                ['label' => 'Tax', 'value' => $totalTax],
+                ['label' => 'COGS', 'value' => $totalCogs],
+                ['label' => 'Gross Profit', 'value' => $grossProfit],
+            ];
+        @endphp
+        @foreach($summaryCards as $card)
+            <div class="col-12 col-md-4 col-xl-2">
+                <div class="card border-0 shadow-sm h-100 rounded-4">
+                    <div class="card-body">
+                        <p class="text-primer mb-1 small text-uppercase">{{ $card['label'] }}</p>
+                        <h5 class="mb-0 fw-bold">IDR {{ number_format((float) $card['value'], 0, ',', '.') }}</h5>
+                    </div>
+                </div>
+            </div>
+        @endforeach
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body">
+            @livewire('sales-chart-widget', [
+                'startDate' => $startDate->toDateString(),
+                'endDate' => $endDate->toDateString(),
+                'granularity' => $granularity,
+            ])
         </div>
     </div>
 
@@ -53,32 +80,39 @@
                 <table class="table align-middle mb-0">
                     <thead class="table-light">
                         <tr>
+                            <th class="text-muted">Order</th>
                             <th class="text-muted">Date</th>
-                            <th class="text-muted">Total Orders</th>
-                            <th class="text-muted">Total Products</th>
-                            <th class="text-muted">Subtotal</th>
+                            <th class="text-muted">Customer</th>
+                            <th class="text-muted">Status</th>
+                            <th class="text-muted">Net</th>
                             <th class="text-muted">Tax</th>
                             <th class="text-muted">Total</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse ($rows as $r)
+                        @forelse ($orders as $order)
                             <tr>
-                                <td>{{ $r->day }}</td>
-                                <td>{{ (int) $r->total_orders }}</td>
-                                <td>{{ (int) $r->total_products }}</td>
-                                <td>{{ number_format((float) $r->subtotal, 2) }}</td>
-                                <td>{{ number_format((float) $r->tax, 2) }}</td>
-                                <td>{{ number_format((float) $r->total, 2) }}</td>
+                                <td>#{{ $order->reference_no ?? $order->id }}</td>
+                                <td>{{ optional($order->created_at)->format('M d, Y H:i') }}</td>
+                                <td>{{ $order->customerDetail->name ?? 'Guest' }}</td>
+                                <td><span class="badge bg-light text-dark text-uppercase">{{ str_replace('_',' ', $order->status) }}</span></td>
+                                <td>IDR {{ number_format((float) (($order->grand_total ?? 0) - ($order->total_tax ?? 0)), 0, ',', '.') }}</td>
+                                <td>IDR {{ number_format((float) $order->total_tax, 0, ',', '.') }}</td>
+                                <td>IDR {{ number_format((float) $order->grand_total, 0, ',', '.') }}</td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="text-center text-muted py-4">No data for the selected period.</td>
+                                <td colspan="7" class="text-center text-muted py-4">No orders for the selected period.</td>
                             </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
         </div>
+        @if ($orders instanceof \Illuminate\Contracts\Pagination\LengthAwarePaginator)
+            <div class="card-footer bg-white border-0">
+                {{ $orders->withQueryString()->links() }}
+            </div>
+        @endif
     </div>
 </x-backoffice.layout>

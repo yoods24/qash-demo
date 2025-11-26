@@ -23,8 +23,8 @@ return new class extends Migration {
             $table->decimal('latitude', 10, 7)->nullable();
             $table->decimal('longitude', 10, 7)->nullable();
             $table->string('logo_url')->nullable();
+            $table->json('gallery_photos')->nullable(); // adjust "after" column as needed
             $table->timestamps();
-
             $table->unique('tenant_id');
             $table->foreign('tenant_id')
                 ->references('id')

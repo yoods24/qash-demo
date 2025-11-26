@@ -306,16 +306,24 @@ Route::middleware([
                       ->name('backoffice.invoice-settings.update');
               });
 
-              Route::prefix('tenant-profile')
-                  ->controller(TenantProfileController::class)
-                  ->group(function () {
-                      Route::post('/update-about', 'updateAbout')
-                          ->name('backoffice.tenant-profile.update-about');
-                      Route::post('/update-brand-info', 'updateBrandInfo')
-                          ->name('backoffice.tenant-profile.update-brand-info');
-                      Route::post('/update-general-info', 'updateGeneralInfo')
-                          ->name('backoffice.tenant-profile.update-general-info');
-                  });
+          Route::prefix('tenant-profile')
+              ->controller(TenantProfileController::class)
+              ->group(function () {
+                  Route::post('/update-about', 'updateAbout')
+                      ->name('backoffice.tenant-profile.update-about');
+                  Route::post('/update-brand-info', 'updateBrandInfo')
+                      ->name('backoffice.tenant-profile.update-brand-info');
+                  Route::post('/update-general-info', 'updateGeneralInfo')
+                      ->name('backoffice.tenant-profile.update-general-info');
+              });
+
+          // Gallery (CMS)
+          Route::get('/gallery', [TenantProfileController::class, 'galleryIndex'])
+              ->name('backoffice.gallery.index');
+          Route::post('/gallery', [TenantProfileController::class, 'storeGallery'])
+              ->name('backoffice.gallery.store');
+          Route::delete('/gallery', [TenantProfileController::class, 'deleteGallery'])
+              ->name('backoffice.gallery.destroy');
           });
 
           // Facial Recognition routes 

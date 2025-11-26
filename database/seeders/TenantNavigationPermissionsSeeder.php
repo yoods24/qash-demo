@@ -15,28 +15,50 @@ class TenantNavigationPermissionsSeeder extends Seeder
         }
 
         $modules = config('tenant_permissions.modules', []);
-        $names = [];
+        $guard = Permission::getDefaultGuardName();
+        $tenantId = tenant('id');
 
-        foreach ($modules as $module) {
-            $names[] = $module['view'];
-
-            foreach ($module['children'] ?? [] as $child) {
-                $names[] = $child['view'];
-
-                foreach ($child['actions'] ?? [] as $action) {
-                    $names[] = $action['name'];
+        // Collect all permission names from modules/children/actions
+        $names = collect($modules)
+            ->flatMap(function ($module) {
+                $names = [$module['view'] ?? null];
+                foreach ($module['children'] ?? [] as $child) {
+                    $names[] = $child['view'] ?? null;
+                    foreach ($child['actions'] ?? [] as $action) {
+                        $names[] = $action['name'] ?? null;
+                    }
                 }
+                return $names;
+            })
+            ->filter()
+            ->unique()
+            ->values();
+
+        $namesArray = $names->all();
+
+        // Avoid N x firstOrCreate calls by inserting only the missing names
+        $existing = Permission::whereIn('name', $namesArray)->pluck('name')->all();
+        $missing = array_values(array_diff($namesArray, $existing));
+
+        if ($missing) {
+            $now = now();
+            $payload = array_map(function ($name) use ($guard, $tenantId, $now) {
+                return [
+                    'name' => $name,
+                    'guard_name' => $guard,
+                    'tenant_id' => $tenantId,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
+            }, $missing);
+
+            foreach (array_chunk($payload, 100) as $chunk) {
+                Permission::query()->insertOrIgnore($chunk);
             }
-        }
-
-        $names = array_values(array_unique(array_filter($names)));
-
-        foreach ($names as $name) {
-            Permission::firstOrCreate(['name' => $name]);
         }
 
         // Keep Super Admin role in sync with every permission for the tenant
         $superAdminRole = Role::firstOrCreate(['name' => 'Super Admin']);
-        $superAdminRole->syncPermissions(Permission::all());
+        $superAdminRole->permissions()->sync(Permission::pluck('id')->all());
     }
 }

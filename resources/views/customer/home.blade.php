@@ -1,4 +1,22 @@
 <x-customer.layout>
+@php
+    $profile = $tenantInfo ?? null;
+    $openingHours = (array) ($profile->opening_hours ?? []);
+    $daysOfWeek = [
+        'monday' => 'Monday',
+        'tuesday' => 'Tuesday',
+        'wednesday' => 'Wednesday',
+        'thursday' => 'Thursday',
+        'friday' => 'Friday',
+        'saturday' => 'Saturday',
+        'sunday' => 'Sunday',
+    ];
+    $lat = $profile->latitude ?? -6.8914796;
+    $lng = $profile->longitude ?? 107.5790603;
+    $address = $profile->address ?? 'Address not set';
+    $contactPhone = $profile->contact_phone ?? 'Phone not set';
+    $contactEmail = $profile->contact_email ?? 'Email not set';
+@endphp
 <button class="about-btn" data-bs-toggle="modal" data-bs-target="#sideModal">
     <i class="bi bi-question"></i>
 </button>
@@ -17,23 +35,16 @@
             <h5 class="section-title text-center">OPENING HOURS</h5>
             <div class="card-style text-center mt-3">
               <div class="d-flex justify-content-between">
-                <div class="text-start">
-                  <p><strong>SENIN</strong></p>
-                  <p><strong>SELASA</strong></p>
-                  <p><strong>RABU</strong></p>
-                  <p><strong>KAMIS</strong></p>
-                  <p><strong>JUMAT</strong></p>
-                  <p><strong>SABTU</strong></p>
-                  <p><strong>MINGGU</strong></p>
+                <div class="text-start w-50">
+                  @foreach($daysOfWeek as $key => $label)
+                    <p class="mb-1"><strong>{{ strtoupper($label) }}</strong></p>
+                  @endforeach
                 </div>
-                <div class="text-end">
-                  <p>16:00 - 22:30</p>
-                  <p>16:00 - 22:30</p>
-                  <p>16:00 - 22:30</p>
-                  <p>16:00 - 22:30</p>
-                  <p>16:00 - 22:30</p>
-                  <p>16:00 - 22:30</p>
-                  <p>16:00 - 22:30</p>
+                <div class="text-end w-50">
+                  @foreach($daysOfWeek as $key => $label)
+                    @php $hours = $openingHours[$key] ?? null; @endphp
+                    <p class="mb-1">{{ $hours ? $hours : 'Closed' }}</p>
+                  @endforeach
                 </div>
               </div>
             </div>
@@ -218,37 +229,40 @@
 
     <section class="bg-black">
         <div class="section-wrapper mt-5">
+            @php
+                $galleryPhotos = (array) (optional($tenantInfo)->gallery_photos ?? []);
+            @endphp
             <div class="d-flex flex-column align-items-center mb-2 text-center">
                 <p class="primer bold">G A L L E R Y</p>
-                <h4>Kasumba</h4>
+                <h4>{{ optional($tenantInfo)->brand_heading ?? 'Our Gallery' }}</h4>
             </div>
             <div class="mx-auto carousel-wrapper">
-            <div id="carouselExampleIndicators" class="carousel slide" data-bs-ride="carousel">
-                <div class="carousel-indicators">
-                    <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
-                    <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="1" aria-label="Slide 2"></button>
-                    <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="2" aria-label="Slide 3"></button>
+              @if(!empty($galleryPhotos))
+                <div id="carouselExampleIndicators" class="carousel slide" data-bs-ride="carousel">
+                    <div class="carousel-indicators">
+                        @foreach($galleryPhotos as $index => $photo)
+                            <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="{{ $index }}" class="{{ $index === 0 ? 'active' : '' }}" aria-current="{{ $index === 0 ? 'true' : 'false' }}" aria-label="Slide {{ $index + 1 }}"></button>
+                        @endforeach
+                    </div>
+                    <div class="carousel-inner rounded">
+                        @foreach($galleryPhotos as $index => $photo)
+                            <div class="carousel-item {{ $index === 0 ? 'active' : '' }}" data-bs-interval="3000">
+                                <img src="{{ tenant_storage_url($photo) }}" class="d-block w-100 carousel-img" alt="Gallery photo {{ $index + 1 }}">
+                            </div>
+                        @endforeach
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
                 </div>
-                <div class="carousel-inner rounded">
-                    <div class="carousel-item active" data-bs-interval="3000">
-                        <img src="http://picsum.photos/seed/{{ rand(0, 10000) }}/1600/1600" class="d-block w-100 carousel-img" alt="...">
-                    </div>
-                    <div class="carousel-item" data-bs-interval="3000">
-                        <img src="http://picsum.photos/seed/{{ rand(0, 10000) }}/1600/1600" class="d-block w-100 carousel-img" alt="...">
-                    </div>
-                    <div class="carousel-item" data-bs-interval="3000">
-                        <img src="http://picsum.photos/seed/{{ rand(0, 10000) }}/1600/1600" class="d-block w-100 carousel-img" alt="...">
-                    </div>
-                </div>
-                <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Previous</span>
-                </button>
-                <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="next">
-                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Next</span>
-                </button>
-            </div>
+              @else
+                <div class="alert alert-light mb-0">Gallery photos are coming soon.</div>
+              @endif
             </div>
         </div>
     </section>
@@ -263,11 +277,10 @@
       <div class="col-md-4">
         <h5 class="section-title text-center">WHERE ARE WE?</h5>
         <div class="card-style mt-3">
-          <iframe
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d31693.789227843917!2d107.5790603!3d-6.8914796!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e68e7d4f8e80c75%3A0x5f785c3ebf1efac3!2sBandung!5e0!3m2!1sen!2sid!4v1716000000000!5m2!1sen!2sid"
-            width="100%" height="300" style="border:0;" allowfullscreen=""
-            loading="lazy" referrerpolicy="no-referrer-when-downgrade">
-          </iframe>
+          <div id="leaflet-map" data-lat="{{ $lat }}" data-lng="{{ $lng }}" style="height:300px; border-radius:16px; overflow:hidden;"></div>
+          <div class="mt-2 small text-muted">
+            Showing location for this tenant{{ $profile && ($profile->latitude && $profile->longitude) ? '' : ' (default map shown)' }}.
+          </div>
         </div>
       </div>
 
@@ -283,9 +296,9 @@
               <p><strong>FOLLOW</strong></p>
             </div>
             <div>
-              <p>23 CISATU BLOK F GACOR</p>
-              <p>+62 8124 9571</p>
-              <p>test@gmail.com</p>
+              <p>{{ $address }}</p>
+              <p>{{ $contactPhone }}</p>
+              <p>{{ $contactEmail }}</p>
               <div class="d-flex gap-3 mt-1 social-icons">
                 <a href="https://wa.me/1234567890" target="_blank" class="text-dark">
                   <i class="fab fa-whatsapp fa-xl"></i>
@@ -304,4 +317,24 @@
     </div>
 </section>
 </div>
+@once
+  @push('meta')
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-sA+e2atcf0fU6IVdIB2pOmIG0fKLEHsM2Fs3AxV4Ec8=" crossorigin=""/>
+  @endpush
+@endonce
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-pMpr+QnG4S8FkRA0kZlMaqkOawxjUY8jSQuzCtw3vC4=" crossorigin=""></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const mapEl = document.getElementById('leaflet-map');
+    if (!mapEl || typeof L === 'undefined') return;
+    const lat = parseFloat(mapEl.dataset.lat || '0');
+    const lng = parseFloat(mapEl.dataset.lng || '0');
+    const map = L.map(mapEl).setView([lat, lng], 15);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+    L.marker([lat, lng]).addTo(map);
+  });
+</script>
 </x-customer.layout>

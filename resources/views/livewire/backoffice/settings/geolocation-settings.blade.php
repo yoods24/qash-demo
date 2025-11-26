@@ -24,7 +24,7 @@
     </div>
 
     <div class="mt-3 d-flex gap-2">
-        <button class="btn btn-primary" wire:click="saveGeofence">Save Geolocation</button>
+        <button class="btn btn-main" wire:click="saveGeofence">Save Geolocation</button>
         <button class="btn btn-outline-secondary" type="button" id="btn-use-current">Use Current Location</button>
     </div>
 

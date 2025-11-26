@@ -190,6 +190,7 @@
           <x-backoffice.sidebar-nav-section section="Content (CMS)">
           <x-backoffice.sidebar-nav-link href="{{ route('customer.home') }}" class="bi bi-house me-2">Home Page</x-backoffice.sidebar-nav-link>
           <x-backoffice.sidebar-nav-link href="{{ route('customer.order') }}" class="bi bi-wallet me-2">Order Page</x-backoffice.sidebar-nav-link>
+          <x-backoffice.sidebar-nav-link href="{{ route('backoffice.gallery.index') }}" class="bi bi-images me-2">Gallery</x-backoffice.sidebar-nav-link>
           @can('content_events_view')
             <x-backoffice.sidebar-nav-link href="{{ route('backoffice.events.index') }}" class="bi bi-calendar-event me-2 heroicon heroicon-o-calendar">Events</x-backoffice.sidebar-nav-link>
           @endcan

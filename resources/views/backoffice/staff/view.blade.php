@@ -62,7 +62,7 @@
         <!-- Profile -->
         <div class="tab-pane fade show active" id="tab-profile" role="tabpanel">
             <div class="card card-white border-0 shadow-sm">
-                <div class="card-header bg-white border-0 border-bottom">
+                <div class="card-header border-0 border-bottom">
                     <h6 class="mb-0 text-muted fw-semibold">Basic Information</h6>
                 </div>
                 <div class="card-body">
@@ -107,7 +107,7 @@
         <!-- Security -->
         <div class="tab-pane fade" id="tab-security" role="tabpanel">
             <div class="card card-white border-0 shadow-sm">
-                <div class="card-header bg-white border-0 border-bottom">
+                <div class="card-header border-0 border-bottom">
                     <h6 class="mb-0 text-muted fw-semibold">Change Password</h6>
                 </div>
                 <div class="card-body">
@@ -134,7 +134,7 @@
         <!-- Facial recognition -->
         <div class="tab-pane fade" id="tab-facial-recognition" role="tabpanel">
             <div class="card card-white border-0 shadow-sm">
-                <div class="card-header bg-white border-0 border-bottom">
+                <div class="card-header border-0 border-bottom">
                     <h6 class="mb-0 text-muted fw-semibold">Change Password</h6>
                 </div>
                 <div class="card-body">

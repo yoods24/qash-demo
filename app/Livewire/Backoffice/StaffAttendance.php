@@ -56,11 +56,13 @@ class StaffAttendance extends Component implements HasTable, HasActions, HasSche
     {
         $user = Auth::user();
         $settings = AttendanceSetting::firstOrCreate(['tenant_id' => $user->tenant_id]);
+        $isCombined = ($settings->default_combined ?? false) || ($settings->default_method === 'face+geo');
+        $defaultMethod = $settings->default_method === 'face+geo' ? 'geo' : ($settings->default_method ?? 'geo');
 
         if ($user->attendance_method === 'default') {
-            $effective = ($settings->apply_face_to === 'all' && $settings->default_combined)
+            $effective = ($settings->apply_face_to === 'all' && $isCombined)
                 ? 'default_combined'
-                : ($settings->default_method ?? 'geo');
+                : $defaultMethod;
         } else {
             $effective = $user->attendance_method; // manual|geo|face
         }
@@ -209,8 +211,10 @@ class StaffAttendance extends Component implements HasTable, HasActions, HasSche
     {
         $user = Auth::user();
         $settings = AttendanceSetting::firstOrCreate(['tenant_id' => $user->tenant_id]);
+        $isCombined = ($settings->default_combined ?? false) || ($settings->default_method === 'face+geo');
+        $defaultMethod = $settings->default_method === 'face+geo' ? 'geo' : ($settings->default_method ?? 'geo');
         $effective = $user->attendance_method === 'default'
-            ? (($settings->apply_face_to === 'all' && $settings->default_combined) ? 'default_combined' : ($settings->default_method ?? 'geo'))
+            ? (($settings->apply_face_to === 'all' && $isCombined) ? 'default_combined' : $defaultMethod)
             : $user->attendance_method;
         return in_array($effective, ['geo', 'default_combined'], true);
     }
@@ -218,7 +222,7 @@ class StaffAttendance extends Component implements HasTable, HasActions, HasSche
     #[Computed]
     public function geofenceConfigured(): bool
     {
-        $s = AttendanceSetting::first();
+        $s = AttendanceSetting::firstOrCreate(['tenant_id' => Auth::user()->tenant_id]);
         $g = $s?->geofence ?? [];
         return !empty($g['lat']) && !empty($g['lng']) && !empty($g['radius']);
     }
@@ -228,8 +232,10 @@ class StaffAttendance extends Component implements HasTable, HasActions, HasSche
     {
         $user = Auth::user();
         $settings = AttendanceSetting::firstOrCreate(['tenant_id' => $user->tenant_id]);
+        $isCombined = ($settings->default_combined ?? false) || ($settings->default_method === 'face+geo');
+        $defaultMethod = $settings->default_method === 'face+geo' ? 'geo' : ($settings->default_method ?? 'geo');
         $effective = $user->attendance_method === 'default'
-            ? (($settings->apply_face_to === 'all' && $settings->default_combined) ? 'default_combined' : ($settings->default_method ?? 'geo'))
+            ? (($settings->apply_face_to === 'all' && $isCombined) ? 'default_combined' : $defaultMethod)
             : $user->attendance_method;
         return in_array($effective, ['face', 'default_combined'], true);
     }

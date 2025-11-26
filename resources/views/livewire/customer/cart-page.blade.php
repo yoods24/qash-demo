@@ -1,13 +1,12 @@
 {{-- Component-scoped styles inside root to keep single Livewire root element --}}
 <div class="cart-component-root">
     <div wire:loading.delay.short class="loadingAnimation">
-        <dotlottie-wc
-            src="https://lottie.host/926a98d0-7bf6-4990-8609-25ee02a687a1/N4xc3Fyms2.lottie"
-            style="width: 100px; height: 50px"
-            speed="1"
-            autoplay
-            loop
-        ></dotlottie-wc>
+        <img
+            src="{{ global_asset('storage/logos/Logogram-Orange.png') }}"
+            alt="Loading"
+            style="width: 80px; height: 80px;"
+            class="logo-spin"
+        >
     </div>
     <style>
             /* Accent + base */

@@ -295,6 +295,13 @@ html[data-theme='dark'] .report-card .report-icon {
     z-index: 999;
     position: sticky;
 }
+
+html[data-theme='dark'] .bootstrap-tabs-link-custom {
+    color: var(--secondaryWhite) !important;
+}
+html[data-theme='dark'] .bootstrap-tabs-link-custom:hover {
+    color: var(--mainColorOrange) !important;
+}
 /* Bootstrap Tabs */
 .bootstrap-tabs-link-custom {
     color: var(--secondaryBlack) !important;

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Livewire\Backoffice\Settings;
 
 use App\Models\AttendanceSetting;
-use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Rule;
 use Livewire\Component;
 
@@ -22,29 +21,26 @@ class AttendanceSettings extends Component
     public $geo_lng;
     #[Rule('nullable|integer|min:50|max:5000')]
     public $geo_radius = 200; // meters
+    public string|int|null $tenantId = null;
 
+    public function boot(): void
+    {
+        if ($this->tenantId === null) {
+            $this->tenantId = request()->route('tenant') ?? (function_exists('tenant') ? tenant('id') : null);
+        }
+    }
+    
     public function mount(?string $view = null): void
     {
         if ($view) {
             $this->view = in_array($view, ['attendance','geolocation'], true) ? $view : 'attendance';
         }
-        // Get or create the settings row scoped to current tenant
-        $s = AttendanceSetting::firstOrCreate([], [
-            'face_recognition_enabled' => false,
-            'default_method' => 'geo',
-            'default_combined' => false,
-            'apply_face_to' => 'per_user',
-        ]);
+        $s = $this->getSettings();
 
         $this->face_recognition_enabled = (bool) $s->face_recognition_enabled;
         $this->apply_face_to = (string) ($s->apply_face_to ?? 'per_user');
-
-        // Determine UI mode
-        if ($s->default_combined) {
-            $this->mode = 'default_combined';
-        } else {
-            $this->mode = (string) $s->default_method;
-        }
+        $isCombined = $s->default_combined || $s->default_method === 'face+geo';
+        $this->mode = $isCombined ? 'default_combined' : (string) $s->default_method;
 
         $geo = $s->geofence ?? [];
         $this->geo_lat = $geo['lat'] ?? null;
@@ -54,13 +50,14 @@ class AttendanceSettings extends Component
 
     public function saveAttendance(): void
     {
-        $s = AttendanceSetting::first() ?? new AttendanceSetting();
+        $s = $this->getSettings();
 
         // Persist according to selected mode
-        $s->default_combined = $this->mode === 'default_combined';
-        if ($this->mode === 'default_combined') {
+        $isCombined = $this->mode === 'default_combined';
+        $s->default_combined = $isCombined;
+        if ($isCombined) {
             // Combined requires both geo and face; force-enable face regardless of toggle
-            $s->default_method = 'geo'; // used along with face flag
+            $s->default_method = 'face+geo';
             $s->face_recognition_enabled = true;
         } else {
             // Standalone modes: respect the selected method and the toggle
@@ -76,7 +73,7 @@ class AttendanceSettings extends Component
     public function saveGeofence(): void
     {
         $this->validate();
-        $s = AttendanceSetting::first() ?? new AttendanceSetting();
+        $s = $this->getSettings();
         $s->geofence = [
             'lat' => $this->geo_lat !== null ? (float) $this->geo_lat : null,
             'lng' => $this->geo_lng !== null ? (float) $this->geo_lng : null,
@@ -92,5 +89,21 @@ class AttendanceSettings extends Component
             return view('livewire.backoffice.settings.geolocation-settings');
         }
         return view('livewire.backoffice.settings.attendance-settings');
+    }
+
+    /**
+     * Always return the current tenant's settings row, creating it with defaults when missing.
+     */
+    private function getSettings(): AttendanceSetting
+    {
+        return AttendanceSetting::firstOrCreate(
+            ['tenant_id' => $this->tenantId],
+            [
+                'face_recognition_enabled' => false,
+                'default_method' => 'geo',
+                'default_combined' => false,
+                'apply_face_to' => 'per_user',
+            ],
+        );
     }
 }

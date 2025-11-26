@@ -5,7 +5,9 @@
             <i class="bi bi-check-circle-fill"></i>
         </span>
         <p class="m-0 ms-2 flex-grow-1 text-black"><strong>{{ session('message') }}</strong></p>
-        <button class="close-toast btn text-muted">X</button>
+        {{-- <button class="close-toast text-muted">
+            <i class="bi bi-x "></i>
+        </button> --}}
     </div>
     <div class="toast-progress"></div>
 </div>

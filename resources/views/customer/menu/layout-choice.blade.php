@@ -52,8 +52,8 @@
       </div>
 
       <div class="text-center mt-5">
-        <a href="{{ route('customer.order') }}" class="text-decoration-none reservation-btn w-75">
-          Order Now
+        <a href="{{ route('customer.order') }}">
+          <button class="reservation-btn w-100">Order Now</button>
         </a>
       </div>
     </div>

@@ -6,6 +6,8 @@ namespace App\Services;
 
 use App\Models\TenantProfile;
 use Illuminate\Support\Arr;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 class TenantProfileService
 {
@@ -56,12 +58,55 @@ class TenantProfileService
         return $profile->fresh();
     }
 
+    public function addGalleryPhotos(string $tenantId, array $images): TenantProfile
+    {
+        $profile = $this->getProfile($tenantId);
+        $current = $profile->gallery_photos ?? [];
+
+        foreach ($images as $image) {
+            if (! $image instanceof UploadedFile) {
+                continue;
+            }
+            if (count($current) >= 5) {
+                break;
+            }
+
+            $current[] = $this->storeGalleryImage($tenantId, $image);
+        }
+
+        $profile->gallery_photos = array_values($current);
+        $profile->save();
+
+        return $profile->fresh();
+    }
+
+    public function removeGalleryPhoto(string $tenantId, string $photoPath): TenantProfile
+    {
+        $profile = $this->getProfile($tenantId);
+        $photos = collect($profile->gallery_photos ?? [])
+            ->filter(fn ($path) => $path !== $photoPath)
+            ->values()
+            ->all();
+
+        $profile->gallery_photos = $photos;
+        $profile->save();
+
+        Storage::disk('public')->delete($photoPath);
+
+        return $profile->fresh();
+    }
+
     protected function getProfile(string $tenantId): TenantProfile
     {
         return TenantProfile::firstOrCreate(
             ['tenant_id' => $tenantId],
             ['tenant_id' => $tenantId]
         );
+    }
+
+    protected function storeGalleryImage(string $tenantId, UploadedFile $image): string
+    {
+        return $image->store("tenants/{$tenantId}/gallery", 'public');
     }
 
     protected function sanitizeStringArray(?array $values): ?array

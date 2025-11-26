@@ -16,6 +16,8 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Stancl\Tenancy\Controllers\TenantAssetsController;
 use Stancl\Tenancy\Middleware\InitializeTenancyByPath;
+use Livewire\Livewire;
+use Livewire\Controllers\FilePreviewController;
 
 class TenancyServiceProvider extends ServiceProvider
 {
@@ -124,6 +126,23 @@ class TenancyServiceProvider extends ServiceProvider
             URL::defaults([]);
             View::share('currentTenant', null);
         });
+
+                // Livewire update endpoint (v3)
+        // Livewire::setUpdateRoute(function ($handle) {
+        //     return Route::post('/livewire/update', $handle)
+        //         ->middleware(
+        //             'web',
+        //             'universal',                 // tenancy universal routes
+        //             InitializeTenancyByPath::class, // 👈 path-based identification
+        //         );
+        // });
+
+        // Livewire file preview endpoint
+        // FilePreviewController::$middleware = [
+        //     'web',
+        //     'universal',
+        //     InitializeTenancyByPath::class, // 👈 same here
+        // ];
     }
 
     protected function bootEvents()

@@ -12,9 +12,9 @@
         <p class="text-muted mb-0">Browse every section at a glance and find your next favorite dish.</p>
       </div>
 
-      <div class="text-center mb-4">
-        <a href="{{ route('customer.order') }}" class="btn btn-main px-4 py-2">
-          Order Now
+      <div class="text-center my-3">
+        <a href="{{ route('customer.order') }}">
+          <button class="reservation-btn w-50">Order Now</button>
         </a>
       </div>
 

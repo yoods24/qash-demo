@@ -42,10 +42,12 @@ class FaceRecognitionController extends Controller
 
         // Determine effective method similar to StaffAttendance
         $settings = AttendanceSetting::firstOrCreate(['tenant_id' => $user->tenant_id]);
+        $isCombined = ($settings->default_combined ?? false) || ($settings->default_method === 'face+geo');
+        $defaultMethod = $settings->default_method === 'face+geo' ? 'geo' : ($settings->default_method ?? 'geo');
         if ($user->attendance_method === 'default') {
-            $effective = ($settings->apply_face_to === 'all' && $settings->default_combined)
+            $effective = ($settings->apply_face_to === 'all' && $isCombined)
                 ? 'default_combined'
-                : ($settings->default_method ?? 'geo');
+                : $defaultMethod;
         } else {
             $effective = $user->attendance_method; // manual|geo|face
         }

@@ -117,7 +117,7 @@
 
                     <div class="d-flex justify-content-end gap-2 mt-4">
                         <a href="{{ url()->previous() }}" class="btn btn-light border">Cancel</a>
-                        <button type="submit" class="btn btn-primary px-4">Save Changes</button>
+                        <button type="submit" class="btn btn-main px-4">Save Changes</button>
                     </div>
                 </form>
             </div>

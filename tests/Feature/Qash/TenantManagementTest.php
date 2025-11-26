@@ -30,7 +30,8 @@ class TenantManagementTest extends TestCase
             'name' => 'Acme Cafe',
             'slug' => 'acme-cafe',
             'description' => 'A demo tenant for testing.',
-            'admin_name' => 'Jane Doe',
+            'admin_first_name' => 'Jane',
+            'admin_last_name' => 'Doe',
             'admin_email' => 'jane@acme.test',
             'admin_phone' => '+62 812-0000-0000',
             'admin_password' => 'password123',
@@ -47,6 +48,8 @@ class TenantManagementTest extends TestCase
             'email' => 'jane@acme.test',
             'tenant_id' => 'acme-cafe',
             'is_admin' => true,
+            'firstName' => 'Jane',
+            'lastName' => 'Doe',
         ]);
     }
 

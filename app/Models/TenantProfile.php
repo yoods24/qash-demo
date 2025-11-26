@@ -22,6 +22,7 @@ class TenantProfile extends Model
         'latitude',
         'longitude',
         'logo_url',
+        'gallery_photos',
     ];
 
     protected $casts = [
@@ -29,6 +30,7 @@ class TenantProfile extends Model
         'social_links' => 'array',
         'latitude' => 'float',
         'longitude' => 'float',
+        'gallery_photos' => 'array',
     ];
 
     public function tenant(): BelongsTo

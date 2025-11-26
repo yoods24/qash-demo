@@ -1,4 +1,4 @@
-<x-customer.layout>
+<x-layouts.app>
     <section class="secondary-white-bg">
         <div class="container py-5" style="max-width: 560px;">
             <div class="card shadow-sm">
@@ -31,5 +31,5 @@
             </div>
         </div>
     </section>
-</x-customer.layout>
+</x-layouts.app>
 

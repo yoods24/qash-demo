@@ -49,12 +49,21 @@
 
                             <h6 class="mb-3">Primary Admin</h6>
 
-                            <div class="mb-3">
-                                <label for="admin-name" class="form-label">Name</label>
-                                <input type="text" name="admin_name" id="admin-name" value="{{ old('admin_name') }}" class="form-control @error('admin_name') is-invalid @enderror" placeholder="Jane Doe" required>
-                                @error('admin_name')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="admin-first-name" class="form-label">First name</label>
+                                    <input type="text" name="admin_first_name" id="admin-first-name" value="{{ old('admin_first_name') }}" class="form-control @error('admin_first_name') is-invalid @enderror" placeholder="Jane" required>
+                                    @error('admin_first_name')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="admin-last-name" class="form-label">Last name</label>
+                                    <input type="text" name="admin_last_name" id="admin-last-name" value="{{ old('admin_last_name') }}" class="form-control @error('admin_last_name') is-invalid @enderror" placeholder="Doe" required>
+                                    @error('admin_last_name')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
                             </div>
 
                             <div class="mb-3">
@@ -123,7 +132,8 @@
                                             </td>
                                             <td>
                                                 @if ($primaryAdmin)
-                                                    <div>{{ $primaryAdmin->name }}</div>
+                                                    @php($fullAdminName = trim(($primaryAdmin->firstName ?? '') . ' ' . ($primaryAdmin->lastName ?? '')))
+                                                    <div>{{ $fullAdminName !== '' ? $fullAdminName : $primaryAdmin->email }}</div>
                                                     <small class="text-muted">{{ $primaryAdmin->email }}</small>
                                                 @else
                                                     <span class="badge bg-warning text-dark">No admin record</span>
@@ -135,7 +145,7 @@
                                                 </small>
                                             </td>
                                             <td class="text-end">
-                                                <a href="{{ url('/t/' . $tenant->path) }}" class="btn btn-outline-secondary btn-sm" target="_blank" rel="noopener">Visit</a>
+                                                <a href="{{ url('/t/' . $tenant->path) . '/home'}}" class="btn btn-outline-secondary btn-sm" target="_blank" rel="noopener">Visit</a>
                                             </td>
                                         </tr>
                                     @empty
