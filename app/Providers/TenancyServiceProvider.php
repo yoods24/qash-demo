@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use Livewire\Livewire;
 use Stancl\Tenancy\Jobs;
 use Stancl\Tenancy\Events;
 use Stancl\Tenancy\Listeners;
@@ -14,10 +15,10 @@ use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
+use Livewire\Controllers\FilePreviewController;
 use Stancl\Tenancy\Controllers\TenantAssetsController;
 use Stancl\Tenancy\Middleware\InitializeTenancyByPath;
-use Livewire\Livewire;
-use Livewire\Controllers\FilePreviewController;
+use Stancl\Tenancy\Middleware\InitializeTenancyByRequestData;
 
 class TenancyServiceProvider extends ServiceProvider
 {
@@ -127,15 +128,23 @@ class TenancyServiceProvider extends ServiceProvider
             View::share('currentTenant', null);
         });
 
-                // Livewire update endpoint (v3)
-        // Livewire::setUpdateRoute(function ($handle) {
-        //     return Route::post('/livewire/update', $handle)
-        //         ->middleware(
-        //             'web',
-        //             'universal',                 // tenancy universal routes
-        //             InitializeTenancyByPath::class, // 👈 path-based identification
-        //         );
-        // });
+        // Configure RequestData identification
+        InitializeTenancyByRequestData::$header = 'X-Tenant';      // optional, this is default
+        InitializeTenancyByRequestData::$queryParameter = null;    // only use header
+
+        // 👇 IMPORTANT: don't throw if tenant can't be identified (e.g. central app Livewire)
+        InitializeTenancyByRequestData::$onFail = function ($exception, $request, $next) {
+            // Just continue without tenancy instead of throwing
+            return $next($request);
+        };
+
+        Livewire::setUpdateRoute(function ($handle) {
+            return Route::post('/livewire/update', $handle)
+                ->middleware([
+                    'web',
+                    InitializeTenancyByRequestData::class,
+                ]);
+        });
 
         // Livewire file preview endpoint
         // FilePreviewController::$middleware = [

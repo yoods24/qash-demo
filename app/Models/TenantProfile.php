@@ -22,15 +22,14 @@ class TenantProfile extends Model
         'latitude',
         'longitude',
         'logo_url',
-        'gallery_photos',
     ];
 
     protected $casts = [
         'opening_hours' => 'array',
         'social_links' => 'array',
+        'gallery_photos' => 'array',
         'latitude' => 'float',
         'longitude' => 'float',
-        'gallery_photos' => 'array',
     ];
 
     public function tenant(): BelongsTo

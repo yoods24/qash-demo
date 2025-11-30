@@ -41,7 +41,16 @@
     <x-customer.footer></x-customer.footer>
 
     @livewireScripts
-
+    @if (tenant())
+        <script>
+            document.addEventListener('livewire:init', () => {
+                Livewire.hook('request', ({ options }) => {
+                    options.headers = options.headers || {};
+                    options.headers['X-Tenant'] = '{{ tenant()->id }}';
+                });
+            });
+        </script>
+    @endif
 
     <!-- JS LIBRARIES -->
     <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.min.js"></script>

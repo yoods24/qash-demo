@@ -1,4 +1,4 @@
-<x-layouts.app>
+<x-backoffice.login-layout>
     <style>
     /* Container style */
     .custom-tabs {
@@ -120,5 +120,4 @@
             </div>
         </div>
     </section>
-</div>
-</x-qash.layout>
+</x-backoffice.login-layout>

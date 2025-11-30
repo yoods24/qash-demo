@@ -26,6 +26,16 @@
         {{$slot}}
     </main>
      @livewireScripts
+     @if (tenant())
+    <script>
+        document.addEventListener('livewire:init', () => {
+            Livewire.hook('request', ({ options }) => {
+                options.headers = options.headers || {};
+                options.headers['X-Tenant'] = '{{ tenant()->id }}';
+            });
+        });
+    </script>
+@endif
 </body>
 {{-- splide --}}
 <script src="https://cdn.jsdelivr.net/npm/@splidejs/splide/dist/js/splide.min.js"></script>

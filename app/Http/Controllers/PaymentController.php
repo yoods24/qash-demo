@@ -158,6 +158,14 @@ class PaymentController extends Controller
             'xendit_invoice_url' => $invoice->getInvoiceUrl(),
         ])->save();
 
+        if (function_exists('ds')) {
+            ds([
+                'context' => 'payment-controller.handle-digital',
+                'order_id' => $order->id,
+                'invoice_payload' => method_exists($invoice, 'jsonSerialize') ? $invoice->jsonSerialize() : $invoice,
+            ]);
+        }
+
         return redirect()->away($invoice->getInvoiceUrl());
     }
 

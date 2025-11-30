@@ -2,11 +2,13 @@
 
 namespace App\Services\Customer\OrderPage;
 
-use App\Livewire\Customer\OrderPage;
 use App\Models\Category;
 use App\Models\Product;
 use App\Support\PriceAfterDiscount;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Cache\TaggableStore;
+use Throwable;
 
 /**
  * Fetches product data, groups it for the UI, and provides price computations
@@ -14,15 +16,25 @@ use Illuminate\Support\Collection;
  */
 class OrderPageProductService
 {
+    private const CACHE_TTL_SECONDS = 300;
+
     public function loadAllGrouped(?string $tenantId): Collection
     {
-        $products = Product::with('category')
-            ->where('active', 1)
-            ->get();
+        $tenantKey = $this->tenantCacheKey($tenantId);
 
-        $products = $this->withDiscounts($products, $tenantId);
+        return $this->rememberSafely(
+            "order_page:products:all:{$tenantKey}",
+            function () use ($tenantId) {
+                $products = Product::query()
+                    ->with('category')
+                    ->where('active', 1)
+                    ->get();
 
-        return $this->groupByCategory($products);
+                $products = $this->withDiscounts($products, $tenantId);
+
+                return $this->groupByCategory($products);
+            }
+        );
     }
 
     public function loadByCategory(?string $tenantId, $categoryId): Collection
@@ -33,37 +45,54 @@ class OrderPageProductService
             return $this->loadAllGrouped($tenantId);
         }
 
-        $items = Product::where('category_id', $categoryId)
-            ->where('active', 1)
-            ->get();
+        return $this->rememberSafely(
+            "order_page:products:category:{$this->tenantCacheKey($tenantId)}:{$categoryId}",
+            function () use ($category, $categoryId, $tenantId) {
+                $items = Product::where('category_id', $categoryId)
+                    ->where('active', 1)
+                    ->get();
 
-        $items = $this->withDiscounts($items, $tenantId);
+                $items = $this->withDiscounts($items, $tenantId);
 
-        return collect([
-            $categoryId => [
-                'id' => $categoryId,
-                'name' => $category->name,
-                'items' => $items,
-            ],
-        ]);
+                return collect([
+                    $categoryId => [
+                        'id' => $categoryId,
+                        'name' => $category->name,
+                        'items' => $items,
+                    ],
+                ]);
+            }
+        );
     }
 
     public function loadFeatured(?string $tenantId): Collection
     {
-        $featured = Product::where('featured', 1)
-            ->where('active', 1)
-            ->get();
+        $tenantKey = $this->tenantCacheKey($tenantId);
 
-        return $this->withDiscounts($featured, $tenantId);
+        return $this->rememberSafely(
+            "order_page:products:featured:{$tenantKey}",
+            function () use ($tenantId) {
+                $featured = Product::where('featured', 1)
+                    ->where('active', 1)
+                    ->get();
+
+                return $this->withDiscounts($featured, $tenantId);
+            }
+        );
     }
 
     public function withDiscounts(Collection $products, ?string $tenantId): Collection
     {
         return $products->map(function (Product $product) use ($tenantId) {
-            $product->setAttribute(
-                'discount_details',
-                PriceAfterDiscount::calculate($product, $tenantId)
+
+            $key = "order_page:discount:{$this->tenantCacheKey($tenantId)}:{$product->id}";
+
+            $discount = $this->rememberSafely(
+                $key,
+                fn () => PriceAfterDiscount::calculate($product, $tenantId)
             );
+
+            $product->setAttribute('discount_details', $discount);
 
             return $product;
         });
@@ -88,28 +117,6 @@ class OrderPageProductService
         return $total;
     }
 
-    public function prepareSelectedProduct(OrderPage $component, int $productId): void
-    {
-        $component->selectedProduct = Product::with(['options.values', 'category'])->findOrFail($productId);
-        $component->selectedProductSoldOut = (int) ($component->selectedProduct->stock_qty ?? 0) <= 0;
-
-        $component->selectedOptions = [];
-        foreach ($component->selectedProduct->options as $option) {
-            $component->selectedOptions[$option->id] = null;
-        }
-
-        $component->selectedProduct->setAttribute(
-            'discount_details',
-            PriceAfterDiscount::calculate($component->selectedProduct, $this->resolveTenantId($component))
-        );
-
-        $component->quantity = $component->selectedProductSoldOut ? 0 : 1;
-        $component->note = '';
-        $component->showOptionModal = true;
-
-        $component->dispatch('lock-scroll');
-    }
-
     private function groupByCategory(Collection $products): Collection
     {
         return $products
@@ -123,8 +130,29 @@ class OrderPageProductService
             });
     }
 
-    private function resolveTenantId(OrderPage $component): ?string
+    private function tenantCacheKey(?string $tenantId): string
     {
-        return tenant()?->id ?? $component->tenantId ?? request()->route('tenant');
+        return $tenantId ?: 'public';
+    }
+
+    /**
+        * Use cache when the store supports tags (required by tenancy-scoped stores);
+        * otherwise fall back to uncached execution to avoid "store does not support tagging".
+        */
+    private function rememberSafely(string $key, callable $callback)
+    {
+        try {
+            if (Cache::getStore() instanceof TaggableStore) {
+                return Cache::remember($key, self::CACHE_TTL_SECONDS, $callback);
+            }
+
+            return $callback();
+        } catch (Throwable $e) {
+            if (str_contains(strtolower($e->getMessage()), 'tag')) {
+                return $callback();
+            }
+
+            throw $e;
+        }
     }
 }

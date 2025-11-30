@@ -197,6 +197,14 @@ class PaymentPage extends Component
             return null;
         }
 
+        if (function_exists('ds')) {
+            ds([
+                'context' => 'livewire.payment-page.start-digital-payment',
+                'order_id' => $this->order->id,
+                'invoice_payload' => method_exists($invoice, 'jsonSerialize') ? $invoice->jsonSerialize() : $invoice,
+            ]);
+        }
+
         $this->order->forceFill([
             'xendit_invoice_id' => $invoice->getId(),
             'xendit_invoice_url' => $invoice->getInvoiceUrl(),

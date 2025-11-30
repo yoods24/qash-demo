@@ -1,5 +1,7 @@
 <?php
 
+use Stancl\Tenancy\Middleware\InitializeTenancyByRequestData;
+
 return [
 
     /*
@@ -66,12 +68,11 @@ return [
         'disk' => null,
         'rules' => null,
         'directory' => null,
-        'middleware' => null,
-        // 'middleware' => [
-        //     'throttle:60,1',
-        //     'universal',
-        //     \Stancl\Tenancy\Middleware\InitializeTenancyByPath::class, // 👈 here
-        // ],
+
+        'middleware' => [
+            'throttle:60,1',
+        InitializeTenancyByRequestData::class,
+        ],
 
         'preview_mimes' => [
             'png', 'gif', 'bmp', 'svg', 'wav', 'mp4',

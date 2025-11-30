@@ -30,6 +30,7 @@
     @vite([
       'resources/css/backoffice.css',
       'resources/js/backoffice.js',
+      'resources/js/logo-loader.js',
       'resources/css/app.css',
       'resources/js/app.js',
       'resources/css/filament.css',

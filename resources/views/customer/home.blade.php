@@ -1,4 +1,5 @@
 <x-customer.layout>
+  
 @php
     $profile = $tenantInfo ?? null;
     $openingHours = (array) ($profile->opening_hours ?? []);
@@ -17,6 +18,7 @@
     $contactPhone = $profile->contact_phone ?? 'Phone not set';
     $contactEmail = $profile->contact_email ?? 'Email not set';
 @endphp
+
 <button class="about-btn" data-bs-toggle="modal" data-bs-target="#sideModal">
     <i class="bi bi-question"></i>
 </button>
@@ -60,7 +62,7 @@
             <div class="d-flex justify-content-between">
               <div>
                 <i class="bi bi-telephone">
-                  <span class="text-orange"> +62 81281381395</span>
+                  <span class="text-orange"> {{$contactEmail}}</span>
                 </i>
               </div>
               <div class="d-flex gap-3 mt-1 social-icons">
@@ -274,7 +276,7 @@
     <div class="row g-4">
       
       <!-- Map Section -->
-      <div class="col-md-4">
+      {{-- <div class="col-md-4">
         <h5 class="section-title text-center">WHERE ARE WE?</h5>
         <div class="card-style mt-3">
           <div id="leaflet-map" data-lat="{{ $lat }}" data-lng="{{ $lng }}" style="height:300px; border-radius:16px; overflow:hidden;"></div>
@@ -282,7 +284,7 @@
             Showing location for this tenant{{ $profile && ($profile->latitude && $profile->longitude) ? '' : ' (default map shown)' }}.
           </div>
         </div>
-      </div>
+      </div> --}}
 
       <!-- Contact Info -->
       <div class="col-md-4">

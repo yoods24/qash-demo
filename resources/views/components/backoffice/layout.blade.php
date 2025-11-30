@@ -32,6 +32,7 @@
     @vite([
       'resources/css/backoffice.css',
       'resources/js/backoffice.js',
+      'resources/js/logo-loader.js',
       'resources/css/app.css',
       'resources/js/app.js',
       'resources/css/filament.css',
@@ -70,5 +71,16 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
   @filamentScripts
   @livewireScripts
+
+  @if (tenant())
+    <script>
+        document.addEventListener('livewire:init', () => {
+            Livewire.hook('request', ({ options }) => {
+                options.headers = options.headers || {};
+                options.headers['X-Tenant'] = '{{ tenant()->id }}';
+            });
+        });
+    </script>
+@endif
 </body>
 </html>

@@ -1,5 +1,5 @@
 
-<div class="container py-4 order-container">
+<div class="container py-4 order-container" wire:init="load">
     <div wire:loading.delay.short class="loadingAnimation">
         <img
             src="{{ global_asset('storage/logos/Logogram-Orange.png') }}"
@@ -177,6 +177,7 @@
         </div>
     @endif
 
+    @if($loaded)
     @if($selectedCategory === 'all')
     {{-- Voucher Lists --}}
 
@@ -234,7 +235,6 @@
             </ul>
         </div>
     </div>
-    @else
     @endif
 
 
@@ -306,6 +306,11 @@
     </div>
 @endforeach
 
+    @else
+        <div class="text-center py-5 text-muted">
+            Loading menu...
+        </div>
+    @endif
 
 
 @if($showOptionModal && $selectedProduct)
@@ -610,7 +615,7 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-danger" wire:click="cancelCustomerModal">Cancel</button>
+        <button type="button" class="btn btn-outline-danger" wire:click="cancelCustomerModal">Cancel</button>
         <button type="button" class="btn btn-primer" wire:click="saveCustomer">
             {{ $pendingAction === 'add_to_cart' ? 'Save & Add to Cart' : 'Save' }}
         </button>

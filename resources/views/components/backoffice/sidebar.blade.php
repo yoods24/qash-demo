@@ -40,19 +40,11 @@
           @can('attendance_view')
             <x-backoffice.sidebar-nav-link href="{{ route('backoffice.attendance.index') }}" class="bi bi-building me-2" >Attendance</x-backoffice.sidebar-nav-link>
           @endcan
-        </x-backoffice.sidebar-nav-section>
-        <x-backoffice.sidebar-nav-section section="Home">
-          @can('profile_view')
-            <x-backoffice.sidebar-nav-link href="{{ route('backoffice.staff.view', ['staff' => request()->user()->id]) }}" class="bi bi-cash-coin me-2">Profile</x-backoffice.sidebar-nav-link>
-          @endcan
-          @can('settings_view')
-            <x-backoffice.sidebar-nav-link href="{{ route('backoffice.settings.index') }}" class="bi bi-gear me-2" >Settings</x-backoffice.sidebar-nav-link>
-          @endcan
           @can('notification_view')
             <x-backoffice.sidebar-nav-link href="{{route('backoffice.notification.index')}}" class="bi bi-bell me-2" >Notification</x-backoffice.sidebar-nav-link>
           @endcan
-          @can('taxes_view')
-            <x-backoffice.sidebar-nav-link href="{{route('backoffice.taxes.index')}}" class="bi bi-cash me-2" >Taxes</x-backoffice.sidebar-nav-link>
+          @can('profile_view')
+            <x-backoffice.sidebar-nav-link href="{{ route('backoffice.staff.view', ['staff' => request()->user()->id]) }}" class="bi bi-cash-coin me-2">Profile</x-backoffice.sidebar-nav-link>
           @endcan
         </x-backoffice.sidebar-nav-section>
 
@@ -185,7 +177,18 @@
               <x-backoffice.sidebar-nav-link href="{{route('backoffice.kitchen.index')}}" class="bi bi-fork-knife me-2" >O.S.S</x-backoffice.sidebar-nav-link>
           </x-backoffice.sidebar-nav-section>
         @endcan
-        
+
+        {{-- @can('Setup & Configuration') --}}
+          <x-backoffice.sidebar-nav-section section="Setup & Configuration">
+            @can('settings_view')
+              <x-backoffice.sidebar-nav-link href="{{ route('backoffice.settings.index') }}" class="bi bi-gear me-2" >Settings</x-backoffice.sidebar-nav-link>
+            @endcan
+            @can('taxes_view')
+              <x-backoffice.sidebar-nav-link href="{{route('backoffice.taxes.index')}}" class="bi bi-cash me-2" >Taxes</x-backoffice.sidebar-nav-link>
+            @endcan
+          </x-backoffice.sidebar-nav-section>
+        {{-- @endcan --}}
+
         @canany($contentPermissions)
           <x-backoffice.sidebar-nav-section section="Content (CMS)">
           <x-backoffice.sidebar-nav-link href="{{ route('customer.home') }}" class="bi bi-house me-2">Home Page</x-backoffice.sidebar-nav-link>

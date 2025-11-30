@@ -9,6 +9,8 @@ use App\Models\Permission;
 use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
+use Database\Seeders\TenantDefaultRolesSeeder;
+use Database\Seeders\TenantNavigationPermissionsSeeder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -80,8 +82,16 @@ class TenantController extends Controller
             }
 
             $superAdminRole = Role::firstOrCreate(['name' => 'Super Admin']);
-            $superAdminRole->syncPermissions(Permission::all());
+
+            // Ensure navigation/action permissions exist for the tenant
+            app(TenantNavigationPermissionsSeeder::class)->run();
+            app(TenantDefaultRolesSeeder::class)->run();
+            $permissions = Permission::all();
+
+            // Give Super Admin role and user every permission available
+            $superAdminRole->syncPermissions($permissions);
             $admin->assignRole($superAdminRole);
+            $admin->syncPermissions($permissions);
 
             if (function_exists('tenancy')) {
                 tenancy()->end();

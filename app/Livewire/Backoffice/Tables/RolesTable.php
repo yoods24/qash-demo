@@ -30,7 +30,7 @@ class RolesTable extends Component implements HasTable, HasActions, HasSchemas
     }
     public function table(Table $table):Table {
         return $table
-            ->query(Role::query())
+            ->query(Role::query()->where('name', '!=', 'Super Admin'))
             ->columns([
                 TextColumn::make('name')
             ])

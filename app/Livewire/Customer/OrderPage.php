@@ -4,6 +4,7 @@ namespace App\Livewire\Customer;
 
 use Livewire\Component;
 use App\Models\Category;
+use App\Models\Product;
 use Darryldecode\Cart\Facades\CartFacade as Cart;
 use Illuminate\Support\Facades\Session;
 use App\Services\OrderService;
@@ -13,6 +14,7 @@ use App\Services\Customer\OrderPage\OrderPageCustomerService;
 use App\Services\Customer\OrderPage\OrderPageInitializer;
 use App\Services\Customer\OrderPage\OrderPageOrderTypeService;
 use App\Services\Customer\OrderPage\OrderPageProductService;
+use Livewire\Attributes\Computed;
 
 class OrderPage extends Component
 {
@@ -31,6 +33,7 @@ class OrderPage extends Component
     public $customerGender = null; // 'man' | 'women' | null
     public $username = null;
     public $pendingAction = null; // 'add_to_cart' | 'update_profile' | null
+    public bool $loaded = false;
     public $tenantId = null;   // current tenant id
     public $tenantName = null; // display-only name
     public $currentTable = null; // label for current dining table
@@ -47,6 +50,12 @@ class OrderPage extends Component
         $orderTypeService->syncCurrentTable($this);
     }
 
+    public function load(): void
+    {
+        $this->loaded = true;
+        $this->dispatch('categoryUpdated');
+    }
+
     public function filterCategory($categoryId): void
     {
         $this->selectedCategory = $categoryId;
@@ -60,7 +69,7 @@ class OrderPage extends Component
 
     public function showProductOptions(int $productId, OrderPageProductService $productService): void
     {
-        $productService->prepareSelectedProduct($this, $productId);
+        $this->loadSelectedProductDetails($productId, $productService);
     }
 
     public function incrementQuantity(): void
@@ -158,14 +167,16 @@ class OrderPage extends Component
         $this->dispatch('unlock-scroll');
     }
 
-    public function getTotalPriceProperty()
+    #[Computed]
+    public function totalPrice()
     {
         $pricing = $this->selectedProductPriceInfo;
 
         return $pricing['unit_final'] * $this->quantity;
     }
 
-    public function getSelectedProductPriceInfoProperty(): array
+    #[Computed]
+    public function selectedProductPriceInfo(): array
     {
         if (! $this->selectedProduct) {
             return [
@@ -177,7 +188,7 @@ class OrderPage extends Component
             ];
         }
 
-        $productService = app(OrderPageProductService::class);
+        $productService = $this->productService();
         $unitPrice = $productService->computeUnitPrice($this->selectedProduct, $this->selectedOptions);
 
         $pricing = PriceAfterDiscount::calculate(
@@ -194,25 +205,65 @@ class OrderPage extends Component
             'discount_name' => $pricing['discount_name'],
         ];
     }
+    #[Computed]
+    public function productsForView()
+    {
+        if (! $this->loaded) {
+            return collect();
+        }
+
+        $service = $this->productService();
+        $tenantId = $this->resolveTenantId();
+
+        return $this->selectedCategory === 'all'
+            ? $service->loadAllGrouped($tenantId)
+            : $service->loadByCategory($tenantId, $this->selectedCategory);
+    }
+
+    #[Computed]
+    public function featuredProducts()
+    {
+        if (! $this->loaded) {
+            return collect();
+        }
+
+        return $this->productService()->loadFeatured($this->resolveTenantId());
+    }
 
     public function render()
     {
-        $productService = app(OrderPageProductService::class);
-        $tenantId = $this->resolveTenantId();
-
-        $productsForView = $this->selectedCategory === 'all'
-            ? $productService->loadAllGrouped($tenantId)
-            : $productService->loadByCategory($tenantId, $this->selectedCategory);
-
-        $featured = $productService->loadFeatured($tenantId);
-
         return view('livewire.customer.order-page', [
-            'products'           => $productsForView,
-            'featuredProducts'   => $featured,
-            'cartTotal'          => Cart::getTotal(),
-            'cartQuantity'       => Cart::getTotalQuantity(),
+            'products' => $this->productsForView,
+            'featuredProducts' => $this->featuredProducts,
+            'cartTotal' => Cart::getTotal(),
+            'cartQuantity' => Cart::getTotalQuantity(),
             'availableDiscounts' => $this->availableDiscounts,
         ]);
+    }
+
+    private function productService(): OrderPageProductService
+    {
+        return app(OrderPageProductService::class);
+    }
+
+    private function loadSelectedProductDetails(int $productId, OrderPageProductService $productService): void
+    {
+        $product = Product::with(['options.values', 'category'])->findOrFail($productId);
+
+        $this->selectedProduct = $productService
+            ->withDiscounts(collect([$product]), $this->resolveTenantId())
+            ->first();
+
+        $this->selectedProductSoldOut = (int) ($this->selectedProduct->stock_qty ?? 0) <= 0;
+        $this->selectedOptions = $this->selectedProduct->options
+            ->mapWithKeys(fn ($option) => [$option->id => null])
+            ->toArray();
+
+        $this->quantity = $this->selectedProductSoldOut ? 0 : 1;
+        $this->note = '';
+        $this->showOptionModal = true;
+
+        $this->dispatch('lock-scroll');
     }
 
     private function resolveTenantId(): ?string

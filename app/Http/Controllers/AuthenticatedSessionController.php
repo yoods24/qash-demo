@@ -36,7 +36,8 @@ class AuthenticatedSessionController extends Controller
             ds(redirect()->intended(route('backoffice.dashboard', ['tenant' => $tenantId])));
             
             // Redirect to tenant backoffice dashboard
-            return redirect()->intended(route('backoffice.dashboard', ['tenant' => $tenantId]));
+            return redirect()->intended(route('backoffice.dashboard', ['tenant' => $tenantId]))
+            ->with('message', "Successfully logged in. Welcome . {$user->fullName()}");
         }
 
         // If credentials don't match, return with an error
@@ -47,6 +48,6 @@ class AuthenticatedSessionController extends Controller
 
     public function destroy() {
         Auth::logout();
-        return redirect('/login')->with('message', 'You have been logged out!');
+        return redirect('/login')->with('message', 'You have Successfully logged out!');
     }
 }
