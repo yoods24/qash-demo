@@ -828,15 +828,6 @@ background: linear-gradient(to bottom right, #fff8f0, #ffffff);
     background-color: rgba(0,0,0,0.3);
 }
 
-.loadingAnimation {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 9999;
-    pointer-events: none;
-}
-
 /* category scroll */
 .sidebar-category {
     padding-bottom: 8px; /* space for scrollbar */

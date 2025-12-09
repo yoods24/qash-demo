@@ -48,6 +48,7 @@ class AuthenticatedSessionController extends Controller
 
     public function destroy() {
         Auth::logout();
-        return redirect('/login')->with('message', 'You have Successfully logged out!');
+        return redirect('/login')
+        ->with('message', 'You have Successfully logged out!');
     }
 }

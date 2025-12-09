@@ -11,13 +11,17 @@ use App\Models\Product;
 use App\Models\ProductOptionValue;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\TenantNotification;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Darryldecode\Cart\Facades\CartFacade as Cart;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 use App\Support\CartItemIdentifier;
 use App\Services\OrderTaxCalculator;
+use App\Services\Customer\DiscountFetcher;
 use App\Jobs\SendInvoiceEmailJob;
+use App\Support\PriceAfterDiscount;
 
 class PosPage extends Component
 {
@@ -26,7 +30,9 @@ class PosPage extends Component
     // Catalog state
     public string $search = '';
     public ?int $categoryId = null;
+    public bool $productsLoaded = false;
     protected OrderTaxCalculator $orderTaxCalculator;
+    protected DiscountFetcher $discountFetcher;
 
     // POS inputs
     public ?int $customerId = null;
@@ -41,51 +47,46 @@ class PosPage extends Component
     #[Validate('nullable|in:male,female,other')]
     public ?string $newCustomerGender = null;
 
-    public function boot(OrderTaxCalculator $orderTaxCalculator): void
+    // Payment modal
+    public bool $showPaymentModal = false;
+    public string $paymentMethod = 'cash';
+    public string $cashReceivedFormatted = '';
+    public ?float $cashReceivedNumeric = null;
+    public bool $showCustomerSearch = false;
+    public string $customerSearch = '';
+    public array $customerSearchResults = [];
+    public bool $showReceiptModal = false;
+    public ?array $receiptData = null;
+
+    public function boot(OrderTaxCalculator $orderTaxCalculator, DiscountFetcher $discountFetcher): void
     {
         if ($this->tenantId === null) {
             $this->tenantId = request()->route('tenant') ?? (function_exists('tenant') ? tenant('id') : null);
         }
         $this->orderTaxCalculator = $orderTaxCalculator;
+        $this->discountFetcher = $discountFetcher;
 
     }
 
     // Product modal state
-    public ? Product $selectedProduct = null;
+    public ?Product $selectedProduct = null;
     public array $selectedOptions = [];
     public int $quantity = 1;
     public bool $showOptionModal = false;
     public string $note = '';
-    public array $suggestedAddons = [];
-    public array $addonQty = []; // [productId => qty]
+    public ?string $editingItemId = null;
 
     public function showProductOptions(int $productId): void
     {
         $this->selectedProduct = Product::with(['options.values'])->findOrFail($productId);
+        $this->selectedProduct = $this->applyDiscount($this->selectedProduct);
         $this->selectedOptions = [];
         foreach ($this->selectedProduct->options as $opt) {
             $this->selectedOptions[$opt->id] = null;
         }
         $this->quantity = 1;
         $this->note = '';
-        // Suggest two random addons (serialize to plain arrays for Livewire rehydration)
-        $this->suggestedAddons = Product::query()
-            ->when($this->tenantId, fn($q) => $q->where('tenant_id', $this->tenantId))
-            ->where('id', '!=', $productId)
-            ->inRandomOrder()
-            ->limit(2)
-            ->get()
-            ->map(function ($p) {
-                return [
-                    'id' => (int) $p->id,
-                    'name' => (string) $p->name,
-                    'price' => (float) ($p->price ?? 0),
-                    'image_url' => $p->product_image_url,
-                ];
-            })
-            ->all();
-        $this->addonQty = [];
-        foreach ($this->suggestedAddons as $ad) { $this->addonQty[$ad['id']] = 0; }
+        $this->editingItemId = null;
         $this->showOptionModal = true;
         $this->dispatch('lock-scroll');
         $this->dispatch('pos-open-product-modal');
@@ -96,12 +97,11 @@ class PosPage extends Component
         $this->showOptionModal = false;
         $this->dispatch('unlock-scroll');
         $this->dispatch('pos-close-product-modal');
+        $this->editingItemId = null;
     }
 
     public function incrementQuantity(): void { $this->quantity++; }
     public function decrementQuantity(): void { if ($this->quantity > 1) $this->quantity--; }
-    public function incAddon(int $pid): void { $this->addonQty[$pid] = max(0, (int)($this->addonQty[$pid] ?? 0) + 1); }
-    public function decAddon(int $pid): void { $this->addonQty[$pid] = max(0, (int)($this->addonQty[$pid] ?? 0) - 1); }
 
     public function addSelectedProductToCart(): void
     {
@@ -123,66 +123,54 @@ class PosPage extends Component
             }
         }
 
+        $pricing = PriceAfterDiscount::calculate($this->selectedProduct, $this->resolveTenantId(), $price, $this->discountFetcher);
+
+        if ($this->editingItemId) {
+            Cart::remove($this->editingItemId);
+        }
+
         // Add main line item
         Cart::add([
             'id' => CartItemIdentifier::make($this->selectedProduct->id, $options),
             'name' => $this->selectedProduct->name,
-            'price' => $price,
+            'price' => (float) ($pricing['final_price'] ?? $price),
             'quantity' => $this->quantity,
             'attributes' => [
                 'product_id' => $this->selectedProduct->id,
                 'options' => $options,
                 'note' => $this->note,
                 'base_price' => (float) ($this->selectedProduct->price ?? 0),
+                'raw_price' => $price,
+                'discount_id' => $pricing['discount_id'] ?? null,
+                'discount_amount' => (float) ($pricing['discount_amount'] ?? 0),
+                'discount_name' => $pricing['discount_name'] ?? null,
+                'discount_badge' => $pricing['badge'] ?? null,
+                'final_price' => (float) ($pricing['final_price'] ?? $price),
                 'estimated_seconds' => (int) ($this->selectedProduct->estimated_seconds ?? 0),
             ],
         ]);
 
-        // Add-ons as separate items
-        foreach ($this->addonQty as $pid => $qty) {
-            $qty = (int) $qty;
-            if ($qty <= 0) continue;
-            $p = Product::find($pid);
-            if (!$p) continue;
-            Cart::add([
-                'id' => CartItemIdentifier::make($p->id, ['parent' => $this->selectedProduct->id, 'is_addon' => true]),
-                'name' => $p->name,
-                'price' => (float) ($p->price ?? 0),
-                'quantity' => $qty,
-                'attributes' => [
-                    'product_id' => $p->id,
-                    'is_addon' => true,
-                    'parent_product_id' => $this->selectedProduct->id,
-                    'estimated_seconds' => (int) ($p->estimated_seconds ?? 0),
-                ],
-            ]);
-        }
-
         $this->showOptionModal = false;
         $this->dispatch('unlock-scroll');
         $this->dispatch('pos-close-product-modal');
-        $this->reset(['selectedProduct','selectedOptions','quantity','note','suggestedAddons','addonQty']);
+        $this->reset(['selectedProduct','selectedOptions','quantity','note','editingItemId']);
         $this->dispatch('cart-updated');
     }
 
     public function getModalTotalProperty(): float
     {
         if (!$this->selectedProduct) return 0.0;
-        $t = (float) ($this->selectedProduct->price ?? 0);
+        $raw = (float) ($this->selectedProduct->price ?? 0);
         foreach (($this->selectedProduct->options ?? []) as $opt) {
             $valueId = $this->selectedOptions[$opt->id] ?? null;
             if ($valueId) {
                 $val = $opt->values->firstWhere('id', $valueId);
-                if ($val) $t += (float) $val->price_adjustment;
+                if ($val) $raw += (float) $val->price_adjustment;
             }
         }
-        $t = $t * max(1, $this->quantity);
-        // include add-ons preview
-        foreach ($this->suggestedAddons as $ad) {
-            $qty = (int) ($this->addonQty[$ad['id']] ?? 0);
-            if ($qty > 0) $t += (float) ($ad['price'] ?? 0) * $qty;
-        }
-        return $t;
+        $pricing = PriceAfterDiscount::calculate($this->selectedProduct, $this->resolveTenantId(), $raw, $this->discountFetcher);
+        $total = (float) ($pricing['final_price'] ?? $raw) * max(1, $this->quantity);
+        return $total;
     }
 
     public function mount(): void
@@ -248,6 +236,10 @@ class PosPage extends Component
 
     public function getProductsProperty()
     {
+        if (! $this->productsLoaded) {
+            return collect();
+        }
+
         return Product::query()
             ->when($this->tenantId, fn ($q) => $q->where('tenant_id', $this->tenantId))
             ->when($this->categoryId, fn ($q) => $q->where('category_id', $this->categoryId))
@@ -260,7 +252,13 @@ class PosPage extends Component
             })
             ->latest('id')
             ->limit(60)
-            ->get();
+            ->get()
+            ->map(fn (Product $product) => $this->applyDiscount($product));
+    }
+
+    public function loadProducts(): void
+    {
+        $this->productsLoaded = true;
     }
 
     // Cart helpers
@@ -273,11 +271,15 @@ class PosPage extends Component
     public function getCartSummaryProperty(): array
     {
         $subtotal = 0.0;
+        $discount = 0.0;
         foreach (Cart::getContent() as $ci) {
-            $subtotal += (float)$ci->price * (int)$ci->quantity;
+            $rawPrice = (float) ($ci->attributes['raw_price'] ?? $ci->price);
+            $subtotal += $rawPrice * (int)$ci->quantity;
+            $lineDiscount = (float) ($ci->attributes['discount_amount'] ?? 0);
+            $discount += $lineDiscount * (int)$ci->quantity;
         }
-        $discount = 0.0; // future: coupons/percentage
-        $calculation = $this->orderTaxCalculator->calculate($this->tenantId, max(0, $subtotal - $discount));
+        $net = max($subtotal - $discount, 0);
+        $calculation = $this->orderTaxCalculator->calculate($this->tenantId, $net);
         $total = $calculation->grandTotal;
         return [
             'subtotal' => $subtotal,
@@ -286,6 +288,40 @@ class PosPage extends Component
             'total_tax' => $calculation->totalTax,
             'total' => $total,
         ];
+    }
+
+    public function getTotalAmountProperty(): float
+    {
+        return (float) ($this->cartSummary['total'] ?? 0);
+    }
+
+    public function getCashChangeProperty(): float
+    {
+        return max(0, ($this->cashReceivedNumeric ?? 0) - $this->totalAmount);
+    }
+
+    public function getCanConfirmCashProperty(): bool
+    {
+        return ($this->cashReceivedNumeric ?? 0) >= $this->totalAmount;
+    }
+
+    public function getSelectedCustomerLabelProperty(): string
+    {
+        if (! $this->customerId) {
+            return 'Walking Customer';
+        }
+
+        $customer = CustomerDetail::query()
+            ->when($this->tenantId, fn ($q) => $q->where('tenant_id', $this->tenantId))
+            ->find($this->customerId);
+
+        if (! $customer) {
+            return 'Walking Customer';
+        }
+
+        $email = $customer->email ? " ({$customer->email})" : '';
+
+        return (string) $customer->name . $email;
     }
 
     public function increaseItem(int|string $id): void
@@ -322,31 +358,201 @@ class PosPage extends Component
 
     public function checkout(): void
     {
-        if (Cart::isEmpty()) {
-            $this->dispatch('pos-flash', type: 'warning', message: 'Cart is empty.');
-            return;
-        }
-        if (!$this->customerId) {
-            $this->dispatch('pos-flash', type: 'warning', message: 'Select a customer first.');
-            return;
-        }
-        if ($this->orderType === 'dine-in' && !$this->tableId) {
-            $this->dispatch('pos-flash', type: 'warning', message: 'Please pick a table for dine-in.');
+        $this->openPaymentModal();
+    }
+
+    public function openPaymentModal(): void
+    {
+        if (! $this->validatePosOrder()) {
             return;
         }
 
-        $order = DB::transaction(function () {
-            $tenantId = $this->tenantId;
+        $this->paymentMethod = 'cash';
+        $this->cashReceivedFormatted = '';
+        $this->cashReceivedNumeric = null;
+        $this->showPaymentModal = true;
+        $this->showReceiptModal = false;
+        $this->receiptData = null;
+    }
+
+    public function addCashDigit(string $digit): void
+    {
+        $current = preg_replace('/\D/', '', $this->cashReceivedFormatted) ?? '';
+        $append = preg_replace('/\D/', '', $digit) ?? '';
+        $numericString = $current . $append;
+
+        if ($numericString === '') {
+            $this->cashReceivedNumeric = null;
+            $this->cashReceivedFormatted = '';
+            return;
+        }
+
+        $amount = (int) $numericString;
+        $this->cashReceivedNumeric = (float) $amount;
+        $this->cashReceivedFormatted = number_format($amount, 0, ',', '.');
+    }
+
+    public function clearCashInput(): void
+    {
+        $this->cashReceivedFormatted = '';
+        $this->cashReceivedNumeric = null;
+    }
+
+    public function updatedCashReceivedFormatted(string $value): void
+    {
+        $numericString = preg_replace('/\D/', '', $value) ?? '';
+
+        if ($numericString === '') {
+            $this->cashReceivedNumeric = null;
+            $this->cashReceivedFormatted = '';
+            return;
+        }
+
+        $amount = (int) $numericString;
+        $formatted = number_format($amount, 0, ',', '.');
+
+        $this->cashReceivedNumeric = (float) $amount;
+
+        if ($formatted !== $this->cashReceivedFormatted) {
+            $this->cashReceivedFormatted = $formatted;
+        }
+    }
+
+    public function confirmCashPayment(): void
+    {
+        if (! $this->canConfirmCash) {
+            return;
+        }
+
+        $this->finalizePosOrder(
+            paymentChannel: 'cash',
+            receivedAmount: $this->cashReceivedNumeric,
+            change: $this->cashChange
+        );
+    }
+
+    public function confirmCashPaymentClient(string $amountInput): void
+    {
+        $numericString = preg_replace('/\D/', '', $amountInput) ?? '';
+        $amount = $numericString === '' ? 0.0 : (float) $numericString;
+        $roundedTotal = roundToIndoRupiahTotal($this->totalAmount);
+
+        $this->cashReceivedNumeric = $amount;
+        $this->cashReceivedFormatted = $numericString === ''
+            ? ''
+            : number_format((int) $amount, 0, ',', '.');
+
+        if ($amount < $roundedTotal) {
+            $this->dispatch('pos-flash', type: 'warning', message: 'Received amount is less than total.');
+            return;
+        }
+
+        $this->finalizePosOrder(
+            paymentChannel: 'cash',
+            receivedAmount: $this->cashReceivedNumeric,
+            change: max(0, $this->cashReceivedNumeric - $roundedTotal)
+        );
+    }
+
+    public function confirmCardPayment(): void
+    {
+        $this->finalizePosOrder(paymentChannel: 'card');
+    }
+
+    public function confirmQrisPayment(): void
+    {
+        $this->finalizePosOrder(paymentChannel: 'qris');
+    }
+
+    public function openCustomerSearch(): void
+    {
+        $this->customerSearch = '';
+        $this->customerSearchResults = [];
+        $this->showCustomerSearch = true;
+    }
+
+    public function closeCustomerSearch(): void
+    {
+        $this->showCustomerSearch = false;
+    }
+
+    public function updatedCustomerSearch(string $value): void
+    {
+        $this->searchCustomers($value);
+    }
+
+    public function performCustomerSearch(): void
+    {
+        $this->searchCustomers($this->customerSearch);
+    }
+
+    public function selectCustomerFromSearch(int $customerId): void
+    {
+        $customer = CustomerDetail::query()
+            ->when($this->tenantId, fn ($q) => $q->where('tenant_id', $this->tenantId))
+            ->find($customerId);
+
+        if (! $customer) {
+            $this->dispatch('pos-flash', type: 'warning', message: 'Customer not found.');
+            return;
+        }
+
+        $this->customerId = (int) $customer->id;
+        $this->showCustomerSearch = false;
+        $this->dispatch('pos-flash', type: 'success', message: 'Customer selected.');
+    }
+
+    private function searchCustomers(?string $term): void
+    {
+        $term = trim((string) $term);
+
+        if (strlen($term) < 2) {
+            $this->customerSearchResults = [];
+            return;
+        }
+
+        $results = CustomerDetail::query()
+            ->when($this->tenantId, fn ($q) => $q->where('tenant_id', $this->tenantId))
+            ->where(function ($q) use ($term) {
+                $q->where('name', 'like', '%' . $term . '%')
+                    ->orWhere('email', 'like', '%' . $term . '%');
+            })
+            ->orderBy('name')
+            ->limit(10)
+            ->get(['id', 'name', 'email']);
+
+        $this->customerSearchResults = $results->map(fn (CustomerDetail $c) => [
+            'id' => $c->id,
+            'name' => $c->name,
+            'email' => $c->email,
+        ])->toArray();
+    }
+
+    private function finalizePosOrder(string $paymentChannel, ?float $receivedAmount = null, ?float $change = null): void
+    {
+        if (! $this->validatePosOrder()) {
+            $this->showPaymentModal = false;
+            return;
+        }
+
+        $cartItems = Cart::getContent();
+        $itemCount = $cartItems->sum(fn ($ci) => (int) $ci->quantity);
+        $receiptOrder = null;
+
+        $order = DB::transaction(function () use ($paymentChannel, $cartItems, &$receiptOrder) {
+            $tenantId = $this->resolveTenantId();
             $tenantCode = strtoupper(substr((string)($tenantId ?? ''), 0, 3));
             $rand = strtoupper(substr(bin2hex(random_bytes(8)), 0, 10));
             $reference = ($tenantCode ?: 'REF') . '-' . $rand;
 
-            // expected total seconds from cart
-            $expectedSeconds = 0; $cartSubtotal = 0;
-            foreach (Cart::getContent() as $ci) {
-                $cartSubtotal += (float)$ci->price * (int)$ci->quantity;
-                $expectedSeconds += (int) (($ci->attributes['estimated_seconds'] ?? 0)) * (int)$ci->quantity;
+            $expectedSeconds = 0;
+            $cartSubtotal = 0;
+
+            foreach ($cartItems as $ci) {
+                $cartSubtotal += (float) $ci->price * (int) $ci->quantity;
+                $expectedSeconds += (int) (($ci->attributes['estimated_seconds'] ?? 0)) * (int) $ci->quantity;
             }
+
             $calculation = $this->orderTaxCalculator->calculate($tenantId, $cartSubtotal);
 
             $order = Order::create([
@@ -358,7 +564,7 @@ class PosPage extends Component
                 'grand_total' => $calculation->grandTotal,
                 'status' => 'confirmed',
                 'payment_status' => 'paid',
-                'payment_channel' => 'cash',
+                'payment_channel' => $paymentChannel,
                 'paid_at' => now(),
                 'tenant_id' => $tenantId,
                 'confirmed_at' => now(),
@@ -367,11 +573,12 @@ class PosPage extends Component
                 'order_type' => $this->orderType,
             ]);
 
-            foreach (Cart::getContent() as $item) {
+            foreach ($cartItems as $item) {
                 $attributes = $item->attributes ? $item->attributes->toArray() : [];
-                $options = $attributes; // include options structure
+                $options = $attributes;
                 unset($options['image'], $options['product_id']);
                 $productId = CartItemIdentifier::extractProductId($item) ?? $item->id;
+
                 OrderItem::create([
                     'tenant_id' => $tenantId,
                     'order_id' => $order->id,
@@ -383,7 +590,7 @@ class PosPage extends Component
                     'estimate_seconds' => (int) ($attributes['estimated_seconds'] ?? 0),
                     'special_instructions' => $attributes['note'] ?? null,
                 ]);
-                // Decrement stock
+
                 if ($p = Product::where('tenant_id', $tenantId)->lockForUpdate()->find($productId)) {
                     $p->decrement('stock_qty', (int) $item->quantity);
                 }
@@ -399,7 +606,6 @@ class PosPage extends Component
                 ]);
             }
 
-            // Update customer + table association and table status if dine-in
             if ($this->orderType === 'dine-in' && $this->tableId) {
                 CustomerDetail::where('tenant_id', $tenantId)->where('id', $this->customerId)
                     ->update(['dining_table_id' => $this->tableId]);
@@ -409,15 +615,173 @@ class PosPage extends Component
                 CustomerDetail::where('tenant_id', $tenantId)->where('id', $this->customerId)
                     ->update(['dining_table_id' => null]);
             }
+
+            $receiptOrder = Order::with(['items', 'taxLines', 'customerDetail.diningTable'])
+                ->find($order->id);
+
             return $order;
         });
 
         if ($order) {
-            SendInvoiceEmailJob::dispatch($order->id, (string) $order->tenant_id);
+            $this->persistCashAmounts($order, $receivedAmount, $change);
+            try {
+                TenantNotification::create([
+                    'tenant_id' => $order->tenant_id,
+                    'type' => 'order',
+                    'title' => 'New Order Created',
+                    'item_id' => $order->id,
+                    'description' => 'Order #' . $order->id . ' placed with ' . $itemCount . ' item' . ($itemCount === 1 ? '' : 's') . '.',
+                    'route_name' => 'backoffice.order.view',
+                    'route_params' => json_encode(['order' => $order->id, 'tenant' => $order->tenant_id]),
+                ]);
+            } catch (\Throwable $e) {
+                // notifications should not block checkout
+            }
+            $this->prepareReceiptData($receiptOrder, $receivedAmount, $change);
         }
 
+        $this->resetCart();
+        $this->showPaymentModal = false;
+        $this->paymentMethod = 'cash';
+        $this->clearCashInput();
+        $this->dispatch('pos-flash', type: 'success', message: 'Order completed successfully.');
+    }
+
+    private function prepareReceiptData(?Order $order, ?float $receivedAmount, ?float $change): void
+    {
+        if (! $order) {
+            $this->receiptData = null;
+            $this->showReceiptModal = false;
+            return;
+        }
+
+        $items = $order->items->map(function (OrderItem $item) {
+            $options = $item->options ?? [];
+            if (is_array($options) && array_key_exists('options', $options)) {
+                $options = $options['options'] ?? [];
+            }
+
+            return [
+                'name' => $item->product_name,
+                'quantity' => (int) $item->quantity,
+                'unit_price' => (float) $item->unit_price,
+                'line_total' => (float) $item->unit_price * (int) $item->quantity,
+                'options' => $options,
+                'note' => $item->special_instructions,
+            ];
+        })->toArray();
+
+        $taxLines = $order->taxLines->map(fn ($line) => [
+            'name' => $line->name,
+            'amount' => (float) $line->amount,
+            'rate' => $line->rate,
+        ])->toArray();
+
+        $receivedRounded = $receivedAmount === null ? null : roundToIndoRupiahTotal($receivedAmount);
+        $changeRounded = $change === null ? null : roundToIndoRupiahTotal($change);
+
+        $this->receiptData = [
+            'order_id' => $order->id,
+            'reference' => $order->reference_no,
+            'order_type' => $order->orderTypeLabel(),
+            'paid_at' => optional($order->paid_at)->format('d-m-Y H:i'),
+            'customer_name' => $order->customerDetail?->name,
+            'customer_email' => $order->customerDetail?->email,
+            'customer_table' => $order->customerDetail?->diningTable?->label,
+            'items' => $items,
+            'subtotal' => (float) $order->subtotal,
+            'total_tax' => (float) $order->total_tax,
+            'grand_total' => (float) $order->grand_total,
+            'received' => $receivedRounded,
+            'change' => $changeRounded,
+            'tax_lines' => $taxLines,
+        ];
+
+        $this->showReceiptModal = true;
+    }
+
+    public function sendReceiptEmail(): void
+    {
+        $orderId = $this->receiptData['order_id'] ?? null;
+        $email = $this->receiptData['customer_email'] ?? null;
+
+        if (! $orderId) {
+            $this->dispatch('pos-flash', type: 'warning', message: 'No receipt to send.');
+            return;
+        }
+
+        if (! $email) {
+            $this->dispatch('pos-flash', type: 'warning', message: 'Customer email is missing.');
+            return;
+        }
+
+        SendInvoiceEmailJob::dispatch((int) $orderId, (string) $this->resolveTenantId());
+        $this->dispatch('pos-flash', type: 'success', message: 'Receipt email queued.');
+    }
+
+    public function printReceipt(): void
+    {
+        if (! $this->receiptData) {
+            $this->dispatch('pos-flash', type: 'warning', message: 'No receipt to print.');
+            return;
+        }
+
+        $html = view('backoffice.pos.receipt-print', ['receipt' => $this->receiptData])->render();
+        $this->dispatch('pos-print-receipt', html: $html);
+    }
+
+    public function closeReceiptModal(): void
+    {
+        $this->showReceiptModal = false;
+        $this->receiptData = null;
+    }
+
+    private function validatePosOrder(): bool
+    {
+        if ($this->cartIsEmpty()) {
+            $this->dispatch('pos-flash', type: 'warning', message: 'Cart is empty.');
+            return false;
+        }
+
+        if (! $this->customerId) {
+            $this->dispatch('pos-flash', type: 'warning', message: 'Select a customer first.');
+            return false;
+        }
+
+        if ($this->orderType === 'dine-in' && ! $this->tableId) {
+            $this->dispatch('pos-flash', type: 'warning', message: 'Please pick a table for dine-in.');
+            return false;
+        }
+
+        return true;
+    }
+
+    private function persistCashAmounts(Order $order, ?float $receivedAmount = null, ?float $change = null): void
+    {
+        $updates = [];
+
+        if (Schema::hasColumn($order->getTable(), 'received_amount')) {
+            $updates['received_amount'] = $receivedAmount;
+        }
+
+        if (Schema::hasColumn($order->getTable(), 'change_amount')) {
+            $updates['change_amount'] = $change;
+        }
+
+        if (! empty($updates)) {
+            $order->forceFill($updates)->save();
+        }
+    }
+
+    private function cartIsEmpty(): bool
+    {
+        return Cart::isEmpty();
+    }
+
+    private function resetCart(): void
+    {
         Cart::clear();
-        $this->dispatch('pos-flash', type: 'success', message: 'Order placed.');
+        $this->dispatch('cart-updated');
     }
 
     /**
@@ -431,20 +795,73 @@ class PosPage extends Component
             return;
         }
 
+        $pricing = PriceAfterDiscount::calculate($p, $this->resolveTenantId(), null, $this->discountFetcher);
+
         Cart::add([
             'id' => CartItemIdentifier::make($p->id),
             'name' => (string) $p->name,
-            'price' => (float) ($p->price ?? 0),
+            'price' => (float) ($pricing['final_price'] ?? ($p->price ?? 0)),
             'quantity' => 1,
             'attributes' => [
                 'product_id' => $p->id,
                 'base_price' => (float) ($p->price ?? 0),
+                'raw_price' => (float) ($p->price ?? 0),
+                'discount_id' => $pricing['discount_id'] ?? null,
+                'discount_amount' => (float) ($pricing['discount_amount'] ?? 0),
+                'discount_name' => $pricing['discount_name'] ?? null,
+                'discount_badge' => $pricing['badge'] ?? null,
+                'final_price' => (float) ($pricing['final_price'] ?? ($p->price ?? 0)),
                 'estimated_seconds' => (int) ($p->estimated_seconds ?? 0),
             ],
         ]);
 
         $this->dispatch('cart-updated');
         $this->dispatch('notify', type: 'success', message: 'Added to cart');
+    }
+
+    public function editCartItem(int|string $id): void
+    {
+        $item = Cart::get($id);
+        if (!$item) {
+            return;
+        }
+
+        $productId = CartItemIdentifier::extractProductId($item) ?? ($item->attributes['product_id'] ?? $item->id);
+        $product = Product::with(['options.values'])->find($productId);
+        if (!$product) {
+            return;
+        }
+
+        $this->selectedProduct = $this->applyDiscount($product);
+        $this->selectedOptions = [];
+        $attributes = $item->attributes ? $item->attributes->toArray() : [];
+        $savedOptions = $attributes['options'] ?? [];
+        foreach ($this->selectedProduct->options as $option) {
+            $optId = $option->id;
+            if (isset($savedOptions[$optId]['id'])) {
+                $this->selectedOptions[$optId] = $savedOptions[$optId]['id'];
+            } else {
+                $this->selectedOptions[$optId] = null;
+            }
+        }
+
+        $this->quantity = (int) $item->quantity;
+        $this->note = (string) ($attributes['note'] ?? '');
+        $this->editingItemId = (string) $id;
+        $this->showOptionModal = true;
+        $this->dispatch('lock-scroll');
+        $this->dispatch('pos-open-product-modal');
+    }
+
+    private function resolveTenantId(): ?string
+    {
+        return $this->tenantId ? (string) $this->tenantId : null;
+    }
+
+    private function applyDiscount(Product $product): Product
+    {
+        $product->setAttribute('discount_details', PriceAfterDiscount::calculate($product, $this->resolveTenantId(), null, $this->discountFetcher));
+        return $product;
     }
 
     public function render()

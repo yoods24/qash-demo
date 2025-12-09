@@ -10,7 +10,7 @@ class PriceAfterDiscount
     /**
      * Calculate the best discount for a product and return pricing metadata.
      */
-    public static function calculate(Product $product, ?string $tenantId, ?float $priceOverride = null): array
+    public static function calculate(Product $product, ?string $tenantId, ?float $priceOverride = null, ?DiscountFetcher $discountFetcher = null): array
     {
         $basePrice = $priceOverride ?? (float) $product->price;
         $result = [
@@ -27,7 +27,8 @@ class PriceAfterDiscount
             return $result;
         }
 
-        $discounts = app(DiscountFetcher::class)->forTenant($tenantId);
+        $fetcher = $discountFetcher ?? app(DiscountFetcher::class);
+        $discounts = $fetcher->forTenant($tenantId);
         if ($discounts->isEmpty()) {
             return $result;
         }

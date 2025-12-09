@@ -65,5 +65,16 @@
   <script src="https://cdn.jsdelivr.net/npm/@splidejs/splide/dist/js/splide.min.js"></script>
   @filamentScripts
   @livewireScripts
+  @if (tenant())
+    <script>
+      // Ensure Livewire AJAX requests carry tenant context for path-based tenancy
+      document.addEventListener('livewire:init', () => {
+        Livewire.hook('request', ({ options }) => {
+          options.headers = options.headers || {};
+          options.headers['X-Tenant'] = '{{ tenant()->id }}';
+        });
+      });
+    </script>
+  @endif
 </body>
 </html>

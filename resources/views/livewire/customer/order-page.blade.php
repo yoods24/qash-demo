@@ -1,6 +1,6 @@
 
 <div class="container py-4 order-container" wire:init="load">
-    <div wire:loading.delay.short class="loadingAnimation">
+    <div wire:loading.delay.short class="loadingAnimationLw">
         <img
             src="{{ global_asset('storage/logos/Logogram-Orange.png') }}"
             alt="Loading"

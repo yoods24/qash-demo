@@ -17,7 +17,7 @@ return new class extends Migration
             $table->decimal('subtotal', 12, 2)->default(0);
             $table->decimal('total_tax', 12, 2)->default(0);
             $table->decimal('grand_total', 12, 2)->default(0);
-            $table->enum('status', ['waiting_for_payment', 'confirmed', 'preparing', 'ready', 'cancelled'])->default('waiting_for_payment');
+            $table->enum('status', ['waiting_for_payment', 'confirmed', 'preparing', 'ready', 'served', 'cancelled'])->default('waiting_for_payment');
             // Order origin (POS cashier vs table QR)
             $table->enum('source', ['pos', 'qr'])->default('pos');
             $table->enum('order_type', ['dine-in','takeaway'])->default('dine-in');

@@ -34,18 +34,21 @@
 
       <div class="sidebar-wrapper">
         <x-backoffice.sidebar-nav-section>
-          @can('dashboard_view')
-            <x-backoffice.sidebar-nav-link href="{{route('backoffice.dashboard')}}" class="bi bi-grid-1x2-fill me-2">Dashboard</x-backoffice.sidebar-nav-link>
-          @endcan
-          @can('attendance_view')
+          @php $sidebarUser = request()->user(); @endphp
+          @if(($sidebarUser && ! $sidebarUser->is_admin) || Gate::check('dashboard_view'))
+            <x-backoffice.sidebar-nav-link href="{{route('backoffice.dashboard')}}" class="bi bi-grid-1x2-fill me-2">
+              {{ $sidebarUser && ! $sidebarUser->is_admin ? 'My Dashboard' : 'Dashboard' }}
+            </x-backoffice.sidebar-nav-link>
+          @endif
+          {{-- @can('attendance_view') --}}
             <x-backoffice.sidebar-nav-link href="{{ route('backoffice.attendance.index') }}" class="bi bi-building me-2" >Attendance</x-backoffice.sidebar-nav-link>
-          @endcan
-          @can('notification_view')
+          {{-- @endcan --}}
+          {{-- @can('notification_view') --}}
             <x-backoffice.sidebar-nav-link href="{{route('backoffice.notification.index')}}" class="bi bi-bell me-2" >Notification</x-backoffice.sidebar-nav-link>
-          @endcan
-          @can('profile_view')
+          {{-- @endcan --}}
+          {{-- @can('profile_view') --}}
             <x-backoffice.sidebar-nav-link href="{{ route('backoffice.staff.view', ['staff' => request()->user()->id]) }}" class="bi bi-cash-coin me-2">Profile</x-backoffice.sidebar-nav-link>
-          @endcan
+          {{-- @endcan --}}
         </x-backoffice.sidebar-nav-section>
 
         @canany($tablePermissions)
@@ -174,6 +177,7 @@
                   @endif
                 </span>
               </x-backoffice.sidebar-nav-link>
+              <x-backoffice.sidebar-nav-link href="{{route('backoffice.waiter.orders')}}" class="bi bi-clipboard-check me-2" >Waiter Orders</x-backoffice.sidebar-nav-link>
               <x-backoffice.sidebar-nav-link href="{{route('backoffice.kitchen.index')}}" class="bi bi-fork-knife me-2" >O.S.S</x-backoffice.sidebar-nav-link>
           </x-backoffice.sidebar-nav-section>
         @endcan

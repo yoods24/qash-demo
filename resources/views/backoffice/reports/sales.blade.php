@@ -26,11 +26,10 @@
                     </select>
                 </div>
                 <div class="col-6 col-md-2">
-                    <label class="form-label">Status</label>
-                    <select name="status" class="form-select">
-                        <option value="">Successful</option>
-                        @foreach(['confirmed','preparing','ready','cancelled','waiting_for_payment'] as $s)
-                            <option value="{{ $s }}" @selected($status === $s)>{{ ucfirst(str_replace('_',' ', $s)) }}</option>
+                    <label class="form-label">Payment Status</label>
+                    <select name="payment_status" class="form-select">
+                        @foreach(['paid','pending','failed','cancelled'] as $ps)
+                            <option value="{{ $ps }}" @selected(($paymentStatus ?? 'paid') === $ps)>{{ ucfirst($ps) }}</option>
                         @endforeach
                     </select>
                 </div>

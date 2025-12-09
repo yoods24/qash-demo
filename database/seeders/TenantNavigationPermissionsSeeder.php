@@ -57,8 +57,8 @@ class TenantNavigationPermissionsSeeder extends Seeder
             }
         }
 
-        // Keep Super Admin role in sync with every permission for the tenant
-        $superAdminRole = Role::firstOrCreate(['name' => 'Super Admin']);
-        $superAdminRole->permissions()->sync(Permission::pluck('id')->all());
+        // Keep Owner role in sync with every permission for the tenant
+        $ownerRole = Role::firstOrCreate(['name' => 'Owner']);
+        $ownerRole->permissions()->sync(Permission::pluck('id')->all());
     }
 }

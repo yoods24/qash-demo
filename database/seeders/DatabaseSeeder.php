@@ -57,10 +57,11 @@ class DatabaseSeeder extends Seeder
 
         $this->call(PermissionRoleSeeder::class);
         $this->call(TenantNavigationPermissionsSeeder::class);
+        $this->call(TenantDefaultRolesSeeder::class);
 
-        $superAdminRole = Role::firstOrCreate(['name' => 'Super Admin']);
-        $superAdminRole->syncPermissions(Permission::all());
-        $admin->assignRole($superAdminRole);
+        $ownerRole = Role::firstOrCreate(['name' => 'Owner']);
+        $ownerRole->syncPermissions(Permission::all());
+        $admin->assignRole($ownerRole);
 
         if (function_exists('tenancy')) {
             tenancy()->end();

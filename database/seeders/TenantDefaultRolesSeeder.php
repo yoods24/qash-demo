@@ -15,8 +15,10 @@ class TenantDefaultRolesSeeder extends Seeder
         }
 
         $modules = config('tenant_permissions.modules', []);
+        $allPermissions = Permission::all();
 
         $roleModuleMap = [
+            'Owner' => 'all',
             'Waiter' => ['pos', 'tables'],
             'Kitchen' => ['kitchen'],
             'HR' => ['hrm'],
@@ -25,13 +27,19 @@ class TenantDefaultRolesSeeder extends Seeder
         ];
 
         foreach ($roleModuleMap as $roleName => $moduleKeys) {
+            $role = Role::firstOrCreate(['name' => $roleName]);
+
+            if ($moduleKeys === 'all') {
+                $role->syncPermissions($allPermissions);
+                continue;
+            }
+
             $names = $this->collectPermissionNames($modules, $moduleKeys);
 
             if (empty($names)) {
                 continue;
             }
 
-            $role = Role::firstOrCreate(['name' => $roleName]);
             $permissions = Permission::whereIn('name', $names)->get();
             $role->syncPermissions($permissions);
         }

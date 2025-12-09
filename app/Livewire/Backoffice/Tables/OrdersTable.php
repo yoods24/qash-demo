@@ -55,11 +55,6 @@ class OrdersTable extends Component implements HasTable, HasSchemas, HasActions
                         'primary' => fn ($s) => $s === 'pos',
                         'success' => fn ($s) => $s === 'qr',
                     ])
-                    ->formatStateUsing(fn ($s) => match ((string) $s) {
-                        'pos' => 'POS',
-                        'qr'  => 'Table QR',
-                        default => ucfirst((string) $s),
-                    })
                     ->sortable(),
 
                 TextColumn::make('order_type')
@@ -69,7 +64,6 @@ class OrdersTable extends Component implements HasTable, HasSchemas, HasActions
                         'primary' => fn ($s) => $s === 'dine-in',
                         'warning' => fn ($s) => $s === 'takeaway',
                     ])
-                    ->formatStateUsing(fn ($s) => $s === 'dine-in' ? 'Dine-In' : ucfirst((string)$s))
                     ->sortable(),
 
                 TextColumn::make('customerDetail.name')

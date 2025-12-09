@@ -1,4 +1,4 @@
-<div wire:poll.4s class="kitchen-board">
+<div class="kitchen-board" wire:poll.5s>
     <div class="d-flex justify-content-between align-items-end mb-3">
         <h4 class="mb-0">Kitchen Orders</h4>
         <div class="ko-search" style="min-width:260px;">

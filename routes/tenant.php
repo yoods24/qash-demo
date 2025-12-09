@@ -34,6 +34,7 @@ use App\Http\Controllers\TaxController;
 use App\Http\Controllers\DiscountController;
 // Livewire
 use App\Livewire\Backoffice\TenantNotification;
+use App\Livewire\Backoffice\WaiterOrdersPage;
 use App\Http\Controllers\TenantNotificationController;
 use App\Models\TenantProfile;
 use Stancl\Tenancy\Middleware\InitializeTenancyByPath;
@@ -160,6 +161,10 @@ Route::middleware([
               return view('backoffice.kitchen.kitchen-order-index');
           })->name('backoffice.kitchen.index')
             ->middleware('permission:kitchen_view');
+
+          Route::get('/waiter/orders', WaiterOrdersPage::class)
+              ->name('backoffice.waiter.orders')
+              ->middleware('permission:kitchen_view');
 
           // POS page (sidebar hidden)
           Route::get('/pos', function () {

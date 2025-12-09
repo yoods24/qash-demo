@@ -5,7 +5,9 @@ namespace Database\Seeders;
 use App\Models\Shift;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Models\Role;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DemoCafeUserSeeder extends Seeder
 {
@@ -40,34 +42,81 @@ class DemoCafeUserSeeder extends Seeder
             'status' => 'active',
         ]);
 
-        // Create a couple of sample staff under demo tenant
-        User::firstOrCreate([
-            'email' => 'barista@demo-cafe.test',
-        ], [
-            'firstName' => 'Barista',
-            'lastName' => 'One',
-            'password' => 'Miscrits24!',
-            'tenant_id' => $tenant->id,
-            'status' => 1,
-            'is_admin' => false,
-            'gender' => 'Male',
-            'blood_group' => 'O',
-            'shift_id' => $fixed->id,
-        ]);
+        // Seed demo staff with role assignments
+        if (function_exists('tenancy')) {
+            tenancy()->initialize($tenant);
+        }
 
-        User::firstOrCreate([
-            'email' => 'cashier@demo-cafe.test',
-        ], [
-            'firstName' => 'Cashier',
-            'lastName' => 'Two',
-            'password' => 'Miscrits24!',
-            'tenant_id' => $tenant->id,
-            'status' => 1,
-            'is_admin' => false,
-            'gender' => 'Female',
-            'blood_group' => 'A',
-            'shift_id' => $evening->id,
-        ]);
+        $users = [
+            [
+                'email' => 'barista@demo-cafe.test',
+                'firstName' => 'Barista',
+                'lastName' => 'One',
+                'gender' => 'Male',
+                'blood_group' => 'O',
+                'shift_id' => $fixed->id,
+                'role' => 'Kitchen',
+            ],
+            [
+                'email' => 'cashier@demo-cafe.test',
+                'firstName' => 'Cashier',
+                'lastName' => 'Two',
+                'gender' => 'Female',
+                'blood_group' => 'A',
+                'shift_id' => $evening->id,
+                'role' => 'Cashier',
+            ],
+            [
+                'email' => 'waiter@demo-cafe.test',
+                'firstName' => 'Waiter',
+                'lastName' => 'Three',
+                'gender' => 'Male',
+                'blood_group' => 'B',
+                'shift_id' => $fixed->id,
+                'role' => 'Waiter',
+            ],
+            [
+                'email' => 'sales@demo-cafe.test',
+                'firstName' => 'Sales',
+                'lastName' => 'Four',
+                'gender' => 'Female',
+                'blood_group' => 'AB',
+                'shift_id' => $evening->id,
+                'role' => 'Sales',
+            ],
+            [
+                'email' => 'hr@demo-cafe.test',
+                'firstName' => 'HR',
+                'lastName' => 'Five',
+                'gender' => 'Female',
+                'blood_group' => 'O',
+                'shift_id' => $fixed->id,
+                'role' => 'HR',
+            ],
+        ];
+
+        foreach ($users as $userData) {
+            $user = User::firstOrCreate(
+                ['email' => $userData['email']],
+                [
+                    'firstName' => $userData['firstName'],
+                    'lastName' => $userData['lastName'],
+                    'password' => Hash::make('Miscrits24!'),
+                    'tenant_id' => $tenant->id,
+                    'status' => 1,
+                    'is_admin' => false,
+                    'gender' => $userData['gender'],
+                    'blood_group' => $userData['blood_group'],
+                    'shift_id' => $userData['shift_id'],
+                ]
+            );
+
+            $role = Role::firstOrCreate(['name' => $userData['role']]);
+            $user->assignRole($role);
+        }
+
+        if (function_exists('tenancy')) {
+            tenancy()->end();
+        }
     }
 }
-

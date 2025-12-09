@@ -49,3 +49,16 @@ if (! function_exists('tenant_storage_url')) {
         return asset('storage/' . $normalizedPath);
     }
 }
+
+if (! function_exists('roundToIndoRupiahTotal')) {
+    /**
+     * Apply Indonesian rounding: round to 2 decimals (>=0.005 up) then to full rupiah (>=0.50 up).
+     */
+    function roundToIndoRupiahTotal(float|int $amount): float
+    {
+        $base = max(0, (float) $amount);
+        $twoDecimals = round($base, 2, PHP_ROUND_HALF_UP);
+
+        return round($twoDecimals, 0, PHP_ROUND_HALF_UP);
+    }
+}

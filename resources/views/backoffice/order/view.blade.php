@@ -6,41 +6,10 @@
 
     </style>
     @php
-        $items = $order->items ?? collect();
+        $items = $items ?? collect();
         if (! $items instanceof \Illuminate\Support\Collection) {
             $items = collect($items);
         }
-
-        $lineSummaries = [];
-        foreach ($items as $lineItem) {
-            $quantity = (int) ($lineItem->quantity ?? 1);
-            $baseUnit = (float) ($lineItem->unit_price ?? data_get($lineItem, 'options.base_price', $lineItem->price ?? 0));
-            $finalUnit = (float) ($lineItem->final_price ?? $lineItem->price ?? $baseUnit);
-            $perUnitDiscount = (float) ($lineItem->discount_amount ?? max($baseUnit - $finalUnit, 0));
-
-            $lineSummaries[$lineItem->id] = [
-                'base_unit' => $baseUnit,
-                'final_unit' => $finalUnit,
-                'quantity' => $quantity,
-                'line_discount' => max($perUnitDiscount, 0) * $quantity,
-                'per_unit_discount' => max($perUnitDiscount, 0),
-            ];
-        }
-
-        $preDiscountSubtotal = collect($lineSummaries)->sum(fn ($data) => $data['base_unit'] * $data['quantity']);
-        $discountTotal = collect($lineSummaries)->sum(fn ($data) => $data['line_discount']);
-        $subtotalAfterDiscount = max($preDiscountSubtotal - $discountTotal, 0);
-        $softwareServices = (float) ($order->qash_fee ?? 0);
-        $taxTotal = (float) ($order->total_tax ?? 0);
-        $grandTotal = (float) ($order->grand_total ?? $order->total ?? ($subtotalAfterDiscount + $softwareServices + $taxTotal));
-
-        $appliedDiscounts = $items->filter(fn ($item) => (float) ($item->discount_amount ?? 0) > 0)
-            ->groupBy('discount_id')
-            ->map(function ($group) {
-                $name = optional($group->first()->discount)->name ?? 'Promo';
-                $amount = $group->sum(fn ($item) => (float) ($item->discount_amount ?? 0) * (int) ($item->quantity ?? 1));
-                return ['name' => $name, 'amount' => $amount];
-            });
     @endphp
     <nav aria-label="breadcrumb">
       <ol class="breadcrumb">
@@ -49,7 +18,43 @@
       </ol>
     </nav>
     <div class="border rounded shadow p-4">
-        <h4 class="mb-3 mb-md-4">Order Details</h4>
+        <div class="d-flex justify-content-between align-items-center mb-3 mb-md-4 flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-3">
+                <h4 class="mb-0">Order Details</h4>
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <span class="fw-semibold">Order ID: {{ $order->reference_no ?? ('#' . $order->id) }}</span>
+                    @php
+                        $payStatus = strtolower($order->payment_status ?? 'pending');
+                        $payMap = [
+                            'paid' => ['bg' => 'bg-success-subtle text-success', 'label' => 'Paid'],
+                            'pending' => ['bg' => 'bg-warning-subtle text-warning', 'label' => 'Pending'],
+                            'failed' => ['bg' => 'bg-danger-subtle text-danger', 'label' => 'Failed'],
+                            'cancelled' => ['bg' => 'bg-secondary-subtle text-secondary', 'label' => 'Cancelled'],
+                        ];
+                        $payBadge = $payMap[$payStatus] ?? $payMap['pending'];
+
+                        $status = strtolower($order->status ?? 'pending');
+                        $statusMap = [
+                            'prepared' => ['bg' => 'bg-primary-subtle text-primary', 'label' => 'Prepared'],
+                            'preparing' => ['bg' => 'bg-info-subtle text-info', 'label' => 'Preparing'],
+                            'pending' => ['bg' => 'bg-warning-subtle text-warning', 'label' => 'Pending'],
+                            'cancelled' => ['bg' => 'bg-secondary-subtle text-secondary', 'label' => 'Cancelled'],
+                            'failed' => ['bg' => 'bg-danger-subtle text-danger', 'label' => 'Failed'],
+                            'ready' => ['bg' => 'bg-primary-subtle text-primary', 'label' => 'Ready'],
+                            'confirmed' => ['bg' => 'bg-success-subtle text-success', 'label' => 'Confirmed'],
+                            'paid' => ['bg' => 'bg-success-subtle text-success', 'label' => 'Paid'],
+                        ];
+                        $statusBadge = $statusMap[$status] ?? $statusMap['pending'];
+                    @endphp
+                    <span class="badge rounded-pill px-3 py-2 {{ $payBadge['bg'] }}">{{ $payBadge['label'] }}</span>
+                    <span class="badge rounded-pill px-3 py-2 {{ $statusBadge['bg'] }}">{{ $statusBadge['label'] }}</span>
+                </div>
+            </div>
+            <button type="button" class="btn btn-main d-flex align-items-center gap-2" onclick="printOrderReceipt()">
+                <i class="bi bi-printer"></i>
+                <span>Print Receipt</span>
+            </button>
+        </div>
         <hr>
         <div class="d-flex flex-wrap justify-content-between">
             {{-- customer details --}}
@@ -97,7 +102,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+    </div>
         <hr>
         <div class="border rounded">
             <x-backoffice.table>
@@ -229,4 +234,19 @@
             </div>
         </div>
     </div>
+    <script>
+        const orderReceiptHtml = @json(view('backoffice.pos.receipt-print', ['receipt' => $receipt])->render());
+        function printOrderReceipt() {
+            if (!orderReceiptHtml) return;
+            const w = window.open('', '_blank', 'width=480,height=720');
+            if (!w) {
+                alert('Please allow popups to print the receipt.');
+                return;
+            }
+            w.document.write(orderReceiptHtml);
+            w.document.close();
+            w.focus();
+            w.print();
+        }
+    </script>
 </x-backoffice.layout>

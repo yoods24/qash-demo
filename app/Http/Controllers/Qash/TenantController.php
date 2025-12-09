@@ -81,16 +81,16 @@ class TenantController extends Controller
                 tenancy()->initialize($tenant);
             }
 
-            $superAdminRole = Role::firstOrCreate(['name' => 'Super Admin']);
-
             // Ensure navigation/action permissions exist for the tenant
             app(TenantNavigationPermissionsSeeder::class)->run();
             app(TenantDefaultRolesSeeder::class)->run();
             $permissions = Permission::all();
 
-            // Give Super Admin role and user every permission available
-            $superAdminRole->syncPermissions($permissions);
-            $admin->assignRole($superAdminRole);
+            $ownerRole = Role::firstOrCreate(['name' => 'Owner']);
+
+            // Give Owner role and user every permission available
+            $ownerRole->syncPermissions($permissions);
+            $admin->assignRole($ownerRole);
             $admin->syncPermissions($permissions);
 
             if (function_exists('tenancy')) {

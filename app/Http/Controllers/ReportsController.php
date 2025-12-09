@@ -21,8 +21,9 @@ class ReportsController extends Controller
     {
         $startDate = $request->startDate();
         $endDate = $request->endDate();
+        $paymentStatus = $request->paymentStatus();
 
-        $result = $service->getSummaryAndOrders($startDate, $endDate, $request->input('status'));
+        $result = $service->getSummaryAndOrders($startDate, $endDate, $request->input('status'), $paymentStatus);
 
         return view('backoffice.reports.sales', [
             'orders' => $result['orders'],
@@ -37,6 +38,7 @@ class ReportsController extends Controller
             'endDate' => $endDate,
             'granularity' => $request->granularity(),
             'status' => $request->input('status'),
+            'paymentStatus' => $paymentStatus,
         ]);
     }
 

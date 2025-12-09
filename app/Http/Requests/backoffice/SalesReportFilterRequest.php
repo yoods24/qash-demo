@@ -19,6 +19,7 @@ class SalesReportFilterRequest extends FormRequest
             'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
             'granularity' => ['nullable', 'in:daily,monthly'],
             'status' => ['nullable', 'string'],
+            'payment_status' => ['nullable', 'in:paid,pending,failed,cancelled'],
         ];
     }
 
@@ -43,5 +44,10 @@ class SalesReportFilterRequest extends FormRequest
     public function granularity(): string
     {
         return (string) $this->input('granularity', 'daily');
+    }
+
+    public function paymentStatus(): string
+    {
+        return (string) $this->input('payment_status', 'paid');
     }
 }
