@@ -19,9 +19,9 @@ return new class extends Migration
             $table->foreign('tenant_id')->references('id')->on('tenants')->cascadeOnDelete();
             $table->foreignId('shift_id')->nullable()->constrained('shifts')->nullOnDelete();
             // General Information
-            $table->string('profile-image')->nullable();
-            $table->string('firstName');
-            $table->string('lastName');
+            $table->string('profile_image')->nullable();
+            $table->string('first_name');
+            $table->string('last_name');
             $table->string('email')->unique();
             $table->string('emp_code')->nullable()->unique();
             $table->date('date_of_birth')->nullable();

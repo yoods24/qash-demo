@@ -59,15 +59,15 @@ class StaffTable extends Component implements HasTable, HasActions, HasSchemas
                     ->toggleable(),
                 TextColumn::make('full_name')
                     ->label('Name')
-                    ->getStateUsing(fn ($record) => $record->firstName . ' ' . $record->lastName)
+                    ->getStateUsing(fn ($record) => $record->first_name . ' ' . $record->last_name)
                     ->sortable(query: function ($query, $direction) {
-                        $query->orderBy('firstName', $direction)
-                            ->orderBy('lastName', $direction);
+                        $query->orderBy('first_name', $direction)
+                            ->orderBy('last_name', $direction);
                     })
                     ->searchable(query: function ($query, $search) {
                         $query->where(function ($subQuery) use ($search) {
-                            $subQuery->where('firstName', 'like', "%{$search}%")
-                                    ->orWhere('lastName', 'like', "%{$search}%");
+                            $subQuery->where('first_name', 'like', "%{$search}%")
+                                    ->orWhere('last_name', 'like', "%{$search}%");
                         });
                     }),
                 TextColumn::make('role_name')

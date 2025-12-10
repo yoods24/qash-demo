@@ -63,7 +63,7 @@ class StaffController extends Controller
             abort(403);
         }
 
-        $this->staffService->updatePhoto($staff, $request->file('profile-image'));
+        $this->staffService->updatePhoto($staff, $request->file('profile_image'));
 
         return back()->with('message', 'Profile photo updated.');
     }
@@ -102,8 +102,8 @@ class StaffController extends Controller
         // needs admin role
 
         $validated = $request->validate([
-            'firstName' => ['required', 'string', 'max:120'],
-            'lastName' => ['required', 'string', 'max:120'],
+            'first_name' => ['required', 'string', 'max:120'],
+            'last_name' => ['required', 'string', 'max:120'],
             'email' => ['required', 'max:255', 'unique:users,email'],
             'phone' => ['required', 'string', 'max:20'],
             'password' => ['required', 'string', 'min:8'],
@@ -112,8 +112,8 @@ class StaffController extends Controller
         $user = User::firstOrCreate([
             'email' => $validated['email'],
         ], [
-            'firstName' => $validated['firstName'],
-            'lastName' => $validated['lastName'],
+            'first_name' => $validated['first_name'],
+            'last_name' => $validated['last_name'],
             'phone' => $validated['phone'],
             'password' => Hash::make($validated['password']),
         ]);
@@ -127,7 +127,7 @@ class StaffController extends Controller
     public function storeFull(StoreStaffRequest $request) {
         $this->staffService->createStaff(
             $request->validated(),
-            $request->file('profile-image'),
+            $request->file('profile_image'),
             $request->input('role')
         );
 
@@ -151,7 +151,7 @@ class StaffController extends Controller
         $this->staffService->updateStaff(
             $staff,
             $request->validated(),
-            $request->file('profile-image'),
+            $request->file('profile_image'),
             $request->input('role')
         );
 

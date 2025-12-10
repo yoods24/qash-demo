@@ -22,9 +22,9 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'profile-image',
-        'firstName',
-        'lastName',
+        'profile_image',
+        'first_name',
+        'last_name',
         'email',
         'password',
         'phone',
@@ -94,12 +94,12 @@ class User extends Authenticatable
         return $this->hasMany(Attendance::class);
     }
     public function fullName() {
-        return "{$this->firstName} {$this->lastName}";
+        return trim("{$this->first_name} {$this->last_name}");
     }
-    // Convenience accessors to avoid dealing with hyphenated column names in views/components
+    // Convenience accessors for profile image path/url
     public function getProfileImagePathAttribute(): ?string
     {
-        return $this->getAttribute('profile-image');
+        return $this->getAttribute('profile_image');
     }
     public function getProfileImageUrlAttribute(): ?string
     {

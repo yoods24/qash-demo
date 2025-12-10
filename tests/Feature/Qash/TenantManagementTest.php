@@ -48,8 +48,8 @@ class TenantManagementTest extends TestCase
             'email' => 'jane@acme.test',
             'tenant_id' => 'acme-cafe',
             'is_admin' => true,
-            'firstName' => 'Jane',
-            'lastName' => 'Doe',
+            'first_name' => 'Jane',
+            'last_name' => 'Doe',
         ]);
     }
 

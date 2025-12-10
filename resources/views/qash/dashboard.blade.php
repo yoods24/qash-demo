@@ -8,6 +8,13 @@
             </div>
         @endif
 
+        <div class="d-flex justify-content-end mb-3">
+            <form method="POST" action="{{ route('qash.auth.logout') }}">
+                @csrf
+                <button type="submit" class="btn btn-outline-secondary btn-sm">Logout</button>
+            </form>
+        </div>
+
         <div class="row g-4">
             <div class="col-12 col-xl-4">
                 <div class="card shadow-sm h-100">
@@ -37,6 +44,23 @@
                                     @enderror
                                 </div>
                                 <div class="form-text">Used for development URLs such as <code>/t/{slug}</code>.</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="tenant-company-code" class="form-label">Kode Perusahaan</label>
+                                <input
+                                    type="text"
+                                    name="company_code"
+                                    id="tenant-company-code"
+                                    value="{{ old('company_code') }}"
+                                    class="form-control @error('company_code') is-invalid @enderror text-uppercase"
+                                    placeholder="ACME-OPS-01"
+                                    required
+                                >
+                                @error('company_code')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <div class="form-text">Shared secret code for dashboard login (letters, numbers, dashes).</div>
                             </div>
 
                             <div class="mb-4">
@@ -117,6 +141,7 @@
                                 <thead class="table-light">
                                     <tr>
                                         <th scope="col">Tenant</th>
+                                        <th scope="col">Kode</th>
                                         <th scope="col">Admin</th>
                                         <th scope="col">Created</th>
                                         <th scope="col" class="text-end">Actions</th>
@@ -131,8 +156,13 @@
                                                 <small class="text-muted">/t/{{ $tenant->path }}</small>
                                             </td>
                                             <td>
+                                                <span class="badge bg-light text-dark border">
+                                                    {{ strtoupper($tenant->company_code ?? '-') }}
+                                                </span>
+                                            </td>
+                                            <td>
                                                 @if ($primaryAdmin)
-                                                    @php($fullAdminName = trim(($primaryAdmin->firstName ?? '') . ' ' . ($primaryAdmin->lastName ?? '')))
+                                                    @php($fullAdminName = trim(($primaryAdmin->first_name ?? '') . ' ' . ($primaryAdmin->last_name ?? '')))
                                                     <div>{{ $fullAdminName !== '' ? $fullAdminName : $primaryAdmin->email }}</div>
                                                     <small class="text-muted">{{ $primaryAdmin->email }}</small>
                                                 @else
@@ -150,7 +180,7 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="4" class="text-center text-muted py-5">
+                                            <td colspan="5" class="text-center text-muted py-5">
                                                 No tenants yet. Create one using the form to get started.
                                             </td>
                                         </tr>

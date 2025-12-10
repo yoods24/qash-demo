@@ -22,12 +22,12 @@
                 @method('POST')
                 <div class="row g-2">
                     <div class="col-6">
-                        <label for="firstName" class="form-label">First Name</label>
-                        <input type="text" class="form-control" id="firstName" name="firstName" value="{{ $user->firstName }}" required>
+                        <label for="first_name" class="form-label">First Name</label>
+                        <input type="text" class="form-control" id="first_name" name="first_name" value="{{ $user->first_name }}" required>
                     </div>
                     <div class="col-6">
-                        <label for="lastName" class="form-label">Last Name</label>
-                        <input type="text" class="form-control" id="lastName" name="lastName" value="{{ $user->lastName }}" required>
+                        <label for="last_name" class="form-label">Last Name</label>
+                        <input type="text" class="form-control" id="last_name" name="last_name" value="{{ $user->last_name }}" required>
                     </div>
                 </div>
 

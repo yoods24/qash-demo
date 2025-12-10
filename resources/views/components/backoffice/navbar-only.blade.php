@@ -15,8 +15,8 @@
           <livewire:backoffice.tenant-notification />
           <div class="dropdown">
             <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle text-black" data-bs-toggle="dropdown" aria-expanded="false">
-              <img src="https://i.pravatar.cc/30" alt="User" class="rounded-circle me-2" />
-              <strong class="sekunder d-none d-sm-inline">{{ trim((Auth::user()->firstName ?? '') . ' ' . (Auth::user()->lastName ?? '')) }}</strong>
+              <img src="{{Auth::user()->profile_image_url ? Auth::user()->profile_image_url : 'https://i.pravatar.cc/30'}}" alt="User" class="rounded-circle me-2" style="width:32px;height:32px;object-fit:cover;" />
+              <strong class="sekunder d-none d-sm-inline">{{ trim((Auth::user()->first_name ?? '') . ' ' . (Auth::user()->last_name ?? '')) }}</strong>
             </a>
             <ul class="dropdown-menu dropdown-menu-end">
               <li><a class="dropdown-item" href="{{route('backoffice.user.edit', Auth::user())}}">Profile</a></li>

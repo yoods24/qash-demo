@@ -96,6 +96,20 @@
                                     <small class="text-danger">{{ $message }}</small>
                                 @enderror
                             </div>
+                            <div class="form-group text-start mb-4">
+                                <label for="company_code">Kode Perusahaan</label>
+                                <input 
+                                    type="text" 
+                                    class="my-3 form-control text-uppercase @error('company_code') is-invalid @enderror" 
+                                    id="company_code" 
+                                    name="company_code" 
+                                    value="{{ old('company_code') }}" 
+                                    placeholder="ACME-OPS-01"
+                                >
+                                @error('company_code')
+                                    <small class="text-danger">{{ $message }}</small>
+                                @enderror
+                            </div>
                             <div class="form-group text-start">
                                 <label for="password">Password</label>
                                 <input 

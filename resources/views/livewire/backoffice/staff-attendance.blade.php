@@ -278,7 +278,7 @@
             if (!el) return;
             const API_BASE_URL = 'http://127.0.0.1:5001';
             const TENANT_ID = @json(tenant('id'));
-            const name = @json(auth()->user()->firstName . ' ' . auth()->user()->lastName);
+            const name = @json(auth()->user()->first_name . ' ' . auth()->user()->last_name);
             const url = `${API_BASE_URL}/has_face`;
             const fd = new FormData();
             fd.append('tenant_id', TENANT_ID ?? '');

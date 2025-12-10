@@ -18,6 +18,7 @@ class CreateTenantsTable extends Migration
         Schema::create('tenants', function (Blueprint $table) {
             // Stancl Tenancy expects a string primary key named 'id'
             $table->string('id')->primary();
+            $table->string('company_code', 50)->unique();
             $table->timestamps();
             $table->json('data')->nullable();
         });

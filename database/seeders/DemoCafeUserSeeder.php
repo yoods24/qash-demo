@@ -50,8 +50,8 @@ class DemoCafeUserSeeder extends Seeder
         $users = [
             [
                 'email' => 'barista@demo-cafe.test',
-                'firstName' => 'Barista',
-                'lastName' => 'One',
+                'first_name' => 'Barista',
+                'last_name' => 'One',
                 'gender' => 'Male',
                 'blood_group' => 'O',
                 'shift_id' => $fixed->id,
@@ -59,8 +59,8 @@ class DemoCafeUserSeeder extends Seeder
             ],
             [
                 'email' => 'cashier@demo-cafe.test',
-                'firstName' => 'Cashier',
-                'lastName' => 'Two',
+                'first_name' => 'Cashier',
+                'last_name' => 'Two',
                 'gender' => 'Female',
                 'blood_group' => 'A',
                 'shift_id' => $evening->id,
@@ -68,8 +68,8 @@ class DemoCafeUserSeeder extends Seeder
             ],
             [
                 'email' => 'waiter@demo-cafe.test',
-                'firstName' => 'Waiter',
-                'lastName' => 'Three',
+                'first_name' => 'Waiter',
+                'last_name' => 'Three',
                 'gender' => 'Male',
                 'blood_group' => 'B',
                 'shift_id' => $fixed->id,
@@ -77,8 +77,8 @@ class DemoCafeUserSeeder extends Seeder
             ],
             [
                 'email' => 'sales@demo-cafe.test',
-                'firstName' => 'Sales',
-                'lastName' => 'Four',
+                'first_name' => 'Sales',
+                'last_name' => 'Four',
                 'gender' => 'Female',
                 'blood_group' => 'AB',
                 'shift_id' => $evening->id,
@@ -86,8 +86,8 @@ class DemoCafeUserSeeder extends Seeder
             ],
             [
                 'email' => 'hr@demo-cafe.test',
-                'firstName' => 'HR',
-                'lastName' => 'Five',
+                'first_name' => 'HR',
+                'last_name' => 'Five',
                 'gender' => 'Female',
                 'blood_group' => 'O',
                 'shift_id' => $fixed->id,
@@ -99,8 +99,8 @@ class DemoCafeUserSeeder extends Seeder
             $user = User::firstOrCreate(
                 ['email' => $userData['email']],
                 [
-                    'firstName' => $userData['firstName'],
-                    'lastName' => $userData['lastName'],
+                    'first_name' => $userData['first_name'],
+                    'last_name' => $userData['last_name'],
                     'password' => Hash::make('Miscrits24!'),
                     'tenant_id' => $tenant->id,
                     'status' => 1,

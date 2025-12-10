@@ -20,8 +20,8 @@ class StaffService
 
         if ($photo) {
             $this->replacePhoto($user, $photo);
-        } elseif (! $user->getAttribute('profile-image')) {
-            $user->setAttribute('profile-image', '');
+        } elseif (! $user->getAttribute('profile_image')) {
+            $user->setAttribute('profile_image', '');
             $user->save();
         }
 
@@ -56,7 +56,7 @@ class StaffService
 
     protected function fillUser(User $user, array $data, bool $forcePassword): void
     {
-        $payload = collect($data)->except(['password_confirmation', 'profile-image', 'role'])->toArray();
+        $payload = collect($data)->except(['password_confirmation', 'profile_image', 'role'])->toArray();
 
         if (! empty($payload['password'])) {
             $payload['password'] = Hash::make($payload['password']);
@@ -71,12 +71,12 @@ class StaffService
 
     protected function replacePhoto(User $staff, UploadedFile $photo): void
     {
-        $currentImage = $staff->getAttribute('profile-image');
+        $currentImage = $staff->getAttribute('profile_image');
         if ($currentImage) {
             Storage::disk('public')->delete($currentImage);
         }
 
-        $staff->setAttribute('profile-image', $this->storePhoto($photo));
+        $staff->setAttribute('profile_image', $this->storePhoto($photo));
         $staff->save();
     }
 

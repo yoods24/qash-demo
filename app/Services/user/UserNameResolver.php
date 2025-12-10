@@ -9,8 +9,8 @@ class UserNameResolver
     {
         if (! $user) return null;
 
-        $first = trim((string) ($user->firstName ?? ''));
-        $last = trim((string) ($user->lastName ?? ''));
+        $first = trim((string) ($user->first_name ?? ''));
+        $last = trim((string) ($user->last_name ?? ''));
         $fallback = $user->email ?? null;
 
         $full = trim($first . ' ' . $last);

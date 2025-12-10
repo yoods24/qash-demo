@@ -1,8 +1,8 @@
 <x-backoffice.layout>
-    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
             <h4 class="mb-0">Edit Employee</h4>
-            <div class="text-muted small">Update {{ trim(($staff->firstName ?? '') . ' ' . ($staff->lastName ?? '')) }}</div>
+            <div class="text-muted small">Update {{ trim(($staff->first_name ?? '') . ' ' . ($staff->last_name ?? '')) }}</div>
         </div>
         <div class="d-flex gap-2">
             <button type="button" class="btn btn-outline-secondary" data-bs-toggle="collapse"  data-bs-target=".multi-collapse" title="Toggle all sections"><i class="bi bi-arrows-collapse"></i></button>
@@ -46,7 +46,7 @@
                             <div class="card-body d-flex flex-column flex-md-row align-items-center gap-3">
                                 <div class="avatar-lg rounded-3 d-flex align-items-center justify-content-center bg-light-subtle border py-3 px-4 overflow-hidden" aria-label="Avatar">
                                     @if($staff->profile_image_url)
-                                        <img src="{{ $staff->profile_image_url }}" alt="{{ trim(($staff->firstName ?? '') . ' ' . ($staff->lastName ?? '')) }}" style="width:100%;height:100%;object-fit:cover;">
+                                        <img src="{{ $staff->profile_image_url }}" alt="{{ trim(($staff->first_name ?? '') . ' ' . ($staff->last_name ?? '')) }}" style="width:100%;height:100%;object-fit:cover;">
                                     @else
                                         <i class="bi bi-person-fill fs-1 text-secondary"></i>
                                     @endif
@@ -55,8 +55,8 @@
                                     <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
                                         <div class="w-100 w-lg-auto">
                                             <label class="form-label">Profile Photo</label>
-                                            <input type="file" name="profile-image" accept="image/*" class="form-control">
-                                            @error('profile-image')<small class="text-danger">{{ $message }}</small>@enderror
+                                            <input type="file" name="profile_image" accept="image/*" class="form-control">
+                                            @error('profile_image')<small class="text-danger">{{ $message }}</small>@enderror
                                         </div>
                                     </div>
                                 </div>
@@ -64,13 +64,13 @@
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">First Name <span class="red-asterisk">*</span></label>
-                            <input name="firstName" value="{{ old('firstName', $staff->firstName) }}" class="form-control" required>
-                            @error('firstName')<small class="text-danger">{{ $message }}</small>@enderror
+                            <input name="first_name" value="{{ old('first_name', $staff->first_name) }}" class="form-control" required>
+                            @error('first_name')<small class="text-danger">{{ $message }}</small>@enderror
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Last Name <span class="red-asterisk">*</span></label>
-                            <input name="lastName" value="{{ old('lastName', $staff->lastName) }}" class="form-control" required>
-                            @error('lastName')<small class="text-danger">{{ $message }}</small>@enderror
+                            <input name="last_name" value="{{ old('last_name', $staff->last_name) }}" class="form-control" required>
+                            @error('last_name')<small class="text-danger">{{ $message }}</small>@enderror
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Email <span class="red-asterisk">*</span></label>

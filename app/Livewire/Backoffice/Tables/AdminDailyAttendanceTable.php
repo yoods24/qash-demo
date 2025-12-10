@@ -62,7 +62,7 @@ class AdminDailyAttendanceTable extends Component implements HasTable, HasSchema
         return $table
             ->query(
                 Attendance::query()
-                    ->with(['user:id,firstName,lastName,email'])
+                    ->with(['user:id,first_name,last_name,email'])
                     ->whereDate('work_date', $date)
                     ->orderByDesc('clock_in_at')
             )
@@ -70,8 +70,8 @@ class AdminDailyAttendanceTable extends Component implements HasTable, HasSchema
                 TextColumn::make('staff_name')
                     ->label('Staff')
                     ->getStateUsing(function (Attendance $record): string {
-                        $first = $record->user?->firstName ?? '';
-                        $last = $record->user?->lastName ?? '';
+                        $first = $record->user?->first_name ?? '';
+                        $last = $record->user?->last_name ?? '';
                         $full = trim($first . ' ' . $last);
 
                         return $full !== '' ? $full : ($record->user?->email ?? '-');
@@ -80,8 +80,8 @@ class AdminDailyAttendanceTable extends Component implements HasTable, HasSchema
                     ->searchable(query: function (Builder $query, string $search) {
                         $query->whereHas('user', function (Builder $userQuery) use ($search) {
                             $userQuery->where(function (Builder $nameQuery) use ($search) {
-                                $nameQuery->where('firstName', 'like', '%' . $search . '%')
-                                    ->orWhere('lastName', 'like', '%' . $search . '%');
+                                $nameQuery->where('first_name', 'like', '%' . $search . '%')
+                                    ->orWhere('last_name', 'like', '%' . $search . '%');
                             });
                         });
                     }),

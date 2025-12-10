@@ -14,7 +14,7 @@ class UpdateStaffPhotoRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'profile-image' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'profile_image' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ];
     }
 }

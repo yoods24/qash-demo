@@ -6,7 +6,7 @@
         <div class="card-body d-flex flex-column flex-md-row align-items-center gap-3">
             <div class="avatar-lg rounded-3 d-flex align-items-center justify-content-center bg-light-subtle border overflow-hidden" aria-label="Avatar">
                 @if($staff->profile_image_url)
-                    <img src="{{ $staff->profile_image_url }}" alt="{{ trim(($staff->firstName ?? '') . ' ' . ($staff->lastName ?? '')) }}" style="width:100%;height:100%;object-fit:cover;" />
+                    <img src="{{ $staff->profile_image_url }}" alt="{{ trim(($staff->first_name ?? '') . ' ' . ($staff->last_name ?? '')) }}" style="width:100%;height:100%;object-fit:cover;" />
                 @else
                     <i class="bi bi-person-fill fs-1 text-secondary"></i>
                 @endif
@@ -14,7 +14,7 @@
             <div class="flex-grow-1 w-100">
                 <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
                     <div>
-                        <h3 class="mb-1 fw-bold">{{ trim(($staff->firstName ?? '') . ' ' . ($staff->lastName ?? '')) }}</h3>
+                        <h3 class="mb-1 fw-bold">{{ trim(($staff->first_name ?? '') . ' ' . ($staff->last_name ?? '')) }}</h3>
                         <span class="badge rounded-pill bg-warning-subtle text-warning border border-warning-subtle">{{ strtoupper($role ?? 'STAFF') }}</span>
                     </div>
                     <div>
@@ -22,9 +22,9 @@
                             @csrf
                             <label class="btn btn-primary shadow-sm mb-0">
                                 <i class="bi bi-upload me-2"></i>Upload New Photo
-                                <input type="file" name="profile-image" accept="image/*" class="d-none" onchange="this.form.submit()">
+                                <input type="file" name="profile_image" accept="image/*" class="d-none" onchange="this.form.submit()">
                             </label>
-                            @error('profile-image')
+                            @error('profile_image')
                                 <div class="text-danger small mt-1">{{ $message }}</div>
                             @enderror
                         </form>

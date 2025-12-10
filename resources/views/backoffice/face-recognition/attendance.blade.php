@@ -12,7 +12,7 @@
         {{-- 🌟 INPUT USERNAME BARU 🌟 --}}
         <div class="mb-3">
             <label for="usernameInput"  class="form-label fw-bold">Username untuk Absen:</label>
-            <input type="text" id="usernameInput" value="{{ $user->firstName .' '. $user->lastName }}" class="form-control" disabled placeholder="{{ $user->firstName .' '. $user->lastName }}">
+            <input type="text" id="usernameInput" value="{{ $user->first_name .' '. $user->last_name }}" class="form-control" disabled placeholder="{{ $user->first_name .' '. $user->last_name }}">
         </div>
         <div class="d-grid gap-2 mb-3">
             <button id="startCameraBtn" class="btn btn-outline-primary btn-lg">Mulai Kamera</button>

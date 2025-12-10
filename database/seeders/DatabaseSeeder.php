@@ -27,6 +27,7 @@ class DatabaseSeeder extends Seeder
         $tenant = Tenant::firstOrCreate([
             'id' => 'demo-cafe',
         ], [
+            'company_code' => 'DEMO12345',
             'data' => [
                 'name' => 'Demo Cafe',
                 'description' => 'Seeded demo tenant',
@@ -41,8 +42,8 @@ class DatabaseSeeder extends Seeder
         $admin = User::firstOrCreate([
             'email' => 'admin@demo-cafe.test',
         ], [
-            'firstName' => 'Demo',
-            'lastName' => 'Admin',
+            'first_name' => 'Demo',
+            'last_name' => 'Admin',
             'password' => Hash::make('Miscrits24!'),
             'tenant_id' => $tenant->id,
             'status' => 1,

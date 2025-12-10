@@ -29,4 +29,19 @@ class Tenant extends BaseTenant
     {
         return $this->hasMany(User::class, 'tenant_id')->where('is_admin', true);
     }
+
+    /**
+     * Tell Stancl's virtual column trait which columns are real DB columns
+     * so attributes like company_code don't get moved into the JSON data.
+     */
+    public static function getCustomColumns(): array
+    {
+        return [
+            'id',
+            'company_code',
+            'created_at',
+            'updated_at',
+            static::getDataColumn(),
+        ];
+    }
 }

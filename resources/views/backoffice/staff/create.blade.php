@@ -45,8 +45,8 @@
                                     <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
                                         <div class="w-100 w-lg-auto">
                                             <label class="form-label">Profile Photo</label>
-                                            <input type="file" name="profile-image" accept="image/*" class="form-control">
-                                            @error('profile-image')<small class="text-danger">{{ $message }}</small>@enderror
+                                            <input type="file" name="profile_image" accept="image/*" class="form-control">
+                                            @error('profile_image')<small class="text-danger">{{ $message }}</small>@enderror
                                         </div>
                                     </div>
                                 </div>
@@ -54,13 +54,13 @@
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">First Name <span class="red-asterisk">*</span></label>
-                            <input name="firstName" value="{{ old('firstName') }}" class="form-control" required>
-                            @error('firstName')<small class="text-danger">{{ $message }}</small>@enderror
+                            <input name="first_name" value="{{ old('first_name') }}" class="form-control" required>
+                            @error('first_name')<small class="text-danger">{{ $message }}</small>@enderror
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Last Name <span class="red-asterisk">*</span></label>
-                            <input name="lastName" value="{{ old('lastName') }}" class="form-control" required>
-                            @error('lastName')<small class="text-danger">{{ $message }}</small>@enderror
+                            <input name="last_name" value="{{ old('last_name') }}" class="form-control" required>
+                            @error('last_name')<small class="text-danger">{{ $message }}</small>@enderror
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Email <span class="red-asterisk">*</span></label>
@@ -407,4 +407,3 @@
         </div>
     </x-modal.create>
 </x-backoffice.layout>
-

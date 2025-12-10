@@ -112,6 +112,6 @@ class DashboardController extends Controller
             default => 'Good evening',
         };
 
-        return $prefix . ', ' . ($user->fullName() ?: $user->firstName ?? 'there');
+        return $prefix . ', ' . ($user->fullName() ?: $user->first_name ?? 'there');
     }
 }

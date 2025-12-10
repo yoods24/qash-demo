@@ -257,7 +257,7 @@ class StaffAttendance extends Component implements HasTable, HasActions, HasSche
                 ->withHeaders(['X-Tenant-Id' => $tenantId])
                 ->post('http://127.0.0.1:5001/has_face', [
                     'tenant_id' => $tenantId,
-                    'name' => trim(($user->firstName ?? '') . ' ' . ($user->lastName ?? '')),
+                    'name' => trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? '')),
                 ]);
             if (!$resp->ok()) return null;
             $j = $resp->json();

@@ -16,8 +16,8 @@ class UpdateStaffRequest extends FormRequest
         $staffId = $this->route('staff')?->id;
 
         return [
-            'firstName' => ['required', 'string', 'max:120'],
-            'lastName' => ['required', 'string', 'max:120'],
+            'first_name' => ['required', 'string', 'max:120'],
+            'last_name' => ['required', 'string', 'max:120'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email,' . $staffId],
             'phone' => ['required', 'string', 'max:20'],
             'emp_code' => ['nullable', 'string', 'max:120', 'unique:users,emp_code,' . $staffId],
@@ -43,7 +43,7 @@ class UpdateStaffRequest extends FormRequest
             'account_number' => ['nullable', 'string', 'max:60'],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
             'role' => ['nullable', 'exists:roles,name'],
-            'profile-image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'profile_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ];
     }
 }

@@ -11,7 +11,7 @@
 
         <div class="mb-3 text-start">
             <label for="nameInput" class="form-label fw-bold">Nama untuk Pendaftaran:</label>
-            <input type="text" value="{{ $user->firstName .' '. $user->lastName }}" id="nameInput" disabled class="form-control" placeholder="{{ $user->firstName .' '. $user->lastName }}">
+            <input type="text" value="{{ $user->first_name .' '. $user->last_name }}" id="nameInput" disabled class="form-control" placeholder="{{ $user->first_name .' '. $user->last_name }}">
         </div>
 
         <div class="d-grid gap-2 mb-3">

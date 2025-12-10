@@ -15,6 +15,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class TenantController extends Controller
@@ -42,6 +43,7 @@ class TenantController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:150'],
             'slug' => ['required', 'alpha_dash', 'max:80', 'unique:tenants,id'],
+            'company_code' => ['required', 'alpha_dash', 'max:50', 'unique:tenants,company_code'],
             'description' => ['nullable', 'string', 'max:500'],
             'admin_first_name' => ['required', 'string', 'max:120'],
             'admin_last_name' => ['required', 'string', 'max:120'],
@@ -53,6 +55,7 @@ class TenantController extends Controller
         DB::transaction(function () use ($validated): void {
             $tenant = Tenant::create([
                 'id' => $validated['slug'],
+                'company_code' => Str::upper($validated['company_code']),
                 'data' => array_filter([
                     'name' => $validated['name'],
                     'description' => $validated['description'] ?? null,
@@ -60,8 +63,8 @@ class TenantController extends Controller
             ]);
 
             $admin = User::create([
-                'firstName' => $validated['admin_first_name'],
-                'lastName' => $validated['admin_last_name'],
+                'first_name' => $validated['admin_first_name'],
+                'last_name' => $validated['admin_last_name'],
                 'email' => $validated['admin_email'],
                 'phone' => $validated['admin_phone'] ?? null,
                 'password' => Hash::make($validated['admin_password']),

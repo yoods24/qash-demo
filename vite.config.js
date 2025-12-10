@@ -22,11 +22,4 @@ export default defineConfig({
         }),
     tailwindcss(),
     ],
-    server: {
-        host: '0.0.0.0',
-        port: 5173,
-        hmr: {
-            host: '172.24.64.1',
-        },
-    },
 });
